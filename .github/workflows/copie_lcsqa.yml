@@ -1,0 +1,70 @@
+# IATMO : copie des fichiers « temps réel » du LCSQA (data.gouv.fr) sur la branche « donnees » du dépôt.
+# Pourquoi : files.data.gouv.fr n'autorise pas la lecture depuis une autre page web (en-tête CORS absent),
+# alors que raw.githubusercontent.com l'autorise. La maquette lit donc la copie, puis data.gouv.fr à défaut.
+# À enregistrer dans le dépôt sous le nom .github/workflows/copie_lcsqa.yml
+# La branche « donnees » ne garde qu'un seul état (poussée forcée) : l'historique du dépôt ne grossit pas.
+name: Copie des mesures LCSQA
+
+on:
+  schedule:
+    - cron: "9,39 * * * *"          # deux passages par heure (heure UTC), décalés de l'heure pile
+  workflow_dispatch:                # bouton « Run workflow » dans l'onglet Actions
+
+permissions:
+  contents: write
+
+concurrency:
+  group: copie-lcsqa
+  cancel-in-progress: true
+
+jobs:
+  copie:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      SOURCE: https://files.data.gouv.fr/ineris/lcsqa/concentrations-de-polluants-atmospheriques-reglementes/temps-reel
+      REPO: ${{ github.repository }}
+      TOKEN: ${{ github.token }}
+    steps:
+      - name: Télécharger les fichiers du jour et de la veille
+        shell: bash
+        run: |
+          set -euo pipefail
+          export TZ=Europe/Paris
+          mkdir -p out/lcsqa
+          entrees=""
+          for D in "$(date +%F)" "$(date -d yesterday +%F)"; do
+            AN="${D:0:4}"; D2="${D//-/}"
+            LISTE="$(curl -fsSL --retry 3 --max-time 60 "$SOURCE/$AN/" || true)"
+            NOMS="$(printf '%s' "$LISTE" | grep -oE '[A-Za-z0-9_.-]+\.csv' | sort -u || true)"
+            NOM="$(printf '%s\n' "$NOMS" | grep -x "FR_E2_$D.csv" || true)"
+            [ -n "$NOM" ] || NOM="$(printf '%s\n' "$NOMS" | grep -E "($D|$D2)" | grep 'E2' | tail -n 1 || true)"
+            [ -n "$NOM" ] || NOM="$(printf '%s\n' "$NOMS" | grep -E "($D|$D2)" | tail -n 1 || true)"
+            [ -n "$NOM" ] || NOM="FR_E2_$D.csv"
+            if curl -fsSL --retry 3 --max-time 300 -o "out/lcsqa/$NOM" "$SOURCE/$AN/$NOM" \
+               && [ "$(head -c 2000 "out/lcsqa/$NOM" | grep -ci 'polluant' || true)" != "0" ]; then
+              echo "$D : $NOM ($(wc -c < "out/lcsqa/$NOM") octets)"
+              entrees="$entrees${entrees:+,}\"$D\":\"$NOM\""
+            else
+              echo "$D : aucun fichier lisible ($NOM)"; rm -f "out/lcsqa/$NOM"
+            fi
+          done
+          if [ -z "$entrees" ]; then echo "Aucun fichier copié : la branche n'est pas modifiée."; exit 1; fi
+          printf '{"maj":"%s","source":"%s","fichiers":{%s}}\n' "$(date -Iseconds)" "$SOURCE" "$entrees" > out/lcsqa/etat.json
+          printf '%s\n' "Copie automatique des fichiers temps réel du LCSQA (data.gouv.fr, Licence Ouverte), pour la maquette IATMO." \
+            "Branche réécrite à chaque passage par la tâche .github/workflows/copie_lcsqa.yml : ne pas y travailler." > out/LISEZMOI.txt
+          cat out/lcsqa/etat.json
+
+      - name: Publier sur la branche donnees
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd out
+          git init -q -b donnees
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -qm "Copie LCSQA du $(TZ=Europe/Paris date '+%d/%m/%Y à %H:%M')"
+          DEST="${DEST:-https://x-access-token:${TOKEN}@github.com/${REPO}.git}"
+          git push -qf "$DEST" donnees
+          echo "Copie publiée : https://raw.githubusercontent.com/${REPO}/donnees/lcsqa/etat.json"
