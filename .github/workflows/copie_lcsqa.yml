@@ -1,9 +1,15 @@
-# IATMO : copie des fichiers « temps réel » du LCSQA (data.gouv.fr) sur la branche « donnees » du dépôt.
-# Pourquoi : files.data.gouv.fr n'autorise pas la lecture depuis une autre page web (en-tête CORS absent),
-# alors que raw.githubusercontent.com l'autorise. La maquette lit donc la copie, puis data.gouv.fr à défaut.
+# IATMO : copie des données publiques sur la branche « donnees » du dépôt, deux fois par heure.
+# 1. Fichiers « temps réel » du LCSQA (data.gouv.fr) : files.data.gouv.fr n'autorise pas la lecture depuis une
+#    autre page web (en-tête CORS absent), alors que raw.githubusercontent.com l'autorise.
+# 2. Débits et vitesses Bison Futé sur le réseau national routier non concédé (data.gouv.fr, Licence Ouverte) :
+#    fichiers bruts du moment, dernier état par point de mesure et archive horaire (60 jours), pour caler plus tard
+#    l'effet routier de la maquette sur le trafic réel ; fichier points.json (coordonnées, débits et vitesses du jour)
+#    lu par la maquette.
+# 3. Archive des mesures du LCSQA (180 jours) : une ligne par station et par heure, valeurs de NO, NO2, NOx, O3, PM10,
+#    PM2,5 et SO2, pour caler le modèle sur un historique.
 # À enregistrer dans le dépôt sous le nom .github/workflows/copie_lcsqa.yml
 # La branche « donnees » ne garde qu'un seul état (poussée forcée) : l'historique du dépôt ne grossit pas.
-name: Copie des mesures LCSQA
+name: Copie des mesures LCSQA et du trafic
 
 on:
   schedule:
@@ -15,23 +21,42 @@ permissions:
 
 concurrency:
   group: copie-lcsqa
-  cancel-in-progress: true
+  cancel-in-progress: false         # un passage en cours va jusqu'au bout ; le suivant attend
 
 jobs:
   copie:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     env:
       SOURCE: https://files.data.gouv.fr/ineris/lcsqa/concentrations-de-polluants-atmospheriques-reglementes/temps-reel
+      TRAFIC_1: https://www.data.gouv.fr/api/1/datasets/r/625048a9-9d8f-4a6b-a7bf-b62094fb2c2e
+      TRAFIC_2: https://www.data.gouv.fr/api/1/datasets/r/82673e5e-904f-41ae-8e1f-c64ff4095c1b
+      TRAFIC_3: https://www.data.gouv.fr/api/1/datasets/r/501e1cee-2961-41dc-b229-d14ba96819a8
       REPO: ${{ github.repository }}
       TOKEN: ${{ github.token }}
     steps:
-      - name: Télécharger les fichiers du jour et de la veille
+      - name: Reprendre la branche donnees
+        shell: bash
+        run: |
+          set -euo pipefail
+          DEST="${DEST:-https://x-access-token:${TOKEN}@github.com/${REPO}.git}"
+          git init -q out
+          cd out
+          git remote add origin "$DEST"
+          if git fetch -q --depth 1 origin donnees 2>/dev/null; then
+            git checkout -q -B donnees FETCH_HEAD; echo "Branche donnees reprise"
+          else
+            git checkout -q --orphan donnees; echo "Branche donnees créée"
+          fi
+
+      - name: Mesures du LCSQA (jour et veille)
+        id: lcsqa
+        continue-on-error: true
         shell: bash
         run: |
           set -euo pipefail
           export TZ=Europe/Paris
-          mkdir -p out/lcsqa
+          rm -rf tmp_lcsqa && mkdir -p tmp_lcsqa
           entrees=""
           for D in "$(date +%F)" "$(date -d yesterday +%F)"; do
             AN="${D:0:4}"; D2="${D//-/}"
@@ -41,30 +66,251 @@ jobs:
             [ -n "$NOM" ] || NOM="$(printf '%s\n' "$NOMS" | grep -E "($D|$D2)" | grep 'E2' | tail -n 1 || true)"
             [ -n "$NOM" ] || NOM="$(printf '%s\n' "$NOMS" | grep -E "($D|$D2)" | tail -n 1 || true)"
             [ -n "$NOM" ] || NOM="FR_E2_$D.csv"
-            if curl -fsSL --retry 3 --max-time 300 -o "out/lcsqa/$NOM" "$SOURCE/$AN/$NOM" \
-               && [ "$(head -c 2000 "out/lcsqa/$NOM" | grep -ci 'polluant' || true)" != "0" ]; then
-              echo "$D : $NOM ($(wc -c < "out/lcsqa/$NOM") octets)"
+            if curl -fsSL --retry 3 --max-time 300 -o "tmp_lcsqa/$NOM" "$SOURCE/$AN/$NOM" \
+               && [ "$(head -c 2000 "tmp_lcsqa/$NOM" | grep -ci 'polluant' || true)" != "0" ]; then
+              echo "$D : $NOM ($(wc -c < "tmp_lcsqa/$NOM") octets)"
               entrees="$entrees${entrees:+,}\"$D\":\"$NOM\""
             else
-              echo "$D : aucun fichier lisible ($NOM)"; rm -f "out/lcsqa/$NOM"
+              echo "$D : aucun fichier lisible ($NOM)"; rm -f "tmp_lcsqa/$NOM"
             fi
           done
-          if [ -z "$entrees" ]; then echo "Aucun fichier copié : la branche n'est pas modifiée."; exit 1; fi
-          printf '{"maj":"%s","source":"%s","fichiers":{%s}}\n' "$(date -Iseconds)" "$SOURCE" "$entrees" > out/lcsqa/etat.json
-          printf '%s\n' "Copie automatique des fichiers temps réel du LCSQA (data.gouv.fr, Licence Ouverte), pour la maquette IATMO." \
-            "Branche réécrite à chaque passage par la tâche .github/workflows/copie_lcsqa.yml : ne pas y travailler." > out/LISEZMOI.txt
+          if [ -z "$entrees" ]; then echo "Aucun fichier du LCSQA copié : la copie précédente est gardée."; exit 1; fi
+          printf '{"maj":"%s","source":"%s","fichiers":{%s}}\n' "$(date -Iseconds)" "$SOURCE" "$entrees" > tmp_lcsqa/etat.json
+          rm -rf out/lcsqa && mv tmp_lcsqa out/lcsqa
           cat out/lcsqa/etat.json
+          python3 - <<'PY'
+          import csv, gzip, io, os, glob, json, datetime as dt
+          from zoneinfo import ZoneInfo
+          POL = {"NO": "NO", "NO2": "NO2", "NOX as NO2": "NOX", "O3": "O3", "PM10": "PM10", "PM2.5": "PM25", "SO2": "SO2"}
+          COLS = ["NO", "NO2", "NOX", "O3", "PM10", "PM25", "SO2"]
+          os.makedirs("out/archive/lcsqa", exist_ok=True)
+          fst = "out/archive/lcsqa/stations.csv"; stations = {}
+          if os.path.exists(fst):
+              with open(fst, encoding="utf-8", newline="") as fi:
+                  for r in csv.DictReader(fi, delimiter=";"): stations[r["code"]] = r
+          etat = json.load(open("out/lcsqa/etat.json", encoding="utf-8"))
+          for jour, nom in etat["fichiers"].items():
+              acc = {}
+              with open("out/lcsqa/" + nom, encoding="utf-8-sig", newline="") as fi:
+                  rd = csv.reader(fi, delimiter=";"); H = next(rd); ix = {h: i for i, h in enumerate(H)}
+                  for x in rd:
+                      if len(x) < len(H): continue
+                      p = POL.get(x[ix["Polluant"]]); val = x[ix["valeur"]]
+                      if not p or not val: continue
+                      try:
+                          if float(x[ix["validité"]]) <= 0: continue
+                      except ValueError: continue
+                      code = x[ix["code site"]]; h = x[ix["Date de début"]].replace("/", "-")[:13]
+                      acc.setdefault((code, h), {})[p] = val
+                      stations[code] = {"code": code, "nom": x[ix["nom site"]], "organisme": x[ix["Organisme"]], "implantation": x[ix["type d'implantation"]],
+                                        "influence": x[ix["type d'influence"]], "zas": x[ix["Zas"]]}
+              buf = io.StringIO(); w = csv.writer(buf, delimiter=";"); w.writerow(["code", "heure"] + COLS)
+              for (code, h), d in sorted(acc.items()): w.writerow([code, h] + [d.get(c, "") for c in COLS])
+              with gzip.open("out/archive/lcsqa/" + jour + ".csv.gz", "wt", encoding="utf-8") as fo: fo.write(buf.getvalue())
+              print("archive LCSQA", jour, ":", len(acc), "couples station-heure")
+          with open(fst, "w", encoding="utf-8", newline="") as fo:
+              w = csv.DictWriter(fo, fieldnames=["code", "nom", "organisme", "implantation", "influence", "zas"], delimiter=";"); w.writeheader()
+              for c in sorted(stations): w.writerow(stations[c])
+          limite = (dt.datetime.now(ZoneInfo("Europe/Paris")) - dt.timedelta(days=180)).strftime("%Y-%m-%d")
+          for fa in glob.glob("out/archive/lcsqa/*.csv.gz"):
+              if os.path.basename(fa)[:10] < limite: os.remove(fa)
+          PY
+
+      - name: Trafic Bison Futé (réseau national non concédé)
+        id: trafic
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p out/trafic/brut out/trafic/archive
+          cd out/trafic
+          ok=0
+          for k in 1 2 3; do
+            URL="TRAFIC_$k"; URL="${!URL}"
+            rm -f "brut/tmp_$k"
+            if curl -fsSL --retry 3 --max-time 180 -o "brut/tmp_$k" "$URL"; then
+              ext=csv; [ "$(head -c 300 "brut/tmp_$k" | grep -c '<' || true)" != "0" ] && ext=xml
+              rm -f "brut/fichier_$k".*; mv "brut/tmp_$k" "brut/fichier_$k.$ext"
+              echo "fichier_$k.$ext : $(wc -c < "brut/fichier_$k.$ext") octets"; ok=1
+            else
+              echo "fichier_$k : échec du téléchargement"; rm -f "brut/tmp_$k"
+            fi
+          done
+          [ "$ok" = 1 ] || exit 1
+          python3 - <<'PY'
+          import xml.etree.ElementTree as ET, csv, gzip, json, os, glob, io, collections, datetime as dt
+          from zoneinfo import ZoneInfo
+          PARIS = ZoneInfo("Europe/Paris"); XSI = "{http://www.w3.org/2001/XMLSchema-instance}type"
+          def loc(t): return t.rsplit("}", 1)[-1]
+          def nombre(x):
+              try: return float(x.strip().replace(",", "."))
+              except Exception: return None
+          sites = {}; types = collections.Counter(); racines = {}; erreurs = []
+          for f in sorted(glob.glob("brut/*.xml")):
+              nom = os.path.basename(f); n0 = len(sites)
+              try:
+                  for ev, el in ET.iterparse(f, events=("start", "end")):
+                      if ev == "start":
+                          racines.setdefault(nom, loc(el.tag)); continue
+                      if loc(el.tag) != "siteMeasurements": continue
+                      sid = t = None; debits = []; vitesses = []
+                      for c in el.iter():
+                          cn = loc(c.tag)
+                          if cn == "measurementSiteReference": sid = c.get("id") or (c.text or "").strip() or sid
+                          elif cn == "measurementTimeDefault" and t is None: t = (c.text or "").strip()
+                          elif cn == "basicData":
+                              ty = (c.get(XSI) or "?").split(":")[-1]; types[ty] += 1
+                              for d in c.iter():
+                                  dn = loc(d.tag)
+                                  if dn == "vehicleFlowRate" and d.text and nombre(d.text) is not None: debits.append(nombre(d.text))
+                                  elif dn == "speed" and d.text and nombre(d.text) is not None: vitesses.append(nombre(d.text))
+                      if sid and (debits or vitesses): sites[sid] = (t, debits, vitesses)
+                      el.clear()
+              except ET.ParseError as e:
+                  erreurs.append(nom + " : " + str(e))
+              print(nom, ":", len(sites) - n0, "points de mesure lus")
+          # dernier état par point : débit = somme des valeurs (voies), vitesse = moyenne ; nombres de valeurs gardés
+          with open("dernier.csv", "w", newline="", encoding="utf-8") as fo:
+              w = csv.writer(fo, delimiter=";")
+              w.writerow(["point", "horodatage", "debit_veh_h", "vitesse_km_h", "n_debits", "n_vitesses"])
+              for sid, (t, de, vi) in sorted(sites.items()):
+                  w.writerow([sid, t or "", round(sum(de)) if de else "", round(sum(vi) / len(vi), 1) if vi else "", len(de), len(vi)])
+          # archive horaire : moyennes par point et par heure locale, un fichier compressé par jour
+          vus = {}
+          if os.path.exists("vus.json"):
+              try: vus = json.load(open("vus.json", encoding="utf-8"))
+              except Exception: vus = {}
+          ajouts = collections.defaultdict(list)
+          for sid, (t, de, vi) in sites.items():
+              if not t or vus.get(sid) == t: continue
+              try: h = dt.datetime.fromisoformat(t.replace("Z", "+00:00")).astimezone(PARIS)
+              except Exception: continue
+              vus[sid] = t
+              ajouts[h.strftime("%Y-%m-%d")].append((sid, h.strftime("%H"), sum(de) if de else None, sum(vi) / len(vi) if vi else None, len(de), len(vi)))
+          for jour, lignes in ajouts.items():
+              fa = "archive/" + jour + ".csv.gz"; acc = {}
+              if os.path.exists(fa):
+                  with gzip.open(fa, "rt", encoding="utf-8") as fi:
+                      for r in csv.DictReader(fi, delimiter=";"):
+                          acc[(r["point"], r["heure"])] = [float(r["somme_debit"] or 0), int(r["n_debit"]), float(r["somme_vitesse"] or 0), int(r["n_vitesse"]), int(r["valeurs_debit"]), int(r["valeurs_vitesse"])]
+              for sid, hh, de, vi, nd, nv in lignes:
+                  a = acc.setdefault((sid, hh), [0.0, 0, 0.0, 0, nd, nv])
+                  if de is not None: a[0] += de; a[1] += 1
+                  if vi is not None: a[2] += vi; a[3] += 1
+                  a[4] = max(a[4], nd); a[5] = max(a[5], nv)
+              buf = io.StringIO(); w = csv.writer(buf, delimiter=";")
+              w.writerow(["point", "heure", "somme_debit", "n_debit", "somme_vitesse", "n_vitesse", "valeurs_debit", "valeurs_vitesse"])
+              for (sid, hh), a in sorted(acc.items()):
+                  w.writerow([sid, hh, round(a[0], 1), a[1], round(a[2], 1), a[3], a[4], a[5]])
+              with gzip.open(fa, "wt", encoding="utf-8") as fo: fo.write(buf.getvalue())
+              print("archive", jour, ":", len(acc), "couples point-heure")
+          limite = (dt.datetime.now(PARIS) - dt.timedelta(days=60)).strftime("%Y-%m-%d")
+          for fa in glob.glob("archive/*.csv.gz"):
+              if os.path.basename(fa)[:10] < limite: os.remove(fa)
+          json.dump(vus, open("vus.json", "w", encoding="utf-8"))
+          horos = sorted(t for t, de, vi in sites.values() if t)
+          etat = {"maj": dt.datetime.now(PARIS).isoformat(timespec="seconds"), "points": len(sites),
+                  "horodatage_min": horos[0] if horos else None, "horodatage_max": horos[-1] if horos else None,
+                  "types_de_donnees": dict(types), "racines_xml": racines, "erreurs": erreurs,
+                  "fichiers": {os.path.basename(f): os.path.getsize(f) for f in sorted(glob.glob("brut/*"))},
+                  "valeurs_par_point": {f"{a} débits / {b} vitesses": n for (a, b), n in collections.Counter((len(de), len(vi)) for t, de, vi in sites.values()).most_common(8)},
+                  "archive": sorted(os.path.basename(f) for f in glob.glob("archive/*.csv.gz"))}
+          json.dump(etat, open("etat.json", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+          print(json.dumps({k: etat[k] for k in ("points", "horodatage_max", "types_de_donnees", "valeurs_par_point")}, ensure_ascii=False))
+          # référentiel des points de mesure : coordonnées tirées des fichiers XML (measurementSiteRecord) ou CSV (colonnes de latitude et longitude)
+          import math, re, unicodedata
+          def l93(x, y):                                                     # Lambert-93 vers longitude, latitude (RGF93 ≈ WGS84)
+              n, c, xs, ys, e = 0.7256077650, 11754255.426, 700000.0, 12655612.050, 0.0818191910428
+              R = math.hypot(x - xs, y - ys); g = math.atan((x - xs) / (ys - y)); lon = 3 + math.degrees(g / n)
+              L = -math.log(abs(R / c)) / n; phi = 2 * math.atan(math.exp(L)) - math.pi / 2
+              for _ in range(8): phi = 2 * math.atan(((1 + e * math.sin(phi)) / (1 - e * math.sin(phi))) ** (e / 2) * math.exp(L)) - math.pi / 2
+              return lon, math.degrees(phi)
+          ref = {}
+          for f in sorted(glob.glob("brut/*.xml")):
+              try:
+                  for ev, el in ET.iterparse(f, events=("end",)):
+                      if loc(el.tag) != "measurementSiteRecord": continue
+                      sid = el.get("id"); la = lo = None; route = sens = None
+                      for c in el.iter():
+                          cn = loc(c.tag); tx = (c.text or "").strip()
+                          if cn == "latitude" and la is None: la = nombre(tx)
+                          elif cn == "longitude" and lo is None: lo = nombre(tx)
+                          elif cn in ("roadNumber", "roadName") and not route and tx: route = tx
+                          elif cn in ("directionBound", "tpegDirection", "directionRelative") and not sens and tx: sens = tx
+                      if sid and la is not None and lo is not None: ref[sid] = (lo, la, route, sens)
+                      el.clear()
+              except ET.ParseError: pass
+          def norm(h): return re.sub(r"[^a-z0-9]", "", unicodedata.normalize("NFD", h.lower()).encode("ascii", "ignore").decode())
+          for f in sorted(glob.glob("brut/*.csv")):
+              try:
+                  txt = open(f, encoding="utf-8-sig", errors="replace").read()
+                  dl = ";" if txt[:2000].count(";") >= txt[:2000].count(",") else ","
+                  rows = list(csv.reader(io.StringIO(txt), delimiter=dl))
+                  if len(rows) < 2: continue
+                  H = [norm(h) for h in rows[0]]
+                  def col(cands, excl=()):
+                      for i, h in enumerate(H):
+                          if any(h == c or h.startswith(c) for c in cands) and not any(x in h for x in excl): return i
+                      return None
+                  ci = col(["identifiant", "idpoint", "id", "code", "point", "site", "station", "mst"])
+                  cla = col(["latitude", "lat", "y", "ywgs", "coordy"]); clo = col(["longitude", "lon", "lng", "long", "x", "xwgs", "coordx"], ("lat",))
+                  cro = col(["route", "axe", "voie", "nomroute", "numroute"]); cse = col(["sens", "direction"])
+                  if ci is None or cla is None or clo is None: continue
+                  for r in rows[1:]:
+                      if len(r) <= max(ci, cla, clo): continue
+                      a, b = nombre(r[clo]), nombre(r[cla])
+                      if a is None or b is None: continue
+                      if a > 1000 and b > 1000: a, b = l93(a, b)
+                      if -6 <= a <= 10 and 41 <= b <= 52:
+                          ref.setdefault(r[ci].strip(), (a, b, r[cro].strip() if cro is not None and len(r) > cro else None, r[cse].strip() if cse is not None and len(r) > cse else None))
+              except Exception as e:
+                  erreurs.append(os.path.basename(f) + " : " + str(e))
+          # rapprochement des identifiants (exact, puis sans ponctuation ni casse)
+          cle = lambda s: re.sub(r"[^A-Z0-9]", "", s.upper())
+          refn = {cle(k): v for k, v in ref.items()}
+          jour = dt.datetime.now(PARIS).strftime("%Y-%m-%d"); hor = {}
+          fa = "archive/" + jour + ".csv.gz"
+          if os.path.exists(fa):
+              with gzip.open(fa, "rt", encoding="utf-8") as fi:
+                  for r in csv.DictReader(fi, delimiter=";"):
+                      d = hor.setdefault(r["point"], ([None] * 24, [None] * 24)); hh = int(r["heure"])
+                      if int(r["n_debit"]): d[0][hh] = round(float(r["somme_debit"]) / int(r["n_debit"]))
+                      if int(r["n_vitesse"]): d[1][hh] = round(float(r["somme_vitesse"]) / int(r["n_vitesse"]), 1)
+          pts = []
+          for sid, (t, de, vi) in sorted(sites.items()):
+              g = ref.get(sid) or refn.get(cle(sid))
+              if not g: continue
+              qh, vh = hor.get(sid, (None, None))
+              pts.append({"id": sid, "lon": round(g[0], 6), "lat": round(g[1], 6), "route": g[2], "sens": g[3], "t": t,
+                          "q": round(sum(de)) if de else None, "v": round(sum(vi) / len(vi), 1) if vi else None, "qh": qh, "vh": vh})
+          json.dump({"maj": dt.datetime.now(PARIS).isoformat(timespec="seconds"), "jour": jour, "points": pts}, open("points.json", "w", encoding="utf-8"), separators=(",", ":"))
+          etat["referentiel"] = len(ref); etat["points_localises"] = len(pts); etat["erreurs"] = erreurs
+          json.dump(etat, open("etat.json", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+          print("référentiel :", len(ref), "points localisés ;", len(pts), "points avec mesures et coordonnées")
+          if not sites: raise SystemExit("Aucun point de mesure lu dans les fichiers XML (voir etat.json et le dossier brut)")
+          PY
 
       - name: Publier sur la branche donnees
+        if: steps.lcsqa.outcome == 'success' || steps.trafic.outcome == 'success'
         shell: bash
         run: |
           set -euo pipefail
           cd out
-          git init -q -b donnees
+          printf '%s\n' "Copie automatique de données publiques pour la maquette IATMO (Licence Ouverte) :" \
+            "- lcsqa/ : fichiers temps réel du LCSQA (data.gouv.fr), jour et veille ;" \
+            "- trafic/ : débits et vitesses Bison Futé sur le réseau national non concédé (data.gouv.fr) : fichiers bruts du moment, dernier état par point, points.json pour la maquette, archive horaire de 60 jours ;" \
+            "- archive/lcsqa/ : mesures horaires du LCSQA par station (NO, NO2, NOx, O3, PM10, PM2,5, SO2), un fichier compressé par jour sur 180 jours, et table des stations." \
+            "Branche réécrite à chaque passage par la tâche .github/workflows/copie_lcsqa.yml : ne pas y travailler." > LISEZMOI.txt
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
-          git commit -qm "Copie LCSQA du $(TZ=Europe/Paris date '+%d/%m/%Y à %H:%M')"
-          DEST="${DEST:-https://x-access-token:${TOKEN}@github.com/${REPO}.git}"
-          git push -qf "$DEST" donnees
-          echo "Copie publiée : https://raw.githubusercontent.com/${REPO}/donnees/lcsqa/etat.json"
+          ARBRE="$(git write-tree)"
+          COMMIT="$(git commit-tree "$ARBRE" -m "Copie du $(TZ=Europe/Paris date '+%d/%m/%Y à %H:%M') (LCSQA : ${{ steps.lcsqa.outcome }}, trafic : ${{ steps.trafic.outcome }})")"
+          git push -qf origin "$COMMIT:refs/heads/donnees"
+          echo "Copie publiée : https://raw.githubusercontent.com/${REPO}/donnees/LISEZMOI.txt"
+
+      - name: Signaler l'échec des deux copies
+        if: steps.lcsqa.outcome != 'success' && steps.trafic.outcome != 'success'
+        shell: bash
+        run: |
+          echo "Ni les mesures du LCSQA ni le trafic n'ont pu être copiés : la branche n'est pas modifiée."; exit 1
