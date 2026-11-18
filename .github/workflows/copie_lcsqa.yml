@@ -5,6 +5,8 @@
 #    fichiers bruts du moment, dernier état par point de mesure et archive horaire (60 jours), pour caler plus tard
 #    l'effet routier de la maquette sur le trafic réel ; fichier points.json (coordonnées, débits et vitesses du jour)
 #    lu par la maquette.
+# 4. AROME (Météo-France, data.gouv.fr) : passage de reconnaissance toutes les 3 heures (dernier calcul disponible, liste
+#    des champs des paquets SP1 et SP2, valeurs à Paris et à Lyon), avant l'extraction du vent et de la pluie pour la carte.
 # 3. Archive des mesures du LCSQA (180 jours) : une ligne par station et par heure, valeurs de NO, NO2, NOx, O3, PM10,
 #    PM2,5 et SO2, pour caler le modèle sur un historique.
 # À enregistrer dans le dépôt sous le nom .github/workflows/copie_lcsqa.yml
@@ -32,6 +34,9 @@ jobs:
       TRAFIC_1: https://www.data.gouv.fr/api/1/datasets/r/625048a9-9d8f-4a6b-a7bf-b62094fb2c2e
       TRAFIC_2: https://www.data.gouv.fr/api/1/datasets/r/82673e5e-904f-41ae-8e1f-c64ff4095c1b
       TRAFIC_3: https://www.data.gouv.fr/api/1/datasets/r/501e1cee-2961-41dc-b229-d14ba96819a8
+      AROME_BASE: https://meteofrance-pnt.s3.rbx.io.cloud.ovh.net
+      AROME_API: https://www.data.gouv.fr/api/1/datasets/paquets-arome-resolution-0-01deg/
+      EVENEMENT: ${{ github.event_name }}
       REPO: ${{ github.repository }}
       TOKEN: ${{ github.token }}
     steps:
@@ -335,8 +340,82 @@ jobs:
           if not sites: raise SystemExit("Aucun point de mesure lu dans les fichiers XML (voir etat.json et le dossier brut)")
           PY
 
+      - name: AROME (reconnaissance, toutes les 3 heures)
+        id: arome
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p out/arome
+          python3 -m pip install -q --user --break-system-packages eccodes >/dev/null 2>&1 || python3 -m pip install -q --user eccodes >/dev/null
+          python3 - <<'PY'
+          import json, os, time, datetime as dt, urllib.request, urllib.error, re, collections
+          os.chdir("out/arome")
+          if os.path.exists("etat.json") and os.environ.get("EVENEMENT") != "workflow_dispatch":
+              try:
+                  age = time.time() - dt.datetime.fromisoformat(json.load(open("etat.json", encoding="utf-8"))["maj"]).timestamp()
+                  if age < 3 * 3600: print("Reconnaissance AROME faite il y a", round(age / 60), "min : rien à faire"); raise SystemExit(0)
+              except (KeyError, ValueError): pass
+          BASE = os.environ["AROME_BASE"]; etat = {"maj": dt.datetime.now(dt.timezone.utc).astimezone().isoformat(timespec="seconds"), "essais": [], "erreurs": []}
+          def lire(url, octets=None, tete=False, delai=60):
+              req = urllib.request.Request(url, method="HEAD" if tete else "GET", headers={"User-Agent": "IATMO-maquette"})
+              if octets: req.add_header("Range", "bytes=0-%d" % (octets - 1))
+              with urllib.request.urlopen(req, timeout=delai) as r: return r.status, dict(r.headers), (b"" if tete else r.read())
+          # 1. liste du stockage (si elle est publique) et ressources déclarées sur data.gouv.fr
+          try:
+              st, h, corps = lire(BASE + "/?list-type=2&prefix=pnt/&delimiter=/")
+              runs = re.findall(r"<Prefix>pnt/([^/<]+)/</Prefix>", corps.decode("utf-8", "replace"))
+              etat["liste_stockage"] = {"statut": st, "calculs": len(runs), "derniers": runs[-8:]}
+          except Exception as e:
+              etat["liste_stockage"] = {"erreur": str(e)[:200]}
+          try:
+              st, h, corps = lire(os.environ["AROME_API"])
+              j = json.loads(corps); res = j.get("resources", [])
+              etat["api_datagouv"] = {"ressources": len(res), "premieres": [(r.get("title"), r.get("url"), r.get("last_modified")) for r in res[:4]],
+                                      "dernieres": [(r.get("title"), r.get("url"), r.get("last_modified")) for r in res[-4:]]}
+          except Exception as e:
+              etat["api_datagouv"] = {"erreur": str(e)[:200]}
+          # 2. dernier calcul disponible : essais de calculs toutes les 3 h, du plus récent au plus ancien
+          maintenant = dt.datetime.now(dt.timezone.utc); trouve = None
+          for k in range(0, 10):
+              t = (maintenant - dt.timedelta(hours=3 * k)).replace(minute=0, second=0, microsecond=0)
+              t = t.replace(hour=t.hour - t.hour % 3); run = t.strftime("%Y-%m-%dT%H:%M:%SZ")
+              url = f"{BASE}/pnt/{run}/arome/001/SP1/arome__001__SP1__01H__{run}.grib2"
+              try:
+                  st, h, _ = lire(url, tete=True); etat["essais"].append([run, st, h.get("Content-Length")]); trouve = run; break
+              except urllib.error.HTTPError as e: etat["essais"].append([run, e.code, None])
+              except Exception as e: etat["essais"].append([run, str(e)[:120], None])
+          etat["calcul"] = trouve
+          # 3. inventaire des paquets SP1, SP2 et SP3 à l'échéance 01H : champs, niveaux, position dans le fichier, valeurs à Paris et à Lyon
+          if trouve:
+              import eccodes
+              for paquet in ("SP1", "SP2", "SP3"):
+                  url = f"{BASE}/pnt/{trouve}/arome/001/{paquet}/arome__001__{paquet}__01H__{trouve}.grib2"
+                  try:
+                      t0 = time.time(); st, h, corps = lire(url, delai=300)
+                      open("/tmp/a.grib2", "wb").write(corps); champs = []
+                      with open("/tmp/a.grib2", "rb") as f:
+                          while True:
+                              gid = eccodes.codes_grib_new_from_file(f)
+                              if gid is None: break
+                              g = lambda k: (eccodes.codes_get(gid, k) if eccodes.codes_is_defined(gid, k) else None)
+                              c = {k: g(k) for k in ("shortName", "name", "units", "typeOfLevel", "level", "stepRange", "stepType", "Ni", "Nj", "packingType", "offset", "totalLength")}
+                              c["grille"] = [g("latitudeOfFirstGridPointInDegrees"), g("longitudeOfFirstGridPointInDegrees"), g("latitudeOfLastGridPointInDegrees"), g("longitudeOfLastGridPointInDegrees"), g("iDirectionIncrementInDegrees")]
+                              for nom, la, lo in (("Paris", 48.857, 2.352), ("Lyon", 45.760, 4.835)):
+                                  try: c[nom] = round(eccodes.codes_grib_find_nearest(gid, la, lo)[0]["value"], 3)
+                                  except Exception: c[nom] = None
+                              champs.append({k: (str(v) if isinstance(v, bytes) else v) for k, v in c.items()}); eccodes.codes_release(gid)
+                      etat[paquet] = {"octets": len(corps), "secondes": round(time.time() - t0, 1), "champs": champs}
+                      print(paquet, ":", len(corps), "octets,", len(champs), "champs :", ", ".join(f"{c['shortName']}({c['typeOfLevel']} {c['level']})" for c in champs))
+                  except urllib.error.HTTPError as e: etat[paquet] = {"erreur": "HTTP %d" % e.code}
+                  except Exception as e: etat[paquet] = {"erreur": str(e)[:300]}
+          json.dump(etat, open("etat.json", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+          print(json.dumps({k: etat[k] for k in ("calcul", "essais", "liste_stockage")}, ensure_ascii=False)[:1500])
+          if not trouve: raise SystemExit("Aucun calcul AROME trouvé sur le stockage (voir arome/etat.json)")
+          PY
+
       - name: Publier sur la branche donnees
-        if: steps.lcsqa.outcome == 'success' || steps.trafic.outcome == 'success'
+        if: steps.lcsqa.outcome == 'success' || steps.trafic.outcome == 'success' || steps.arome.outcome == 'success'
         shell: bash
         run: |
           set -euo pipefail
@@ -344,18 +423,19 @@ jobs:
           printf '%s\n' "Copie automatique de données publiques pour la maquette IATMO (Licence Ouverte) :" \
             "- lcsqa/ : fichiers temps réel du LCSQA (data.gouv.fr), jour et veille ;" \
             "- trafic/ : débits et vitesses Bison Futé sur le réseau national non concédé (data.gouv.fr) : fichiers bruts du moment, dernier état par point, points.json pour la maquette, archive horaire de 60 jours ;" \
+            "- arome/ : reconnaissance des paquets AROME de Météo-France (dernier calcul, liste des champs), toutes les 3 heures ;" \
             "- archive/lcsqa/ : mesures horaires du LCSQA par station (NO, NO2, NOx, O3, PM10, PM2,5, SO2), un fichier compressé par jour sur 180 jours, et table des stations." \
             "Branche réécrite à chaque passage par la tâche .github/workflows/copie_lcsqa.yml : ne pas y travailler." > LISEZMOI.txt
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
           ARBRE="$(git write-tree)"
-          COMMIT="$(git commit-tree "$ARBRE" -m "Copie du $(TZ=Europe/Paris date '+%d/%m/%Y à %H:%M') (LCSQA : ${{ steps.lcsqa.outcome }}, trafic : ${{ steps.trafic.outcome }})")"
+          COMMIT="$(git commit-tree "$ARBRE" -m "Copie du $(TZ=Europe/Paris date '+%d/%m/%Y à %H:%M') (LCSQA : ${{ steps.lcsqa.outcome }}, trafic : ${{ steps.trafic.outcome }}, AROME : ${{ steps.arome.outcome }})")"
           git push -qf origin "$COMMIT:refs/heads/donnees"
           echo "Copie publiée : https://raw.githubusercontent.com/${REPO}/donnees/LISEZMOI.txt"
 
-      - name: Signaler l'échec des deux copies
-        if: steps.lcsqa.outcome != 'success' && steps.trafic.outcome != 'success'
+      - name: Signaler l'échec de toutes les copies
+        if: steps.lcsqa.outcome != 'success' && steps.trafic.outcome != 'success' && steps.arome.outcome != 'success'
         shell: bash
         run: |
           echo "Ni les mesures du LCSQA ni le trafic n'ont pu être copiés : la branche n'est pas modifiée."; exit 1
