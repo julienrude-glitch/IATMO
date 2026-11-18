@@ -142,7 +142,7 @@
   .sheet h2.partie{font-size:24px;margin:44px 0 4px;padding-top:16px;border-top:2px solid var(--accent)} .sheet h2.partie:first-of-type{margin-top:22px}
   .sommaire{display:flex;flex-wrap:wrap;gap:8px 22px;margin:0 0 6px} .sommaire a{color:var(--accent);text-decoration:none;font-weight:600} .sommaire a:hover{text-decoration:underline}
   .imprSeul{display:none} .perfExport{margin:26px 0 0;padding-top:14px;border-top:1px solid var(--line)}
-  #sources td .bon{color:#50CCAA} #sources td .mauvais{color:#FF7A7A} #sources td .neutre{color:var(--muted)} #sources table{font-size:13px}
+  #sources td .bon{color:#50CCAA} #sources td .mauvais{color:#FF7A7A} #sources td .neutre{color:var(--muted)} #sources table{font-size:13px} #sources a{color:var(--accent)} #sources .liens{margin-top:4px;font-size:12px;line-height:1.5}
   @media print{
     @page{size:A4;margin:8mm}
     html,body{height:auto!important;overflow:visible!important}
@@ -716,9 +716,9 @@ e_i = z_i − ẑ₋ᵢ(x_i) = w_i / Q_ii                 erreur de prévision, 
 <div id="srcTab"></div>
 <h2>Tâche de copie GitHub</h2>
 <ul>
-<li><b>Déclenchement.</b> Toutes les 10 minutes par le service gratuit cron-job.org, qui appelle l'API GitHub avec un jeton limité au dépôt et aux Actions ; la planification de GitHub (à 17 et 47 minutes de chaque heure) reste en secours. Un bouton permet aussi de la lancer à la main, avec l'option « force ».</li>
-<li><b>Étapes d'un passage.</b> Mesures du LCSQA (fichiers du jour et de la veille, archive de 180 jours) ; trafic Bison Futé (archive horaire de 60 jours) ; trafic de la Ville de Paris (une fois par jour, après 6 h) ; vent et pluie AROME (budget de 7 minutes) ; calage sur l'historique et performances quotidiennes (une fois par jour, après 4 h) ; publication sur la branche <code>donnees</code>, réécrite à chaque passage pour que le dépôt ne grossisse pas.</li>
-<li><b>Suivi.</b> Chaque passage est noté dans <code>suivi/journal.json</code> (trois jours), présenté dans l'onglet Performances (« Copies des données »), avec le retard de publication des mesures par AASQA.</li>
+<li><b>Déclenchement.</b> Toutes les 10 minutes par le service gratuit <a href="https://cron-job.org/" target="_blank" rel="noopener">cron-job.org</a>, qui appelle l'API GitHub avec un jeton limité au dépôt et aux Actions ; la planification de GitHub (à 17 et 47 minutes de chaque heure) reste en secours. Un bouton permet aussi de la lancer à la main, avec l'option « force ». Définition de la tâche : <a href="https://github.com/julienrude-glitch/IATMO/blob/main/.github/workflows/copie_lcsqa.yml" target="_blank" rel="noopener">copie_lcsqa.yml</a>.</li>
+<li><b>Étapes d'un passage.</b> Mesures du LCSQA (fichiers du jour et de la veille, archive de 180 jours) ; trafic Bison Futé (archive horaire de 60 jours) ; trafic de la Ville de Paris (une fois par jour, après 6 h) ; vent et pluie AROME (budget de 7 minutes) ; calage sur l'historique et performances quotidiennes (une fois par jour, après 4 h) ; publication sur la <a href="https://github.com/julienrude-glitch/IATMO/tree/donnees" target="_blank" rel="noopener">branche <code>donnees</code></a>, réécrite à chaque passage pour que le dépôt ne grossisse pas.</li>
+<li><b>Suivi.</b> Chaque passage est noté dans <a href="https://raw.githubusercontent.com/julienrude-glitch/IATMO/donnees/suivi/journal.json" target="_blank" rel="noopener"><code>suivi/journal.json</code></a> (trois jours), présenté dans l'onglet Performances (« Copies des données »), avec le retard de publication des mesures par AASQA.</li>
 <li><b>Secrets.</b> Aucune clé n'est dans la page ni sur GitHub. La clé de l'API Geod'air reste sur le poste de l'utilisateur et ne sert qu'au relais local, en secours.</li>
 </ul>
 <p class="muted" id="srcEditeur">Éditeur : Julien Rude. Hébergement : GitHub Pages.</p>
@@ -3414,63 +3414,67 @@ function srcHeure(iso){ var d = iso ? new Date(iso) : null; return d && !isNaN(d
 function srcLu(nom,detail){ var e = srcEvt(nom); if(!e) return {t:"non lu dans cette session",c:"neutre"};
   return e.ok ? {t:"lu en "+pfr((e.t1-e.t0)/1000,1)+" s"+(detail ? " ; "+detail : ""),c:"bon"} : {t:"échec de la lecture",c:"mauvais"}; }
 var SRC_LISTE = [
-  {d:"Indice ATMO par commune (aujourd'hui et demain)", p:"Atmo France et AASQA (Atmo Data) ; licence ODbL",
+  {d:"Indice ATMO par commune (aujourd'hui et demain)", l:[["jeu de données (data.gouv.fr)", "https://www.data.gouv.fr/datasets/6149925a2ff0ab6cebdd6fe8"], ["Atmo Data", "https://admindata.atmo-france.org/api/doc"], ["Atmo France", "https://www.atmo-france.org/"]], p:"Atmo France et AASQA (Atmo Data) ; licence ODbL",
    b:"Flux WFS <code>data.atmo-france.org</code> (couche ind_atmo_2021), lu directement par le navigateur",
    a:"Source : une fois par jour, vers 14 h (indice du jour et du lendemain)<br>Page : à l'ouverture",
    e:function(){ return srcLu("Indice ATMO des AASQA (Atmo Data)",(function(){ var n = state.rec ? (state.rec.size!=null ? state.rec.size : Object.keys(state.rec).length) : 0; return n ? n.toLocaleString("fr-FR")+" communes" : null; })()); }},
-  {d:"Mesures horaires aux stations (onglet Geod'air)", p:"AASQA, LCSQA (Geod'air) ; Licence Ouverte ; mesures non validées",
+  {d:"Mesures horaires aux stations (onglet Geod'air)", l:[["fichiers temps réel (data.gouv.fr)", "https://www.data.gouv.fr/datasets/5b98b648634f415309d52a50"], ["Geod'air", "https://www.geodair.fr/"], ["API Geod'air", "https://www.geodair.fr/donnees/api"]], p:"AASQA, LCSQA (Geod'air) ; Licence Ouverte ; mesures non validées",
    b:"Fichiers « temps réel » de <code>files.data.gouv.fr</code> copiés par la tâche GitHub (<code>lcsqa/</code>) ; secours : lecture directe, API Geod'air par le relais local, fichiers exportés",
    a:"Source : chaque heure, délai variable selon l'AASQA (onglet Performances)<br>Copie : toutes les 10 minutes<br>Page : à l'ouverture, relue à chaque ouverture",
    e:function(){ return srcLu("Mesures du LCSQA (copie GitHub)",GEO.copieMaj ? "copie du "+srcHeure(GEO.copieMaj) : null); }},
-  {d:"Prévisions à 2 km (sous la commune, dérive du krigeage)", p:"Ineris, plateforme Prev'air (www.prevair.org) ; Licence Ouverte",
+  {d:"Prévisions à 2 km (sous la commune, dérive du krigeage)", l:[["jeu de données (data.gouv.fr)", "https://www.data.gouv.fr/datasets/prevair-previsions-de-la-qualite-de-lair-pour-la-france-air-quality-forecasts-for-france"], ["Prev'air", "https://www.prevair.org/"]], p:"Ineris, plateforme Prev'air (www.prevair.org) ; Licence Ouverte",
    b:"Fichiers NetCDF publiés sur data.gouv.fr, trouvés par l'API du jeu de données et lus par le navigateur",
    a:"Source : une fois par jour, vers 9 h<br>Page : à l'ouverture",
    e:function(){ var n = Object.keys(PREV).length; return srcLu("Prévisions Prev'air (data.gouv.fr)",n ? n+" polluant"+(n>1?"s":"") : null); }},
-  {d:"Vent et pluie (effet routier)", p:"Météo-France (AROME, AROME Outre-Mer) ; Licence Ouverte",
+  {d:"Vent et pluie (effet routier)", l:[["AROME 0,01°", "https://www.data.gouv.fr/datasets/paquets-arome-resolution-0-01deg"], ["Antilles", "https://www.data.gouv.fr/datasets/paquets-arome-outre-mer-antilles-resolution-0-025deg"], ["Guyane", "https://www.data.gouv.fr/datasets/paquets-arome-outre-mer-guyane-resolution-0-025deg-1"], ["Réunion-Mayotte", "https://www.data.gouv.fr/datasets/paquets-arome-outre-mer-reunion-mayotte-resolution-0-025deg"]], p:"Météo-France (AROME, AROME Outre-Mer) ; Licence Ouverte",
    b:"Paquets GRIB2 à 0,01° (métropole) et 0,025° (DROM) de data.gouv.fr, décodés par la tâche GitHub (<code>arome/</code> : grilles de 0,1° et 0,05°)",
    a:"Source : un calcul toutes les 3 h (métropole) ou 6 h (outre-mer), publié environ 2 h après<br>Copie : toutes les 10 minutes, pour aujourd'hui et demain<br>Page : à l'ouverture",
    e:function(){ return srcLu("Vent et pluie AROME (copie GitHub)",AROME.maj ? "extraction du "+srcHeure(AROME.maj)+" ; "+Object.keys(AROME.jours||{}).length+" jour(s) en métropole, "+(AROME.om ? Object.keys(AROME.om.jours).length : 0)+" outre-mer" : null); }},
-  {d:"Vent et pluie, secours et jours suivants", p:"Open-Meteo (modèle meteofrance_seamless) ; gratuit pour un usage non commercial",
+  {d:"Vent et pluie, secours et jours suivants", l:[["Open-Meteo", "https://open-meteo.com/"]], p:"Open-Meteo (modèle meteofrance_seamless) ; gratuit pour un usage non commercial",
    b:"API <code>api.open-meteo.com</code>, sans clé, lue par le navigateur au centre de la carte et aux stations trafic",
    a:"Source : horaire<br>Page : au zoom de la rue, à chaque déplacement d'au moins 0,1°",
    e:function(){ return METEO.err ? {t:"injoignable depuis ce poste",c:"mauvais"} : METEO.ok ? {t:"lu au centre de la carte"+(METEO.arome ? " (complété par AROME)" : ""),c:"bon"} : {t:"non lu (zoom de la rue non atteint)",c:"neutre"}; }},
-  {d:"Trafic des axes nationaux", p:"Bison Futé et DIR (transport.data.gouv.fr) ; Licence Ouverte",
+  {d:"Trafic des axes nationaux", l:[["jeu de données (data.gouv.fr)", "https://www.data.gouv.fr/datasets/626113a9e7a3010e25422e7f"], ["Bison Futé", "https://www.bison-fute.gouv.fr/donnees-sur-la-circulation-du.html"]], p:"Bison Futé et DIR (transport.data.gouv.fr) ; Licence Ouverte",
    b:"Fichiers DATEX II et référentiel des points de mesure, copiés et convertis par la tâche GitHub (<code>trafic/points.json</code>)",
    a:"Source : toutes les 6 minutes<br>Copie : toutes les 10 minutes (archive horaire de 60 jours)<br>Page : à l'ouverture",
    e:function(){ var n = TRAF.pts.filter(function(p){ return !p.paris; }).length; return srcLu("Trafic Bison Futé (copie GitHub)",n ? n+" sections"+(TRAF.maj ? ", copie du "+srcHeure(TRAF.maj) : "") : null); }},
-  {d:"Trafic de Paris", p:"Ville de Paris, capteurs permanents (opendata.paris.fr) ; licence ODbL",
+  {d:"Trafic de Paris", l:[["débits horaires", "https://opendata.paris.fr/explore/dataset/comptages-routiers-permanents/"], ["référentiel géographique", "https://opendata.paris.fr/explore/dataset/referentiel-comptages-routiers/"]], p:"Ville de Paris, capteurs permanents (opendata.paris.fr) ; licence ODbL",
    b:"Export des débits horaires et du référentiel géographique par la tâche GitHub (<code>trafic/paris.json</code> : jour type des 7 derniers jours)",
    a:"Source : une fois par jour, données de la veille<br>Copie : une fois par jour, après 6 h<br>Page : quand la vue est à moins de 45 km de Paris",
    e:function(){ return srcLu("Trafic Ville de Paris (copie GitHub)",PTRAF.ok ? PTRAF.pts.length+" arcs, jusqu'au "+PTRAF.dernier.slice(8,10)+"/"+PTRAF.dernier.slice(5,7) : null); }},
-  {d:"Calage sur l'historique, suivi des performances", p:"IATMO (script historique.py), à partir des archives du LCSQA et d'AROME",
+  {d:"Calage sur l'historique, suivi des performances", l:[["branche donnees (GitHub)", "https://github.com/julienrude-glitch/IATMO/tree/donnees"]], p:"IATMO (script historique.py), à partir des archives du LCSQA et d'AROME",
    b:"Calcul par la tâche GitHub (<code>calage/calage.json</code>, <code>suivi/</code>), lu par la carte et par l'onglet Performances",
    a:"Calcul : une fois par jour, après 4 h, sur les 30 derniers jours<br>Page : à l'ouverture",
    e:function(){ return srcLu("Calage sur l'historique (copie GitHub)",CALH ? CALH.nj+" jour(s), calcul du "+srcHeure(CALH.maj) : "pas encore de calage publié"); }},
-  {d:"Dossiers des stations trafic", p:"AASQA, transmis par le LCSQA (fiches descriptives des stations)",
+  {d:"Dossiers des stations trafic", l:[["LCSQA", "https://www.lcsqa.org/"]], p:"AASQA, transmis par le LCSQA (fiches descriptives des stations)",
    b:"Intégrés à la page et déposés à la racine du dépôt pour le calage sur l'historique",
    a:"À la réception de nouveaux dossiers",
    e:function(){ var n = FICHES && typeof FICHES==="object" ? Object.keys(FICHES).length : 0; return {t:n+" stations documentées",c:n ? "bon" : "neutre"}; }},
-  {d:"Table des stations", p:"LCSQA (Geod'air)", b:"Coordonnées et métadonnées intégrées à la page, complétées par les fichiers du LCSQA",
+  {d:"Table des stations", l:[["Geod'air", "https://www.geodair.fr/"]], p:"LCSQA (Geod'air)", b:"Coordonnées et métadonnées intégrées à la page, complétées par les fichiers du LCSQA",
    a:"À chaque nouvelle version de la page",
    e:function(){ var n = STATIONS_REF && typeof STATIONS_REF==="object" ? Object.keys(STATIONS_REF).length : 0; return {t:n.toLocaleString("fr-FR")+" stations",c:n ? "bon" : "neutre"}; }},
-  {d:"Photographies aériennes, communes, routes, bâti", p:"IGN, Géoplateforme (ORTHOPHOTOS, ADMIN EXPRESS, Plan IGN) ; Licence Ouverte",
+  {d:"Photographies aériennes, communes, routes, bâti", l:[["Géoplateforme de l'IGN", "https://geoservices.ign.fr/"], ["ADMIN EXPRESS", "https://data.geopf.fr/tms/1.0.0/ADMIN_EXPRESS/metadata.json"], ["Plan IGN", "https://data.geopf.fr/tms/1.0.0/PLAN.IGN/metadata.json"]], p:"IGN, Géoplateforme (ORTHOPHOTOS, ADMIN EXPRESS, Plan IGN) ; Licence Ouverte",
    b:"Tuiles WMTS et vectorielles de <code>data.geopf.fr</code>, lues par le navigateur",
    a:"Source : mises à jour périodiques de l'IGN<br>Page : à l'affichage",
    e:function(){ return BATI.ok ? {t:"bâti lu ("+(BATI.n||0).toLocaleString("fr-FR")+" bâtiments dans la vue)",c:"bon"} : {t:"fonds lus à l'affichage",c:"neutre"}; }},
-  {d:"Recherche d'adresse, communes des stations", p:"IGN, Géoplateforme (service de géocodage) ; Licence Ouverte",
+  {d:"Recherche d'adresse, communes des stations", l:[["Géoplateforme de l'IGN", "https://geoservices.ign.fr/"]], p:"IGN, Géoplateforme (service de géocodage) ; Licence Ouverte",
    b:"Service <code>data.geopf.fr/geocodage</code> : recherche, et géocodage inverse des stations pour l'onglet Performances (gardé par le navigateur)",
    a:"Page : à chaque recherche ; stations : une fois",
    e:function(){ return {t:"à la demande",c:"neutre"}; }},
-  {d:"Indice européen (couche)", p:"Agence européenne pour l'environnement, Copernicus (CAMS)",
+  {d:"Indice européen (couche)", l:[["indice européen (AEE)", "https://airindex.eea.europa.eu/AQI/index.html"]], p:"Agence européenne pour l'environnement, Copernicus (CAMS)",
    b:"Tuiles du service <code>air.discomap.eea.europa.eu</code> (AQMobile_2025), lues par le navigateur",
    a:"Source : chaque heure<br>Page : quand la couche est affichée",
    e:function(){ return {t:"à l'affichage de la couche",c:"neutre"}; }}
 ];
+var LICENCES = [[/Licence Ouverte/g,"https://www.etalab.gouv.fr/licence-ouverte-open-licence/"],[/(licence )?ODbL/g,"https://opendatacommons.org/licenses/odbl/"]];
+function srcLien(t,u){ return '<a href="'+u+'" target="_blank" rel="noopener">'+t+'</a>'; }
 function srcAfficher(){
   var el = document.getElementById("srcTab"); if(!el) return;
   el.innerHTML = '<table><thead><tr><th>Donnée</th><th>Producteur et licence</th><th>Branchement</th><th>Actualisation</th><th>État dans cette session</th></tr></thead><tbody>'+
     SRC_LISTE.map(function(x){ var e = {t:"—",c:"neutre"}; try{ e = x.e(); }catch(err){}
-      return '<tr><td><b>'+x.d+'</b></td><td>'+x.p+'</td><td>'+x.b+'</td><td>'+x.a+'</td><td><span class="'+e.c+'">'+e.t+'</span></td></tr>'; }).join("")+'</tbody></table>';
+      var p = x.p; LICENCES.forEach(function(L){ p = p.replace(L[0],function(m){ return srcLien(m,L[1]); }); });
+      var liens = (x.l||[]).map(function(q){ return srcLien(q[0],q[1]); }).join(" · ");
+      return '<tr><td><b>'+x.d+'</b>'+(liens ? '<div class="liens">'+liens+'</div>' : '')+'</td><td>'+p+'</td><td>'+x.b+'</td><td>'+x.a+'</td><td><span class="'+e.c+'">'+e.t+'</span></td></tr>'; }).join("")+'</tbody></table>';
 }
 /* ================= Onglet Performances =================
    Indicateurs calculés dans le navigateur sur les mesures du jour (onglet Geod'air, métropole) :
