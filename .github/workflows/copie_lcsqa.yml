@@ -52,6 +52,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          echo "DEBUT=$(date +%s)" >> "$GITHUB_ENV"                          # pour le journal des passages (suivi/journal.json)
           DEST="${DEST:-https://x-access-token:${TOKEN}@github.com/${REPO}.git}"
           git init -q out
           cd out
@@ -124,6 +125,28 @@ jobs:
           with open(fst, "w", encoding="utf-8", newline="") as fo:
               w = csv.DictWriter(fo, fieldnames=["code", "nom", "organisme", "implantation", "influence", "zas"], delimiter=";"); w.writeheader()
               for c in sorted(stations): w.writerow(stations[c])
+          # Suivi de la publication : première apparition de chaque heure du fichier du jour, nombre de stations, par organisme (7 jours)
+          PARIS = ZoneInfo("Europe/Paris"); maint = dt.datetime.now(PARIS); jour = maint.strftime("%Y-%m-%d")
+          os.makedirs("out/suivi", exist_ok=True); fa = "out/suivi/lcsqa_arrivees.json"
+          try: arr = json.load(open(fa, encoding="utf-8"))
+          except Exception: arr = {}
+          nom = etat["fichiers"].get(jour)
+          if nom:
+              vus = {}
+              with open("out/lcsqa/" + nom, encoding="utf-8-sig", newline="") as fi:
+                  rd = csv.reader(fi, delimiter=";"); H = next(rd); ix = {h: i for i, h in enumerate(H)}
+                  for x in rd:
+                      if len(x) < len(H) or not x[ix["valeur"]]: continue
+                      h = x[ix["Date de début"]][11:13]; d = vus.setdefault(h, {"st": set(), "org": {}})
+                      d["st"].add(x[ix["code site"]]); o = x[ix["Organisme"]]; d["org"][o] = d["org"].get(o, 0) + 1
+              aj = arr.setdefault(jour, {}); t = maint.isoformat(timespec="seconds")
+              for h, d in vus.items():
+                  e = aj.setdefault(h, {"t": t, "n": 0, "tn": t, "org": {}})
+                  if len(d["st"]) > e["n"]: e["n"] = len(d["st"]); e["tn"] = t
+                  for o in d["org"]: e["org"].setdefault(o, t)
+          arr = {j: arr[j] for j in sorted(arr)[-7:]}
+          json.dump(arr, open(fa, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
+          print("suivi LCSQA :", len(arr.get(jour, {})), "heures vues aujourd'hui")
           limite = (dt.datetime.now(ZoneInfo("Europe/Paris")) - dt.timedelta(days=180)).strftime("%Y-%m-%d")
           for fa in glob.glob("out/archive/lcsqa/*.csv.gz"):
               if os.path.basename(fa)[:10] < limite: os.remove(fa)
@@ -489,8 +512,23 @@ jobs:
             "- lcsqa/ : fichiers temps réel du LCSQA (data.gouv.fr), jour et veille ;" \
             "- trafic/ : débits et vitesses Bison Futé sur le réseau national non concédé (data.gouv.fr) : fichiers bruts du moment, dernier état par point, points.json pour la maquette, archive horaire de 60 jours ;" \
             "- arome/ : vent à 10 m et pluie AROME (Météo-France) heure par heure sur une grille de 0,1°, fichier du jour lu par la maquette, 30 jours gardés ;" \
-            "- archive/lcsqa/ : mesures horaires du LCSQA par station (NO, NO2, NOx, O3, PM10, PM2,5, SO2), un fichier compressé par jour sur 180 jours, et table des stations." \
+            "- archive/lcsqa/ : mesures horaires du LCSQA par station (NO, NO2, NOx, O3, PM10, PM2,5, SO2), un fichier compressé par jour sur 180 jours, et table des stations ;" \
+            "- suivi/ : journal des passages (3 jours) et première apparition de chaque heure du LCSQA (7 jours), lus par l'onglet Performances." \
             "Branche réécrite à chaque passage par la tâche .github/workflows/copie_lcsqa.yml : ne pas y travailler." > LISEZMOI.txt
+          # Journal des passages (3 jours) : heure, durée, déclencheur et résultat de chaque partie, lu par l'onglet Performances
+          mkdir -p suivi
+          LCSQA="${{ steps.lcsqa.outcome }}" TRAFIC="${{ steps.trafic.outcome }}" AROME="${{ steps.arome.outcome }}" EVT="${EVENEMENT}" python3 - <<'PY'
+          import json, os, time, datetime as dt
+          from zoneinfo import ZoneInfo
+          f = "suivi/journal.json"
+          try: j = json.load(open(f, encoding="utf-8"))
+          except Exception: j = []
+          deb = int(os.environ.get("DEBUT") or time.time()); P = ZoneInfo("Europe/Paris")
+          j.append({"t": dt.datetime.fromtimestamp(deb, P).isoformat(timespec="seconds"), "duree": int(time.time()) - deb, "evt": os.environ["EVT"],
+                    "lcsqa": os.environ["LCSQA"], "trafic": os.environ["TRAFIC"], "arome": os.environ["AROME"]})
+          json.dump(j[-432:], open(f, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
+          print("journal :", len(j[-432:]), "passages")
+          PY
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
