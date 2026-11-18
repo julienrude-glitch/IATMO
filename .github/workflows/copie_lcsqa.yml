@@ -1,4 +1,6 @@
-# IATMO : copie des données publiques sur la branche « donnees » du dépôt, toutes les 10 minutes (GitHub en saute une partie).
+# IATMO : copie des données publiques sur la branche « donnees » du dépôt, toutes les 10 minutes.
+# Déclenchement : appel de l'API GitHub toutes les 10 minutes par un service externe (cron-job.org, jeton limité à ce dépôt et
+# à la permission Actions), car GitHub saute une grande partie des passages planifiés ; planification GitHub gardée en secours.
 # 1. Fichiers « temps réel » du LCSQA (data.gouv.fr) : files.data.gouv.fr n'autorise pas la lecture depuis une
 #    autre page web (en-tête CORS absent), alors que raw.githubusercontent.com l'autorise.
 # 2. Débits et vitesses Bison Futé sur le réseau national routier non concédé (data.gouv.fr, Licence Ouverte) :
@@ -15,8 +17,13 @@ name: Copie des mesures LCSQA et du trafic
 
 on:
   schedule:
-    - cron: "4,14,24,34,44,54 * * * *"   # toutes les 10 minutes : GitHub saute une partie des passages planifiés
-  workflow_dispatch:                # bouton « Run workflow » dans l'onglet Actions
+    - cron: "17,47 * * * *"         # secours toutes les 30 minutes, si le déclencheur externe ne passe pas
+  workflow_dispatch:                # bouton « Run workflow » de l'onglet Actions, et appels de cron-job.org
+    inputs:
+      force:
+        description: "Réextraire toutes les heures AROME du jour"
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -37,6 +44,7 @@ jobs:
       AROME_BASE: https://meteofrance-pnt.s3.rbx.io.cloud.ovh.net
       AROME_API: https://www.data.gouv.fr/api/1/datasets/paquets-arome-resolution-0-01deg/
       EVENEMENT: ${{ github.event_name }}
+      FORCE: ${{ inputs.force }}
       REPO: ${{ github.repository }}
       TOKEN: ${{ github.token }}
     steps:
@@ -358,7 +366,7 @@ jobs:
           from zoneinfo import ZoneInfo
           import numpy as np, eccodes
           PARIS = ZoneInfo("Europe/Paris"); UTC = dt.timezone.utc
-          os.chdir("out/arome"); BASE = os.environ["AROME_BASE"]; force = os.environ.get("EVENEMENT") == "workflow_dispatch"
+          os.chdir("out/arome"); BASE = os.environ["AROME_BASE"]; force = os.environ.get("FORCE") == "true"
           LAT0, LON0, PAS, NJ, NI = 51.5, -5.5, 0.1, 105, 155; N = NI * NJ
           def requete(url, debut=None, fin=None, tete=False, delai=120):
               req = urllib.request.Request(url, method="HEAD" if tete else "GET", headers={"User-Agent": "IATMO-maquette"})
