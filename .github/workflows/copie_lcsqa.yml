@@ -9,6 +9,8 @@
 #    lu par la maquette.
 # 4. AROME (Météo-France, data.gouv.fr) : vent à 10 m et pluie de chaque heure du jour, extraits du calcul le plus récent
 #    (seuls les champs utiles sont téléchargés) et moyennés sur une grille de 0,1° (environ 10 km), lue par la carte ; 30 jours gardés.
+# 5. Historique, une fois par jour : calage sur les 30 derniers jours (calage/calage.json) et performances quotidiennes du krigeage
+#    (suivi/performances.json), par le script outils/historique.py de la branche principale.
 # 3. Archive des mesures du LCSQA (180 jours) : une ligne par station et par heure, valeurs de NO, NO2, NOx, O3, PM10,
 #    PM2,5 et SO2, pour caler le modèle sur un historique.
 # À enregistrer dans le dépôt sous le nom .github/workflows/copie_lcsqa.yml
@@ -125,7 +127,7 @@ jobs:
           with open(fst, "w", encoding="utf-8", newline="") as fo:
               w = csv.DictWriter(fo, fieldnames=["code", "nom", "organisme", "implantation", "influence", "zas"], delimiter=";"); w.writeheader()
               for c in sorted(stations): w.writerow(stations[c])
-          # Suivi de la publication : première apparition de chaque heure du fichier du jour, nombre de stations, par organisme (7 jours)
+          # Suivi de la publication : première apparition de chaque heure du fichier du jour, nombre de stations, par organisme (30 jours)
           PARIS = ZoneInfo("Europe/Paris"); maint = dt.datetime.now(PARIS); jour = maint.strftime("%Y-%m-%d")
           os.makedirs("out/suivi", exist_ok=True); fa = "out/suivi/lcsqa_arrivees.json"
           try: arr = json.load(open(fa, encoding="utf-8"))
@@ -144,7 +146,7 @@ jobs:
                   e = aj.setdefault(h, {"t": t, "n": 0, "tn": t, "org": {}})
                   if len(d["st"]) > e["n"]: e["n"] = len(d["st"]); e["tn"] = t
                   for o in d["org"]: e["org"].setdefault(o, t)
-          arr = {j: arr[j] for j in sorted(arr)[-7:]}
+          arr = {j: arr[j] for j in sorted(arr)[-30:]}
           json.dump(arr, open(fa, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
           print("suivi LCSQA :", len(arr.get(jour, {})), "heures vues aujourd'hui")
           limite = (dt.datetime.now(ZoneInfo("Europe/Paris")) - dt.timedelta(days=180)).strftime("%Y-%m-%d")
@@ -502,6 +504,26 @@ jobs:
           if not any(heures): raise SystemExit("Aucune heure AROME extraite (voir arome/etat.json)")
           PY
 
+      - name: Historique (calage et performances, une fois par jour après 4 h)
+        id: historique
+        continue-on-error: true
+        timeout-minutes: 6
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd out
+          J="$(TZ=Europe/Paris date +%F)"; H="$(TZ=Europe/Paris date +%-H)"
+          if [ "${FORCE:-false}" != "true" ]; then
+            if [ "$H" -lt 4 ]; then echo "Avant 4 h : le LCSQA n'a pas encore publié la fin de la veille."; exit 0; fi
+            if [ -f calage/calage.json ] && grep -q "\"maj\":\"$J" calage/calage.json; then echo "Historique déjà calculé aujourd'hui."; exit 0; fi
+          fi
+          # Script et référentiels sur la branche principale du dépôt (outils/historique.py, ref/stations_ref.json, ref/fiches_stations.json)
+          git fetch -q --depth 1 origin main
+          rm -rf /tmp/ref && mkdir -p /tmp/ref
+          for f in outils/historique.py ref/stations_ref.json ref/fiches_stations.json; do git show "FETCH_HEAD:$f" > "/tmp/ref/$(basename "$f")"; done
+          python3 -c "import numpy" 2>/dev/null || python3 -m pip install -q --user --break-system-packages numpy >/dev/null 2>&1 || python3 -m pip install -q --user numpy >/dev/null
+          python3 /tmp/ref/historique.py . /tmp/ref
+
       - name: Publier sur la branche donnees
         if: steps.lcsqa.outcome == 'success' || steps.trafic.outcome == 'success' || steps.arome.outcome == 'success'
         shell: bash
@@ -513,11 +535,12 @@ jobs:
             "- trafic/ : débits et vitesses Bison Futé sur le réseau national non concédé (data.gouv.fr) : fichiers bruts du moment, dernier état par point, points.json pour la maquette, archive horaire de 60 jours ;" \
             "- arome/ : vent à 10 m et pluie AROME (Météo-France) heure par heure sur une grille de 0,1°, fichier du jour lu par la maquette, 30 jours gardés ;" \
             "- archive/lcsqa/ : mesures horaires du LCSQA par station (NO, NO2, NOx, O3, PM10, PM2,5, SO2), un fichier compressé par jour sur 180 jours, et table des stations ;" \
-            "- suivi/ : journal des passages (3 jours) et première apparition de chaque heure du LCSQA (7 jours), lus par l'onglet Performances." \
+            "- suivi/ : journal des passages (3 jours), première apparition de chaque heure du LCSQA (30 jours) et performances quotidiennes du krigeage (90 jours), lus par l'onglet Performances ;" \
+            "- calage/ : calage de l'effet routier sur les 30 derniers jours (incrément, profil horaire, vent, pluie, trafic et confinement), lu par la carte." \
             "Branche réécrite à chaque passage par la tâche .github/workflows/copie_lcsqa.yml : ne pas y travailler." > LISEZMOI.txt
           # Journal des passages (3 jours) : heure, durée, déclencheur et résultat de chaque partie, lu par l'onglet Performances
           mkdir -p suivi
-          LCSQA="${{ steps.lcsqa.outcome }}" TRAFIC="${{ steps.trafic.outcome }}" AROME="${{ steps.arome.outcome }}" EVT="${EVENEMENT}" python3 - <<'PY'
+          LCSQA="${{ steps.lcsqa.outcome }}" TRAFIC="${{ steps.trafic.outcome }}" AROME="${{ steps.arome.outcome }}" HIST="${{ steps.historique.outcome }}" EVT="${EVENEMENT}" python3 - <<'PY'
           import json, os, time, datetime as dt
           from zoneinfo import ZoneInfo
           f = "suivi/journal.json"
@@ -525,7 +548,7 @@ jobs:
           except Exception: j = []
           deb = int(os.environ.get("DEBUT") or time.time()); P = ZoneInfo("Europe/Paris")
           j.append({"t": dt.datetime.fromtimestamp(deb, P).isoformat(timespec="seconds"), "duree": int(time.time()) - deb, "evt": os.environ["EVT"],
-                    "lcsqa": os.environ["LCSQA"], "trafic": os.environ["TRAFIC"], "arome": os.environ["AROME"]})
+                    "lcsqa": os.environ["LCSQA"], "trafic": os.environ["TRAFIC"], "arome": os.environ["AROME"], "historique": os.environ.get("HIST", "")})
           json.dump(j[-432:], open(f, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
           print("journal :", len(j[-432:]), "passages")
           PY
