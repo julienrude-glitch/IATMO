@@ -1187,9 +1187,8 @@ function selectDay(i){
     if(state.cas!=null) return;
     state.day = i; activer(st);
     var d = frDate(state.dates[i]);
-    if(st.mode==="reel") setStatus("ok",(i?"Prévision des AASQA pour le ":"Indice ATMO des AASQA du ")+d,
-      (st.nz||st.rec.size+st.epci.size).toLocaleString("fr-FR")+" zones, "+st.nsrc+" AASQA — repris du flux Atmo Data sans modification."+
-      (st.memo ? " "+(st.vieux ? "<b style='color:#ffb469'>Flux injoignable : lecture de " : "Lecture de ")+new Date(st.memo).toLocaleTimeString("fr-FR",{timeZone:"Europe/Paris",hour:"2-digit",minute:"2-digit"})+", gardée par le navigateur."+(st.vieux ? "</b>" : "") : ""));
+    if(st.mode==="reel") setStatus("ok",(i?"Prévision des AASQA pour le ":"Indice ATMO des AASQA du ")+d,   // une seule ligne, sauf flux injoignable
+      st.memo && st.vieux ? "<b style='color:#ffb469'>Flux injoignable : lecture de "+new Date(st.memo).toLocaleTimeString("fr-FR",{timeZone:"Europe/Paris",hour:"2-digit",minute:"2-digit"})+", gardée par le navigateur.</b>" : "");
     else setStatus("sim","Données simulées","Flux Atmo Data inaccessible depuis ce poste ("+esc(st.err)+"). Les couleurs affichées sont fictives.");
     if(CH.actif && CH.etapes[0].etat==="cours"){ chMaj("atmo",1,st.mode==="reel" ? "fini" : "echec"); chPrev(); }
   });
@@ -3220,7 +3219,7 @@ function setStatus(kind,title,txt){
   var el = document.getElementById("status");
   el.className = "status"+(kind==="ok"?" ok":kind==="sim"?" sim":"");
   el.querySelector("b").textContent = title;
-  document.getElementById("statusTxt").innerHTML = txt;
+  var tx = document.getElementById("statusTxt"); tx.innerHTML = txt||""; tx.style.display = txt ? "" : "none";
   var ms = document.getElementById("mstatus"); ms.textContent = title; ms.className = kind==="ok"?"ok":kind==="sim"?"sim":"";
 }
 var COURTS = {1:"Bon",2:"Moyen",3:"Dégradé",4:"Mauvais",5:"Très mauv.",6:"Extr. mauv."};
