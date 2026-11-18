@@ -1,4 +1,4 @@
-# IATMO : copie des données publiques sur la branche « donnees » du dépôt, deux fois par heure.
+# IATMO : copie des données publiques sur la branche « donnees » du dépôt, toutes les 10 minutes (GitHub en saute une partie).
 # 1. Fichiers « temps réel » du LCSQA (data.gouv.fr) : files.data.gouv.fr n'autorise pas la lecture depuis une
 #    autre page web (en-tête CORS absent), alors que raw.githubusercontent.com l'autorise.
 # 2. Débits et vitesses Bison Futé sur le réseau national routier non concédé (data.gouv.fr, Licence Ouverte) :
@@ -13,7 +13,7 @@ name: Copie des mesures LCSQA et du trafic
 
 on:
   schedule:
-    - cron: "9,39 * * * *"          # deux passages par heure (heure UTC), décalés de l'heure pile
+    - cron: "4,14,24,34,44,54 * * * *"   # toutes les 10 minutes : GitHub saute une partie des passages planifiés
   workflow_dispatch:                # bouton « Run workflow » dans l'onglet Actions
 
 permissions:
@@ -130,7 +130,9 @@ jobs:
             rm -f "brut/tmp_$k"
             if curl -fsSL --retry 3 --max-time 180 -o "brut/tmp_$k" "$URL"; then
               ext=csv; [ "$(head -c 300 "brut/tmp_$k" | grep -c '<' || true)" != "0" ] && ext=xml
+              [ "$(head -c 600 "brut/tmp_$k" | grep -ci '<html' || true)" != "0" ] && ext=html
               rm -f "brut/fichier_$k".*; mv "brut/tmp_$k" "brut/fichier_$k.$ext"
+              [ "$ext" = html ] && echo "fichier_$k : page HTML (liste de dossier), non exploitée"
               echo "fichier_$k.$ext : $(wc -c < "brut/fichier_$k.$ext") octets"; ok=1
             else
               echo "fichier_$k : échec du téléchargement"; rm -f "brut/tmp_$k"
@@ -237,10 +239,11 @@ jobs:
                           elif cn == "longitude" and lo is None: lo = nombre(tx)
                           elif cn in ("roadNumber", "roadName") and not route and tx: route = tx
                           elif cn in ("directionBound", "tpegDirection", "directionRelative") and not sens and tx: sens = tx
-                      if sid and la is not None and lo is not None: ref[sid] = (lo, la, route, sens)
+                      if sid and la is not None and lo is not None: ref[sid] = (lo, la, route, sens, None, None)
                       el.clear()
               except ET.ParseError: pass
           def norm(h): return re.sub(r"[^a-z0-9]", "", unicodedata.normalize("NFD", h.lower()).encode("ascii", "ignore").decode())
+          refsec = {}                                                        # id -> (pr_debut sans côté, abscisse arrondie, axe) pour regrouper les deux sens
           for f in sorted(glob.glob("brut/*.csv")):
               try:
                   txt = open(f, encoding="utf-8-sig", errors="replace").read()
@@ -248,6 +251,26 @@ jobs:
                   rows = list(csv.reader(io.StringIO(txt), delimiter=dl))
                   if len(rows) < 2: continue
                   H = [norm(h) for h in rows[0]]
+                  if "codepme" in H and "xdeb" in H:
+                      # référentiel Bison Futé : les lignes ont souvent une colonne de moins que l'en-tête ;
+                      # les colonnes à partir de « axe » s'alignent par la droite
+                      ja = H.index("axe")
+                      def val(r, nom):
+                          j = H.index(nom)
+                          if len(r) == len(H) or j < ja: return r[j] if j < len(r) else ""
+                          k = j - (len(H) - len(r)); return r[k] if 0 <= k < len(r) else ""
+                      for r in rows[1:]:
+                          if not r or not r[0].strip(): continue
+                          xd, yd, xf, yf = (nombre(val(r, c)) for c in ("xdeb", "ydeb", "xfin", "yfin"))
+                          if xd is None or yd is None or not (xd > 1000 and yd > 1000): continue
+                          lo1, la1 = l93(xd, yd)
+                          lo2, la2 = l93(xf, yf) if (xf and yf and xf > 1000 and yf > 1000) else (lo1, la1)
+                          if not (-6 <= lo1 <= 10 and 41 <= la1 <= 52): continue
+                          sid = r[0].strip(); axe = val(r, "axe").strip() or None
+                          ref[sid] = ((lo1 + lo2) / 2, (la1 + la2) / 2, axe, val(r, "senscardinal").strip() or None, (lo1, la1, lo2, la2), nombre(val(r, "longueur")))
+                          prd = re.sub(r"[DG]$", "", val(r, "prdebut").strip()); ab = nombre(val(r, "abscissedebut"))
+                          if axe and prd: refsec[sid] = (axe, prd, round((ab or 0) / 100))
+                      continue
                   def col(cands, excl=()):
                       for i, h in enumerate(H):
                           if any(h == c or h.startswith(c) for c in cands) and not any(x in h for x in excl): return i
@@ -262,7 +285,7 @@ jobs:
                       if a is None or b is None: continue
                       if a > 1000 and b > 1000: a, b = l93(a, b)
                       if -6 <= a <= 10 and 41 <= b <= 52:
-                          ref.setdefault(r[ci].strip(), (a, b, r[cro].strip() if cro is not None and len(r) > cro else None, r[cse].strip() if cse is not None and len(r) > cse else None))
+                          ref.setdefault(r[ci].strip(), (a, b, r[cro].strip() if cro is not None and len(r) > cro else None, r[cse].strip() if cse is not None and len(r) > cse else None, None, None))
               except Exception as e:
                   erreurs.append(os.path.basename(f) + " : " + str(e))
           # rapprochement des identifiants (exact, puis sans ponctuation ni casse)
@@ -276,17 +299,39 @@ jobs:
                       d = hor.setdefault(r["point"], ([None] * 24, [None] * 24)); hh = int(r["heure"])
                       if int(r["n_debit"]): d[0][hh] = round(float(r["somme_debit"]) / int(r["n_debit"]))
                       if int(r["n_vitesse"]): d[1][hh] = round(float(r["somme_vitesse"]) / int(r["n_vitesse"]), 1)
-          pts = []
-          for sid, (t, de, vi) in sorted(sites.items()):
+          # une entrée par section : les deux sens d'une même section (même axe, même PR de début, même abscisse à 100 m près)
+          # sont regroupés ; débit = moyenne par sens, vitesse = moyenne pondérée par le débit
+          groupes = collections.OrderedDict()
+          for sid in sorted(sites):
               g = ref.get(sid) or refn.get(cle(sid))
               if not g: continue
-              qh, vh = hor.get(sid, (None, None))
-              pts.append({"id": sid, "lon": round(g[0], 6), "lat": round(g[1], 6), "route": g[2], "sens": g[3], "t": t,
-                          "q": round(sum(de)) if de else None, "v": round(sum(vi) / len(vi), 1) if vi else None, "qh": qh, "vh": vh})
+              k = refsec.get(sid) or ("id", sid)
+              groupes.setdefault(k, []).append((sid, g))
+          def moy(vals, poids=None):
+              v = [(x, (poids[i] if poids else 1)) for i, x in enumerate(vals) if x is not None and (not poids or poids[i] is not None)]
+              sw = sum(w for x, w in v)
+              return sum(x * w for x, w in v) / sw if v and sw else (sum(x for x, w in v) / len(v) if v else None)
+          pts = []
+          for k, membres in groupes.items():
+              qs, vs, qhs, vhs = [], [], [], []
+              for sid, g in membres:
+                  t, de, vi = sites[sid]
+                  qs.append(sum(de) if de else None); vs.append(sum(vi) / len(vi) if vi else None)
+                  qh, vh = hor.get(sid, ([None] * 24, [None] * 24)); qhs.append(qh); vhs.append(vh)
+              g0 = membres[0][1]
+              lon = sum(m[1][0] for m in membres) / len(membres); lat = sum(m[1][1] for m in membres) / len(membres)
+              q = moy(qs); v = moy(vs, qs)
+              qh = [None if moy([a[h] for a in qhs]) is None else round(moy([a[h] for a in qhs])) for h in range(24)]
+              vh = [None if moy([a[h] for a in vhs], [b[h] for b in qhs]) is None else round(moy([a[h] for a in vhs], [b[h] for b in qhs]), 1) for h in range(24)]
+              e = {"id": "+".join(m[0] for m in membres), "lon": round(lon, 6), "lat": round(lat, 6), "route": g0[2], "sens": len(membres),
+                   "t": sites[membres[0][0]][0], "q": None if q is None else round(q), "v": None if v is None else round(v, 1), "qh": qh, "vh": vh}
+              if g0[4]: e["sec"] = [round(c, 6) for c in g0[4]]
+              if g0[5]: e["long"] = round(g0[5])
+              pts.append(e)
           json.dump({"maj": dt.datetime.now(PARIS).isoformat(timespec="seconds"), "jour": jour, "points": pts}, open("points.json", "w", encoding="utf-8"), separators=(",", ":"))
-          etat["referentiel"] = len(ref); etat["points_localises"] = len(pts); etat["erreurs"] = erreurs
+          etat["referentiel"] = len(ref); etat["sections_localisees"] = len(pts); etat["erreurs"] = erreurs
           json.dump(etat, open("etat.json", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
-          print("référentiel :", len(ref), "points localisés ;", len(pts), "points avec mesures et coordonnées")
+          print("référentiel :", len(ref), "points localisés ;", len(pts), "sections avec mesures et coordonnées (deux sens regroupés)")
           if not sites: raise SystemExit("Aucun point de mesure lu dans les fichiers XML (voir etat.json et le dossier brut)")
           PY
 
