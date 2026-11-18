@@ -10,7 +10,7 @@
 # 4. AROME (Météo-France, data.gouv.fr) : vent à 10 m et pluie de chaque heure du jour, extraits du calcul le plus récent
 #    (seuls les champs utiles sont téléchargés) et moyennés sur une grille de 0,1° (environ 10 km), lue par la carte ; 30 jours gardés.
 # 5. Historique, une fois par jour : calage sur les 30 derniers jours (calage/calage.json) et performances quotidiennes du krigeage
-#    (suivi/performances.json), par le script outils/historique.py de la branche principale.
+#    (suivi/performances.json), par le script historique.py de la branche principale (racine du dépôt).
 # 3. Archive des mesures du LCSQA (180 jours) : une ligne par station et par heure, valeurs de NO, NO2, NOx, O3, PM10,
 #    PM2,5 et SO2, pour caler le modèle sur un historique.
 # À enregistrer dans le dépôt sous le nom .github/workflows/copie_lcsqa.yml
@@ -37,7 +37,7 @@ concurrency:
 jobs:
   copie:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     env:
       SOURCE: https://files.data.gouv.fr/ineris/lcsqa/concentrations-de-polluants-atmospheriques-reglementes/temps-reel
       TRAFIC_1: https://www.data.gouv.fr/api/1/datasets/r/625048a9-9d8f-4a6b-a7bf-b62094fb2c2e
@@ -373,7 +373,108 @@ jobs:
           if not sites: raise SystemExit("Aucun point de mesure lu dans les fichiers XML (voir etat.json et le dossier brut)")
           PY
 
-      - name: AROME (vent à 10 m et pluie, grille de 0,1° sur la métropole)
+      - name: Trafic Ville de Paris (capteurs permanents, une fois par jour)
+        id: paris
+        continue-on-error: true
+        timeout-minutes: 6
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          # Débits horaires des capteurs permanents de la Ville de Paris (rues et boulevard périphérique), publiés une fois par jour en J-1
+          # sur opendata.paris.fr : sept derniers jours, profil horaire moyen par arc et par type de jour (ouvré, samedi, dimanche),
+          # coordonnées tirées du référentiel géographique (jointure par iu_ac). Une fois par jour, après 6 h, jusqu'à obtenir la veille.
+          import json, os, gzip, time, urllib.request, urllib.parse, urllib.error, datetime as dt
+          from zoneinfo import ZoneInfo
+          PARIS = ZoneInfo("Europe/Paris"); maintenant = dt.datetime.now(PARIS); auj = maintenant.date(); hier = (auj - dt.timedelta(days=1)).isoformat()
+          force = os.environ.get("FORCE") == "true"; os.makedirs("out/trafic", exist_ok=True); os.chdir("out/trafic")
+          def lire(f, defaut):
+              try: return json.load(open(f, encoding="utf-8"))
+              except Exception: return defaut
+          anc, etat = lire("paris.json", {}), lire("paris_etat.json", {})
+          if not force:
+              if anc.get("dernier") == hier: print("Paris : déjà à jour (", hier, ")"); raise SystemExit(0)
+              if maintenant.hour < 6: print("Paris : avant 6 h"); raise SystemExit(0)
+              if etat.get("essai") and maintenant - dt.datetime.fromisoformat(etat["essai"]) < dt.timedelta(minutes=55): print("Paris : dernier essai il y a moins d'une heure"); raise SystemExit(0)
+          etat["essai"] = maintenant.isoformat(timespec="seconds")
+          API = os.environ.get("PARIS_API") or "https://opendata.paris.fr/api/explore/v2.1/catalog/datasets/"
+          def get(url, delai=240):
+              req = urllib.request.Request(url, headers={"User-Agent": "IATMO-maquette", "Accept-Encoding": "gzip"})
+              with urllib.request.urlopen(req, timeout=delai) as r:
+                  b = r.read(); return gzip.decompress(b) if r.headers.get("Content-Encoding") == "gzip" else b
+          def export(ds, select, where=None):
+              p = {"select": select, "timezone": "Europe/Paris"}
+              if where: p["where"] = where
+              return json.loads(get(API + ds + "/exports/json?" + urllib.parse.urlencode(p)))
+          def champs(ds):
+              try: return sorted(json.loads(get(API + ds + "/records?limit=1"))["results"][0].keys())
+              except Exception as e: return "inconnus (" + str(e)[:80] + ")"
+          def fin(msg):
+              etat["erreur"] = msg; json.dump(etat, open("paris_etat.json", "w", encoding="utf-8"), ensure_ascii=False, indent=1); raise SystemExit(msg)
+          debut = (auj - dt.timedelta(days=7)).isoformat(); t0 = time.time()
+          try: rows = export("comptages-routiers-permanents", "iu_ac,t_1h,q", f"t_1h > date'{debut}'")
+          except urllib.error.HTTPError as e: etat["champs_trafic"] = champs("comptages-routiers-permanents"); fin(f"export du trafic refusé (HTTP {e.code})")
+          # référentiel géographique : renouvelé chaque semaine
+          ref = lire("paris_ref.json", {})
+          if force or not ref.get("arcs") or ref.get("maj", "")[:10] < (auj - dt.timedelta(days=7)).isoformat():
+              try: geo = export("referentiel-comptages-routiers", "iu_ac,libelle,geo_point_2d,geo_shape")
+              except urllib.error.HTTPError as e:
+                  etat["champs_referentiel"] = champs("referentiel-comptages-routiers")
+                  if not ref.get("arcs"): fin(f"export du référentiel refusé (HTTP {e.code})")
+                  geo = None
+              if geo is not None:
+                  arcs = {}
+                  for g in geo:
+                      iu = g.get("iu_ac"); sh = g.get("geo_shape") or {}; sh = sh.get("geometry", sh)
+                      lignes = [sh["coordinates"]] if sh.get("type") == "LineString" else sh.get("coordinates", []) if sh.get("type") == "MultiLineString" else []
+                      bouts = [p for l in lignes if l for p in (l[0], l[-1])]
+                      if iu is None or not bouts: continue
+                      a = arcs.setdefault(str(iu), {"lib": g.get("libelle") or "", "bouts": [], "pt": g.get("geo_point_2d")}); a["bouts"] += bouts
+                  sortie = {}
+                  for iu, a in arcs.items():
+                      b = a["bouts"]; best = (0, b[0], b[-1])
+                      for i in range(len(b)):
+                          for j in range(i + 1, len(b)):
+                              d = (b[i][0] - b[j][0]) ** 2 + (b[i][1] - b[j][1]) ** 2
+                              if d > best[0]: best = (d, b[i], b[j])
+                      pt = a["pt"] or {}; lon = pt.get("lon", (best[1][0] + best[2][0]) / 2); lat = pt.get("lat", (best[1][1] + best[2][1]) / 2)
+                      sortie[iu] = [round(lon, 6), round(lat, 6), a["lib"], [round(best[1][0], 6), round(best[1][1], 6), round(best[2][0], 6), round(best[2][1], 6)]]
+                  ref = {"maj": maintenant.isoformat(timespec="seconds"), "arcs": sortie}
+                  json.dump(ref, open("paris_ref.json", "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
+          # débits par jour, arc et heure (heure de Paris du début de la période : l'horodate marque la fin de l'heure)
+          jours = {}
+          for r in rows:
+              iu, t, q = r.get("iu_ac"), r.get("t_1h"), r.get("q")
+              if iu is None or t is None or q is None or q < 0: continue
+              tp = dt.datetime.fromisoformat(str(t).replace("Z", "+00:00")).astimezone(PARIS) - dt.timedelta(hours=1)
+              jours.setdefault(tp.date().isoformat(), {}).setdefault(str(iu), [None] * 24)[tp.hour] = q
+          narcs = max((len(v) for v in jours.values()), default=0)
+          complets = sorted(d for d, v in jours.items() if d < auj.isoformat() and sum(1 for x in v.values() if sum(1 for y in x if y is not None) >= 20) >= 0.5 * narcs)
+          etat.update({"lignes": len(rows), "jours_lus": sorted(jours), "jours_complets": complets, "duree_s": round(time.time() - t0)})
+          if not complets: fin("aucun jour complet dans les données")
+          def type_jour(d): w = dt.date.fromisoformat(d).weekday(); return "o" if w < 5 else "s" if w == 5 else "d"
+          arcs = []
+          for iu, (lon, lat, lib, sec) in ref["arcs"].items():
+              prof = {}
+              for ty in "osd":
+                  ds = [jours[d][iu] for d in complets if type_jour(d) == ty and iu in jours[d]]
+                  if not ds: continue
+                  p = []
+                  for h in range(24):
+                      v = [x[h] for x in ds if x[h] is not None]; p.append(round(sum(v) / len(v)) if v else None)
+                  if sum(1 for x in p if x is not None) >= 12: prof[ty] = p
+              if prof: arcs.append({"id": iu, "lon": lon, "lat": lat, "lib": lib, "sec": sec, "p": prof})
+          paris = {"maj": maintenant.isoformat(timespec="seconds"), "dernier": complets[-1], "jours": complets,
+                   "source": "Ville de Paris, comptages routiers permanents (opendata.paris.fr, Licence ODbL) : débit horaire moyen par type de jour (o ouvré, s samedi, d dimanche), heure de Paris du début de la période",
+                   "arcs": arcs}
+          json.dump(paris, open("paris.json", "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
+          etat.update({"arcs": len(arcs), "dernier": complets[-1], "erreur": None})
+          json.dump(etat, open("paris_etat.json", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+          print("Paris :", len(rows), "lignes,", len(arcs), "arcs localisés, jours", complets[0], "à", complets[-1])
+          if complets[-1] != hier: print("Paris : la veille n'est pas encore publiée, nouvel essai dans une heure")
+          PY
+
+      - name: AROME (vent à 10 m et pluie, aujourd'hui et demain, métropole et DROM)
         id: arome
         continue-on-error: true
         timeout-minutes: 10
@@ -383,43 +484,80 @@ jobs:
           mkdir -p out/arome
           python3 -m pip install -q --user --break-system-packages eccodes numpy >/dev/null 2>&1 || python3 -m pip install -q --user eccodes numpy >/dev/null
           python3 - <<'PY'
-          # Pour chaque heure du jour (heure de Paris) : vent à 10 m (10u, 10v, paquet SP1) et pluie + neige (tirf, tsnowp, paquet SP2)
-          # du calcul AROME le plus récent qui la couvre (échéance 1 h à 48 h). Seuls les messages utiles sont téléchargés (requêtes
-          # partielles) ; la grille à 0,01° est moyennée sur des carrés de 0,1° (51,5° N à 41° N, 5,5° W à 10° E).
-          # Fichier du jour : 24 heures × (u, v en int8 au quart de m/s ; pluie en uint8 au dixième de mm/h ; -128 et 255 = absent).
-          import json, os, time, datetime as dt, urllib.request, urllib.error, re, glob
+          # Vent à 10 m (10u, 10v, paquet SP1) et pluie (tirf, tsnowp, paquet SP2) des calculs AROME de Météo-France, heure par heure,
+          # pour le jour même et le lendemain : AROME 0,01° sur la métropole (moyenne sur des carrés de 0,1°) et AROME Outre-Mer 0,025°
+          # sur les DROM (carrés de 0,05°, 0,1° en Guyane). Seuls les messages utiles sont téléchargés (requêtes partielles).
+          # Métropole : heures de Paris ; DROM : heures locales. Jour même en métropole : renouvelé à chaque nouveau calcul ;
+          # lendemain et DROM : renouvelés quand un calcul plus récent d'au moins 6 h est disponible. Budget de 7 minutes par passage.
+          import json, os, time, datetime as dt, urllib.request, urllib.error, re, glob, warnings
           from zoneinfo import ZoneInfo
           import numpy as np, eccodes
+          warnings.simplefilter("ignore")
           PARIS = ZoneInfo("Europe/Paris"); UTC = dt.timezone.utc
           os.chdir("out/arome"); BASE = os.environ["AROME_BASE"]; force = os.environ.get("FORCE") == "true"
-          LAT0, LON0, PAS, NJ, NI = 51.5, -5.5, 0.1, 105, 155; N = NI * NJ
           def requete(url, debut=None, fin=None, tete=False, delai=120):
               req = urllib.request.Request(url, method="HEAD" if tete else "GET", headers={"User-Agent": "IATMO-maquette"})
               if debut is not None: req.add_header("Range", "bytes=%d-%d" % (debut, fin))
               with urllib.request.urlopen(req, timeout=delai) as r: return b"" if tete else r.read()
-          def url(run, paquet, pas): return f"{BASE}/pnt/{run}/arome/001/{paquet}/arome__001__{paquet}__{pas:02d}H__{run}.grib2"
+          def url_om(dom): return lambda run, p, pas: f"{BASE}/pnt/{run}/arome-om/{dom}/0025/{p}/arome-om-{dom}__0025__{p}__{pas:03d}H__{run}.grib2"
+          DOMS = {"METRO": lambda run, p, pas: f"{BASE}/pnt/{run}/arome/001/{p}/arome__001__{p}__{pas:02d}H__{run}.grib2",
+                  "ANTIL": url_om("ANTIL"), "GUYANE": url_om("GUYANE"), "INDIEN": url_om("INDIEN")}
+          BOITES = {  # nom : (domaine AROME, fuseau, latitude du bord nord, longitude du bord ouest, pas, ni, nj)
+              "METRO": ("METRO", "Europe/Paris", 51.5, -5.5, 0.1, 155, 105),
+              "GUADELOUPE": ("ANTIL", "America/Guadeloupe", 16.6, -61.9, 0.05, 20, 16),
+              "MARTINIQUE": ("ANTIL", "America/Martinique", 15.0, -61.3, 0.05, 12, 14),
+              "GUYANE": ("GUYANE", "America/Cayenne", 6.0, -54.8, 0.1, 34, 40),
+              "REUNION": ("INDIEN", "Indian/Reunion", -20.8, 55.1, 0.05, 16, 14),
+              "MAYOTTE": ("INDIEN", "Indian/Mayotte", -12.6, 44.9, 0.05, 10, 10)}
+          OM = ["GUADELOUPE", "MARTINIQUE", "GUYANE", "REUNION", "MAYOTTE"]
+          T = {b: BOITES[b][5] * BOITES[b][6] for b in BOITES}; N = T["METRO"]
+          OFF, TOM = {}, 0
+          for b in OM: OFF[b] = TOM; TOM += 24 * 3 * T[b]
+          maintenant = dt.datetime.now(PARIS); J0 = maintenant.strftime("%Y-%m-%d"); J1 = (maintenant.date() + dt.timedelta(days=1)).isoformat()
+          def groupe(b): return "METRO" if b == "METRO" else "OM"
+          def fichier(g, j): return f"{j}.bin" if g == "METRO" else f"om-{j}.bin"
           etat = {}
           if os.path.exists("etat.json"):
               try: etat = json.load(open("etat.json", encoding="utf-8"))
               except Exception: etat = {}
+          anc = {}
+          if os.path.exists("meteo.json"):
+              try: anc = json.load(open("meteo.json", encoding="utf-8"))
+              except Exception: anc = {}
+          index = {}                                                                  # "jour|boîte" -> calcul utilisé pour chacune des 24 heures
+          if anc.get("jour"): index[anc["jour"] + "|METRO"] = anc.get("heures")
+          if (anc.get("lendemain") or {}).get("jour"): index[anc["lendemain"]["jour"] + "|METRO"] = anc["lendemain"].get("heures")
+          for j, d in ((anc.get("om") or {}).get("jours") or {}).items():
+              for b, hs in d.items(): index[j + "|" + b] = hs
+          def vide(g):
+              buf = np.zeros(24 * 3 * N if g == "METRO" else TOM, dtype=np.uint8)
+              for b in (["METRO"] if g == "METRO" else OM):
+                  t, o = T[b], (0 if g == "METRO" else OFF[b])
+                  for h in range(24): base = o + h * 3 * t; buf[base:base + 2 * t] = 128; buf[base + 2 * t:base + 3 * t] = 255   # int8 -128 et 255 = absent
+              return buf
+          bufs = {}
+          for g in ("METRO", "OM"):
+              for j in (J0, J1):
+                  f, attendu, buf = fichier(g, j), (24 * 3 * N if g == "METRO" else TOM), None
+                  if os.path.exists(f):
+                      x = np.frombuffer(open(f, "rb").read(), dtype=np.uint8).copy()
+                      if x.size == attendu: buf = x
+                  if buf is None:
+                      buf = vide(g)
+                      for b in (["METRO"] if g == "METRO" else OM): index[j + "|" + b] = None
+                  bufs[(g, j)] = buf
+          index = {k: (v if isinstance(v, list) and len(v) == 24 else [None] * 24) for k, v in index.items() if k[:10] in (J0, J1)}
+          for b in BOITES:
+              for j in (J0, J1): index.setdefault(j + "|" + b, [None] * 24)
           # calculs présents sur le stockage
           try:
               corps = requete(BASE + "/?list-type=2&prefix=pnt/&delimiter=/").decode("utf-8", "replace")
               runs = sorted(set(re.findall(r"<Prefix>pnt/(\d{4}-\d\d-\d\dT\d\d:00:00Z)/</Prefix>", corps)))
-          except Exception as e:
+          except Exception:
               t = dt.datetime.now(UTC).replace(minute=0, second=0, microsecond=0); t = t.replace(hour=t.hour - t.hour % 3)
               runs = [(t - dt.timedelta(hours=3 * k)).strftime("%Y-%m-%dT%H:%M:%SZ") for k in range(8)][::-1]
           runs = runs[-8:]; recents = runs[::-1]
-          maintenant = dt.datetime.now(PARIS); jour = maintenant.strftime("%Y-%m-%d")
-          fj = jour + ".bin"; heures = [None] * 24
-          if os.path.exists(fj) and os.path.exists("meteo.json"):
-              m = json.load(open("meteo.json", encoding="utf-8"))
-              if m.get("jour") == jour: heures = m.get("heures", heures); buf = np.frombuffer(open(fj, "rb").read(), dtype=np.uint8).copy()
-              else: buf = None
-          else: buf = None
-          if buf is None or buf.size != 24 * 3 * N:
-              buf = np.zeros(24 * 3 * N, dtype=np.uint8); heures = [None] * 24
-              for h in range(24): buf[(h * 3) * N:(h * 3 + 2) * N] = 128; buf[(h * 3 + 2) * N:(h * 3 + 3) * N] = 255   # int8 -128 = absent
+          def date_run(run): return dt.datetime.strptime(run, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=UTC)
           def messages(u):
               """Liste (décalage, longueur) des messages GRIB2 d'un fichier, par lecture des 16 premiers octets de chacun."""
               out, o = [], 0
@@ -430,78 +568,121 @@ jobs:
                       raise
                   if len(tete) < 16 or tete[:4] != b"GRIB": break
                   L = int.from_bytes(tete[8:16], "big"); out.append((o, L)); o += L
-                  if len(out) > 40: break
+                  if len(out) > 60: break
               return out
-          RANG = {"10u": 2, "10v": 3, "tirf": 7, "tsnowp": 8}                       # rang des messages dans SP1 et SP2 (reconnaissance du 18/11)
-          def champs(u, voulus):
-              res = {}; liste = messages(u)
-              ordre = [RANG[sn] for sn in voulus if RANG.get(sn, 99) < len(liste)]
+          RANGS = etat.get("rangs") or {}                                             # rang des messages, appris au premier passage
+          RANGS.setdefault("METRO", {"SP1": {"10u": 2, "10v": 3}, "SP2": {"tirf": 7, "tsnowp": 8}})
+          NOMS, CACHE = {}, {}
+          def champs(u, voulus, dom, paquet):
+              """Champs complets {nom: (valeurs nord→sud, lat nord, lon ouest, dx, dy, stepRange)}, gardés en mémoire pendant le passage."""
+              res = {sn: CACHE[(u, sn)] for sn in voulus if (u, sn) in CACHE}
+              manquants = [sn for sn in voulus if sn not in res]
+              if not manquants: return res
+              liste = messages(u); rg = RANGS.setdefault(dom, {}).setdefault(paquet, {}); vus = []
+              ordre = [rg[sn] for sn in manquants if rg.get(sn, 99) < len(liste)]
               ordre += [k for k in range(len(liste)) if k not in ordre]               # si un rang a changé, on parcourt les autres messages
               for k in ordre:
-                  if len(res) == len(voulus): break
+                  if all(sn in res for sn in voulus): break
                   o, L = liste[k]
-                  corps = requete(u, o, o + L - 1, delai=300); gid = eccodes.codes_new_from_message(corps)
+                  gid = eccodes.codes_new_from_message(requete(u, o, o + L - 1, delai=300))
                   try:
-                      sn = eccodes.codes_get(gid, "shortName")
-                      if sn not in voulus: continue
-                      la1, lo1 = eccodes.codes_get(gid, "latitudeOfFirstGridPointInDegrees"), eccodes.codes_get(gid, "longitudeOfFirstGridPointInDegrees")
-                      ni, nj, dx = eccodes.codes_get(gid, "Ni"), eccodes.codes_get(gid, "Nj"), eccodes.codes_get(gid, "iDirectionIncrementInDegrees")
+                      sn = eccodes.codes_get(gid, "shortName"); vus.append(sn)
+                      if sn not in manquants or sn in res: continue
+                      g = lambda c: eccodes.codes_get(gid, c)
+                      la1, lo1, ni, nj = g("latitudeOfFirstGridPointInDegrees"), g("longitudeOfFirstGridPointInDegrees"), g("Ni"), g("Nj")
+                      dx, dy = g("iDirectionIncrementInDegrees"), g("jDirectionIncrementInDegrees")
+                      v = eccodes.codes_get_values(gid).reshape(nj, ni).astype(np.float32)
+                      if g("bitmapPresent"): v[v == g("missingValue")] = np.nan
+                      if g("jScansPositively") == 1: v = v[::-1]; la1 = la1 + (nj - 1) * dy
                       if lo1 > 180: lo1 -= 360
-                      v = eccodes.codes_get_values(gid).reshape(nj, ni)
-                      j0 = int(round((la1 - LAT0) / dx)); i0 = int(round((LON0 - lo1) / dx)); k = int(round(PAS / dx))
-                      bloc = v[j0:j0 + NJ * k, i0:i0 + NI * k].reshape(NJ, k, NI, k).mean(axis=(1, 3))
-                      res[sn] = (bloc, eccodes.codes_get(gid, "stepRange"))
+                      res[sn] = CACHE[(u, sn)] = (v, la1, lo1, dx, dy, str(g("stepRange"))); rg[sn] = k
                   finally: eccodes.codes_release(gid)
+              while sum(c[0].nbytes for c in CACHE.values()) > 3e8: del CACHE[next(iter(CACHE))]
+              if any(sn not in res for sn in voulus): NOMS[dom + " " + paquet] = sorted(set(vus))
               return res
-          faits, essais, cumuls = [], [], {}
-          debut = time.monotonic()                                                    # budget de 7 minutes : le reste au passage suivant
-          for h in range(24):
-              if time.monotonic() - debut > 420: essais.append([h, None, None, "budget atteint"]); break
-              t = dt.datetime(maintenant.year, maintenant.month, maintenant.day, h, tzinfo=PARIS).astimezone(UTC)
-              passe = (maintenant - dt.timedelta(hours=2)) > dt.datetime(maintenant.year, maintenant.month, maintenant.day, h, tzinfo=PARIS)
+          def bloc(c, b):
+              """Moyenne du champ sur les carrés de la boîte b (NaN hors de la grille du modèle)."""
+              v, la1, lo1, dx, dy, _ = c; _, _, lat0, lon0, pas, ni, nj = BOITES[b]
+              k = int(round(pas / dx)); j0 = int(round((la1 - lat0) / dy)); i0 = int(round((lon0 - lo1) / dx))
+              if j0 >= 0 and i0 >= 0 and j0 + nj * k <= v.shape[0] and i0 + ni * k <= v.shape[1]: sub = v[j0:j0 + nj * k, i0:i0 + ni * k]
+              else:
+                  sub = np.full((nj * k, ni * k), np.nan, dtype=np.float32)
+                  js, je, is_, ie = max(0, j0), min(v.shape[0], j0 + nj * k), max(0, i0), min(v.shape[1], i0 + ni * k)
+                  if je > js and ie > is_: sub[js - j0:je - j0, is_ - i0:ie - i0] = v[js:je, is_:ie]
+              return np.nanmean(sub.reshape(nj, k, ni, k), axis=(1, 3))
+          def extraire(b, run, pas):
+              dom = BOITES[b][0]; U = DOMS[dom]
+              a = champs(U(run, "SP1", pas), {"10u", "10v"}, dom, "SP1")
+              if "10u" not in a or "10v" not in a: raise ValueError("vent absent de SP1")
+              voulus = {"tirf", "tsnowp"} if dom == "METRO" else {"tirf"}
+              c = champs(U(run, "SP2", pas), voulus, dom, "SP2"); pluie = None
+              for sn in sorted(voulus):
+                  if sn not in c: continue
+                  val = bloc(c[sn], b); sr = c[sn][5]; d0, d1 = (int(x) for x in sr.split("-")) if "-" in sr else (pas - 1, pas)
+                  if d1 - d0 > 1:                                                     # cumul depuis le début du calcul : différence avec l'échéance précédente
+                      prec = champs(U(run, "SP2", pas - 1), {sn}, dom, "SP2").get(sn) if pas > 1 else None
+                      val = val - bloc(prec, b) if prec else val / max(1, d1 - d0)
+                  val = np.maximum(val, 0); pluie = val if pluie is None else pluie + val
+              return bloc(a["10u"], b), bloc(a["10v"], b), pluie
+          def ecrire(b, j, h, u, v, p):
+              t = T[b]; buf = bufs[(groupe(b), j)]; base = (0 if b == "METRO" else OFF[b]) + h * 3 * t
+              i8 = lambda x: np.where(np.isnan(x), -128, np.clip(np.round(x * 4), -127, 127)).astype(np.int8).ravel().view(np.uint8)
+              buf[base:base + t] = i8(u); buf[base + t:base + 2 * t] = i8(v)
+              if p is None: p = np.full(t, np.nan)
+              buf[base + 2 * t:base + 3 * t] = np.where(np.isnan(p), 255, np.clip(np.round(p * 10), 0, 254)).astype(np.uint8).ravel()
+          # ordre de priorité : métropole aujourd'hui, DROM aujourd'hui, métropole demain, DROM demain (DROM heure par heure, boîtes ensemble)
+          taches = [("METRO", J0, h) for h in range(24)] + [(b, J0, h) for h in range(24) for b in OM] + \
+                   [("METRO", J1, h) for h in range(24)] + [(b, J1, h) for h in range(24) for b in OM]
+          faits, essais, absents = [], [], set(); debut = time.monotonic()
+          for b, j, h in taches:
+              if time.monotonic() - debut > 420: essais.append([b, j, h, None, None, "budget atteint"]); break
+              tz = ZoneInfo(BOITES[b][1]); y, m, d = map(int, j.split("-"))
+              tl = dt.datetime(y, m, d, h, tzinfo=tz); t = tl.astimezone(UTC); passe = dt.datetime.now(tz) - dt.timedelta(hours=2) > tl
+              cle = j + "|" + b; actuel = index[cle][h]; ecart = 0 if (b == "METRO" and j == J0) else 6
               for run in recents:
-                  r = dt.datetime.strptime(run, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=UTC); pas = int((t - r).total_seconds() // 3600)
+                  r = date_run(run); pas = int((t - r).total_seconds() // 3600)
                   if pas < 1 or pas > 48: continue
-                  if heures[h] == run or (heures[h] is not None and (passe or heures[h] >= run) and not force): break
+                  if actuel == run: break
+                  if actuel is not None and not force and (passe or (r - date_run(actuel)).total_seconds() < max(ecart, 0.5) * 3600): break
+                  dom = BOITES[b][0]
+                  if (dom, run, pas) in absents: continue
+                  try: requete(DOMS[dom](run, "SP1", pas), tete=True); requete(DOMS[dom](run, "SP2", pas), tete=True)
+                  except Exception: absents.add((dom, run, pas)); essais.append([b, j, h, run, pas, "absent"]); continue
                   try:
-                      requete(url(run, "SP1", pas), tete=True); requete(url(run, "SP2", pas), tete=True)
-                  except urllib.error.HTTPError: essais.append([h, run, pas, "absent"]); continue
-                  try:
-                      a = champs(url(run, "SP1", pas), {"10u", "10v"}); b = champs(url(run, "SP2", pas), {"tirf", "tsnowp"})
-                      if "10u" not in a or "10v" not in a: raise ValueError("vent absent de SP1")
-                      pluie = np.zeros((NJ, NI))
-                      for sn in ("tirf", "tsnowp"):
-                          if sn not in b: continue
-                          val, sr = b[sn]; d0, d1 = (int(x) for x in str(sr).split("-")) if "-" in str(sr) else (pas - 1, pas)
-                          if d1 - d0 > 1:                                       # cumul depuis le début du calcul : différence avec l'échéance précédente
-                              prec = champs(url(run, "SP2", pas - 1), {sn}).get(sn) if pas > 1 else None
-                              val = val - prec[0] if prec else val / max(1, d1 - d0)
-                          pluie += np.maximum(val, 0)
-                      base = h * 3 * N
-                      buf[base:base + N] = np.clip(np.round(a["10u"][0] * 4), -127, 127).astype(np.int8).ravel().view(np.uint8)
-                      buf[base + N:base + 2 * N] = np.clip(np.round(a["10v"][0] * 4), -127, 127).astype(np.int8).ravel().view(np.uint8)
-                      buf[base + 2 * N:base + 3 * N] = np.clip(np.round(pluie * 10), 0, 254).astype(np.uint8).ravel()
-                      heures[h] = run; faits.append([h, run, pas]); break
+                      u, v, p = extraire(b, run, pas); ecrire(b, j, h, u, v, p)
+                      index[cle][h] = run; faits.append([b, j, h, run, pas]); break
                   except Exception as e:
-                      essais.append([h, run, pas, str(e)[:160]])
-          open(fj, "wb").write(buf.tobytes())
-          def point(lat, lon, h):
-              j = int((LAT0 - lat) / PAS); i = int((lon - LON0) / PAS); base = h * 3 * N; k = j * NI + i
-              u = buf[base + k:base + k + 1].view(np.int8)[0] / 4; v = buf[base + N + k:base + N + k + 1].view(np.int8)[0] / 4
-              return None if heures[h] is None else {"vitesse": round(float(np.hypot(u, v)), 2), "direction": round(float((np.degrees(np.arctan2(-u, -v)) + 360) % 360)), "pluie": float(buf[base + 2 * N + k]) / 10}
-          meteo = {"jour": jour, "maj": maintenant.isoformat(timespec="seconds"), "calculs": runs,
-                   "grille": {"lat0": LAT0, "lon0": LON0, "pas": PAS, "ni": NI, "nj": NJ, "echelle_vent": 0.25, "echelle_pluie": 0.1,
-                              "format": "24 heures × (u int8, v int8, pluie uint8), rangées du nord au sud ; -128 et 255 = absent"},
-                   "heures": heures}
+                      essais.append([b, j, h, run, pas, str(e)[:160]])
+          for (g, j), buf in bufs.items(): open(fichier(g, j), "wb").write(buf.tobytes())
+          def point(b, j, lat, lon, h):
+              _, _, lat0, lon0, pas, ni, nj = BOITES[b]; jj = int((lat0 - lat) / pas); ii = int((lon - lon0) / pas)
+              if index[j + "|" + b][h] is None or not (0 <= jj < nj and 0 <= ii < ni): return None
+              t = T[b]; buf = bufs[(groupe(b), j)]; base = (0 if b == "METRO" else OFF[b]) + h * 3 * t; k = jj * ni + ii
+              u = buf[base + k:base + k + 1].view(np.int8)[0] / 4; v = buf[base + t + k:base + t + k + 1].view(np.int8)[0] / 4; p = int(buf[base + 2 * t + k])
+              return {"vitesse": round(float(np.hypot(u, v)), 2), "direction": round(float((np.degrees(np.arctan2(-u, -v)) + 360) % 360)), "pluie": None if p == 255 else p / 10}
+          def boite_json(b):
+              _, tz, lat0, lon0, pas, ni, nj = BOITES[b]
+              return {"fuseau": tz, "lat0": lat0, "lon0": lon0, "pas": pas, "ni": ni, "nj": nj, "decalage": OFF.get(b, 0), "echelle_vent": 0.25, "echelle_pluie": 0.1}
+          meteo = {"jour": J0, "maj": maintenant.isoformat(timespec="seconds"), "calculs": runs,
+                   "grille": dict(boite_json("METRO"), format="24 heures × (u int8, v int8, pluie uint8), rangées du nord au sud ; -128 et 255 = absent"),
+                   "heures": index[J0 + "|METRO"], "lendemain": {"jour": J1, "heures": index[J1 + "|METRO"]},
+                   "om": {"fichier": "om-AAAA-MM-JJ.bin", "format": "boîtes à la suite (décalage en octets), chacune 24 heures locales × (u, v, pluie)",
+                          "boites": {b: boite_json(b) for b in OM}, "jours": {j: {b: index[j + "|" + b] for b in OM} for j in (J0, J1)}}}
           json.dump(meteo, open("meteo.json", "w", encoding="utf-8"), ensure_ascii=False)
-          hp = min(23, maintenant.hour)
-          etat = {"maj": meteo["maj"], "calculs": runs, "heures_remplies": sum(1 for x in heures if x), "extraits_ce_passage": faits, "echecs": essais[-12:],
-                  "Paris_heure_courante": point(48.857, 2.352, hp), "Lyon_heure_courante": point(45.760, 4.835, hp)}
+          hp = min(23, maintenant.hour); rempli = lambda k: sum(1 for x in index[k] if x)
+          etat = {"maj": meteo["maj"], "calculs": runs, "heures_remplies": rempli(J0 + "|METRO"),
+                  "heures_remplies_par_boite": {k: rempli(k) for k in sorted(index)}, "extraits_ce_passage": faits, "echecs": essais[-20:],
+                  "rangs": RANGS, "noms_vus_si_champ_absent": NOMS,
+                  "Paris_heure_courante": point("METRO", J0, 48.857, 2.352, hp), "Lyon_heure_courante": point("METRO", J0, 45.760, 4.835, hp),
+                  "Fort-de-France_12h_locale": point("MARTINIQUE", J0, 14.61, -61.07, 12), "Saint-Denis_12h_locale": point("REUNION", J0, -20.88, 55.45, 12),
+                  "Cayenne_12h_locale": point("GUYANE", J0, 4.94, -52.33, 12)}
           json.dump(etat, open("etat.json", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
-          for f in glob.glob("*.bin"):                                          # archive de 30 jours
-              if f[:10] < (maintenant - dt.timedelta(days=30)).strftime("%Y-%m-%d"): os.remove(f)
-          print(json.dumps({k: etat[k] for k in ("heures_remplies", "Paris_heure_courante", "Lyon_heure_courante")}, ensure_ascii=False), "|", len(faits), "heures extraites")
-          if not any(heures): raise SystemExit("Aucune heure AROME extraite (voir arome/etat.json)")
+          lim, lim_om = (maintenant - dt.timedelta(days=30)).strftime("%Y-%m-%d"), (maintenant - dt.timedelta(days=3)).strftime("%Y-%m-%d")
+          for f in glob.glob("*.bin"):                                                # archive : 30 jours en métropole, 3 jours outre-mer
+              mm = re.match(r"(om-)?(\d{4}-\d\d-\d\d)\.bin$", f)
+              if mm and mm.group(2) < (lim_om if mm.group(1) else lim): os.remove(f)
+          print(json.dumps({k: etat[k] for k in ("heures_remplies", "Paris_heure_courante", "Fort-de-France_12h_locale", "Saint-Denis_12h_locale")}, ensure_ascii=False), "|", len(faits), "heures extraites")
+          if not any(index[J0 + "|METRO"]): raise SystemExit("Aucune heure AROME extraite pour la métropole (voir arome/etat.json)")
           PY
 
       - name: Historique (calage et performances, une fois par jour après 4 h)
@@ -517,30 +698,33 @@ jobs:
             if [ "$H" -lt 4 ]; then echo "Avant 4 h : le LCSQA n'a pas encore publié la fin de la veille."; exit 0; fi
             if [ -f calage/calage.json ] && grep -q "\"maj\":\"$J" calage/calage.json; then echo "Historique déjà calculé aujourd'hui."; exit 0; fi
           fi
-          # Script et référentiels sur la branche principale du dépôt (outils/historique.py, ref/stations_ref.json, ref/fiches_stations.json)
+          # Script et référentiels sur la branche principale du dépôt, à la racine (historique.py, stations_ref.json, fiches_stations.json)
+          # ou dans les dossiers outils/ et ref/
           git fetch -q --depth 1 origin main
           rm -rf /tmp/ref && mkdir -p /tmp/ref
-          for f in outils/historique.py ref/stations_ref.json ref/fiches_stations.json; do git show "FETCH_HEAD:$f" > "/tmp/ref/$(basename "$f")"; done
+          for f in historique.py stations_ref.json fiches_stations.json; do
+            git show "FETCH_HEAD:$f" > "/tmp/ref/$f" 2>/dev/null || git show "FETCH_HEAD:outils/$f" > "/tmp/ref/$f" 2>/dev/null || git show "FETCH_HEAD:ref/$f" > "/tmp/ref/$f"
+          done
           python3 -c "import numpy" 2>/dev/null || python3 -m pip install -q --user --break-system-packages numpy >/dev/null 2>&1 || python3 -m pip install -q --user numpy >/dev/null
           python3 /tmp/ref/historique.py . /tmp/ref
 
       - name: Publier sur la branche donnees
-        if: steps.lcsqa.outcome == 'success' || steps.trafic.outcome == 'success' || steps.arome.outcome == 'success'
+        if: steps.lcsqa.outcome == 'success' || steps.trafic.outcome == 'success' || steps.paris.outcome == 'success' || steps.arome.outcome == 'success'
         shell: bash
         run: |
           set -euo pipefail
           cd out
           printf '%s\n' "Copie automatique de données publiques pour la maquette IATMO (Licence Ouverte) :" \
             "- lcsqa/ : fichiers temps réel du LCSQA (data.gouv.fr), jour et veille ;" \
-            "- trafic/ : débits et vitesses Bison Futé sur le réseau national non concédé (data.gouv.fr) : fichiers bruts du moment, dernier état par point, points.json pour la maquette, archive horaire de 60 jours ;" \
-            "- arome/ : vent à 10 m et pluie AROME (Météo-France) heure par heure sur une grille de 0,1°, fichier du jour lu par la maquette, 30 jours gardés ;" \
+            "- trafic/ : débits et vitesses Bison Futé sur le réseau national non concédé (data.gouv.fr) : fichiers bruts du moment, dernier état par point, points.json pour la maquette, archive horaire de 60 jours ; paris.json : débits horaires des capteurs permanents de la Ville de Paris (opendata.paris.fr, ODbL), moyenne par type de jour sur les 7 derniers jours ;" \
+            "- arome/ : vent à 10 m et pluie AROME (Météo-France) heure par heure, aujourd'hui et demain : métropole sur une grille de 0,1° (AAAA-MM-JJ.bin, 30 jours gardés), DROM en AROME Outre-Mer (om-AAAA-MM-JJ.bin) ;" \
             "- archive/lcsqa/ : mesures horaires du LCSQA par station (NO, NO2, NOx, O3, PM10, PM2,5, SO2), un fichier compressé par jour sur 180 jours, et table des stations ;" \
             "- suivi/ : journal des passages (3 jours), première apparition de chaque heure du LCSQA (30 jours) et performances quotidiennes du krigeage (90 jours), lus par l'onglet Performances ;" \
             "- calage/ : calage de l'effet routier sur les 30 derniers jours (incrément, profil horaire, vent, pluie, trafic et confinement), lu par la carte." \
             "Branche réécrite à chaque passage par la tâche .github/workflows/copie_lcsqa.yml : ne pas y travailler." > LISEZMOI.txt
           # Journal des passages (3 jours) : heure, durée, déclencheur et résultat de chaque partie, lu par l'onglet Performances
           mkdir -p suivi
-          LCSQA="${{ steps.lcsqa.outcome }}" TRAFIC="${{ steps.trafic.outcome }}" AROME="${{ steps.arome.outcome }}" HIST="${{ steps.historique.outcome }}" EVT="${EVENEMENT}" python3 - <<'PY'
+          LCSQA="${{ steps.lcsqa.outcome }}" TRAFIC="${{ steps.trafic.outcome }}" AROME="${{ steps.arome.outcome }}" HIST="${{ steps.historique.outcome }}" PARIS_T="${{ steps.paris.outcome }}" EVT="${EVENEMENT}" python3 - <<'PY'
           import json, os, time, datetime as dt
           from zoneinfo import ZoneInfo
           f = "suivi/journal.json"
@@ -548,7 +732,7 @@ jobs:
           except Exception: j = []
           deb = int(os.environ.get("DEBUT") or time.time()); P = ZoneInfo("Europe/Paris")
           j.append({"t": dt.datetime.fromtimestamp(deb, P).isoformat(timespec="seconds"), "duree": int(time.time()) - deb, "evt": os.environ["EVT"],
-                    "lcsqa": os.environ["LCSQA"], "trafic": os.environ["TRAFIC"], "arome": os.environ["AROME"], "historique": os.environ.get("HIST", "")})
+                    "lcsqa": os.environ["LCSQA"], "trafic": os.environ["TRAFIC"], "arome": os.environ["AROME"], "historique": os.environ.get("HIST", ""), "paris": os.environ.get("PARIS_T", "")})
           json.dump(j[-432:], open(f, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
           print("journal :", len(j[-432:]), "passages")
           PY
