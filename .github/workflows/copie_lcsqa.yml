@@ -9,8 +9,9 @@
 #    lu par IATMO.
 # 4. AROME (Météo-France, data.gouv.fr) : vent à 10 m et pluie de chaque heure du jour, extraits du calcul le plus récent
 #    (seuls les champs utiles sont téléchargés) et moyennés sur une grille de 0,1° (environ 10 km), lue par la carte ; 30 jours gardés.
-# 5. Historique, une fois par jour : calage sur les 30 derniers jours (calage/calage.json) et performances quotidiennes du krigeage
-#    (suivi/performances.json), par le script historique.py de la branche principale (racine du dépôt).
+# 5. Historique, une fois par jour : calage sur les 30 derniers jours (calage/calage.json), performances quotidiennes du krigeage
+#    (suivi/performances.json) et progression du calage avec la correction apprise des résidus (suivi/calage_jours.json),
+#    par le script historique.py de la branche principale (racine du dépôt) ; numpy et scikit-learn installés au besoin.
 # 3. Archive des mesures du LCSQA (180 jours) : une ligne par station et par heure, valeurs de NO, NO2, NOx, O3, PM10,
 #    PM2,5 et SO2, pour caler le modèle sur un historique.
 # À enregistrer dans le dépôt sous le nom .github/workflows/copie_lcsqa.yml
@@ -688,7 +689,7 @@ jobs:
       - name: Historique (calage et performances, une fois par jour après 4 h)
         id: historique
         continue-on-error: true
-        timeout-minutes: 6
+        timeout-minutes: 8
         shell: bash
         run: |
           set -euo pipefail
@@ -706,6 +707,8 @@ jobs:
             git show "FETCH_HEAD:$f" > "/tmp/ref/$f" 2>/dev/null || git show "FETCH_HEAD:outils/$f" > "/tmp/ref/$f" 2>/dev/null || git show "FETCH_HEAD:ref/$f" > "/tmp/ref/$f"
           done
           python3 -c "import numpy" 2>/dev/null || python3 -m pip install -q --user --break-system-packages numpy >/dev/null 2>&1 || python3 -m pip install -q --user numpy >/dev/null
+          # scikit-learn : correction apprise des résidus (gradient boosting) ; sans lui, historique.py saute cette évaluation
+          python3 -c "import sklearn" 2>/dev/null || python3 -m pip install -q --user --break-system-packages scikit-learn >/dev/null 2>&1 || python3 -m pip install -q --user scikit-learn >/dev/null 2>&1 || echo "scikit-learn non installé"
           python3 /tmp/ref/historique.py . /tmp/ref
 
       - name: Publier sur la branche donnees
@@ -714,7 +717,9 @@ jobs:
         run: |
           set -euo pipefail
           cd out
-          printf '%s\n' "Copie automatique de données publiques pour IATMO (Licence Ouverte) :" \
+          printf '%s\n' "Copie automatique de données publiques pour IATMO." \
+            "Licences : Licence Ouverte (Etalab), sauf trafic/paris.json, base dérivée du jeu « Comptage routier – Données trafic issues des capteurs permanents » de la Ville de Paris, diffusée sous ODbL (Open Database License) : toute réutilisation cite « Ville de Paris » et reste sous ODbL. Sources à citer : Météo-France (arome/), LCSQA – Geod'air (lcsqa/, archive/), Bison Futé (trafic/points.json)." \
+            "Contenu :" \
             "- lcsqa/ : fichiers temps réel du LCSQA (data.gouv.fr), jour et veille ;" \
             "- trafic/ : débits et vitesses Bison Futé sur le réseau national non concédé (data.gouv.fr) : fichiers bruts du moment, dernier état par point, points.json pour IATMO, archive horaire de 60 jours ; paris.json : débits horaires des capteurs permanents de la Ville de Paris (opendata.paris.fr, ODbL), moyenne par type de jour sur les 7 derniers jours ;" \
             "- arome/ : vent à 10 m et pluie AROME (Météo-France) heure par heure, aujourd'hui et demain : métropole sur une grille de 0,1° (AAAA-MM-JJ.bin, 30 jours gardés), DROM en AROME Outre-Mer (om-AAAA-MM-JJ.bin) ;" \
