@@ -237,7 +237,7 @@
   <h1><span>IA</span>TMO</h1>
   <p class="tag">Indice de qualité de l'air, métropole et DROM</p>
 
-  <div class="go" id="topBtns"><button type="button" id="methBtn">Méthodologie</button><button type="button" id="perfBtn">Performances</button><button type="button" id="srcBtn">Sources</button><button type="button" id="casBtn" hidden>Cas typiques</button></div>
+  <div class="go" id="topBtns"><button type="button" id="methBtn">Méthodologie</button><button type="button" id="perfBtn">Évaluation</button><button type="button" id="srcBtn">Sources</button><button type="button" id="casBtn" hidden>Cas typiques</button></div>
   <div id="casBox" hidden><select id="casSel" aria-label="Cas typiques"><option value="">Situation du jour (données réelles)</option></select><p class="hint" id="casTxt"></p></div>
 
   <div id="status" class="status"><span class="dot"></span><div><b>Chargement…</b><span id="statusTxt">Connexion au flux Atmo Data</span></div></div>
@@ -296,7 +296,7 @@
 <div id="insets" class="off"></div>
 <div id="methodo" class="sheet" role="dialog" aria-modal="true" aria-label="Méthodologie"><article><button type="button" class="sheetClose">Fermer ✕</button>
 <h1><span class="ia">IA</span>TMO – Méthodologie</h1>
-<div class="enbref"><b>En bref.</b> IATMO affiche l'indice ATMO publié chaque jour par les AASQA, tel quel, à la commune. En dessous, il simule ce que donnerait une descente d'échelle jusqu'au quartier : ce n'est pas l'indice officiel. L'Aperçu 2027 préfigure le futur indice horaire sur la grille européenne, à partir de concentrations simulées. L'onglet Geod'air cartographie les mesures horaires des stations de fond, et l'onglet Performances mesure la justesse de ces calculs. Toutes les sources sont ouvertes (onglet Sources) ; la maquette sert à montrer l'interface, pas à informer.</div>
+<div class="enbref"><b>En bref.</b> IATMO affiche l'indice ATMO publié chaque jour par les AASQA, tel quel, à la commune. En dessous, il simule ce que donnerait une descente d'échelle jusqu'au quartier : ce n'est pas l'indice officiel. L'Aperçu 2027 préfigure le futur indice horaire sur la grille européenne, à partir de concentrations simulées. L'onglet Geod'air cartographie les mesures horaires des stations de fond, et l'onglet Évaluation mesure la justesse de ces calculs. Toutes les sources sont ouvertes (onglet Sources) ; la maquette sert à montrer l'interface, pas à informer.</div>
 <nav class="sommaire"><a href="#" data-cible="partieCdc">I. Cahier des charges</a><a href="#" data-cible="partieNote">II. Note méthodologique</a></nav>
 <h2 class="partie" id="partieCdc">I. Cahier des charges</h2>
 <h2>Objet</h2>
@@ -310,7 +310,7 @@
 <p>Règles d'interface :</p>
 <ul><li>Un clic sur une commune donne l'indice, les cinq sous-indices (NO₂, O₃, PM₁₀, PM₂,₅, SO₂) et l'AASQA productrice. La fiche est hiérarchisée : la classe en tête, puis le polluant responsable, les sous-indices et l'estimation au point, enfin un volet replié « Détails du calcul » (méthode, station la plus proche, incertitude), qui reste ouvert d'un clic à l'autre une fois ouvert.</li><li>Au niveau quartier, un bandeau permanent signale qu'il s'agit d'une estimation et non de l'indice officiel. Le contour de la commune reste visible.</li><li>La transition commune → quartier est un fondu, pour que l'on voie de quelle valeur communale part l'estimation.</li><li>L'estimation peut être désactivée : la carte reste alors à la commune à tous les zooms.</li></ul>
 <p>Commandes de la maquette :</p>
-<ul><li><b>Recherche</b> d'une commune ou d'une adresse, qui centre la carte sur le lieu.</li><li><b>Aujourd'hui ou demain</b> : les deux échéances du flux Atmo Data ; le choix est masqué dans l'onglet Geod'air, qui ne contient que les mesures du jour.</li><li><b>Indice actuel ou aperçu 2027</b> : l'aperçu ajoute un curseur horaire, une animation des 24 heures, ou la pire heure de la journée, et classe des concentrations simulées avec la grille européenne révisée en 2025.</li><li><b>Onglet Geod'air</b> : carte des concentrations de fond krigées à partir des mesures horaires des stations de fond, classées avec la grille européenne, avec animation des heures et estimation de l'incertitude (§ 7).</li><li><b>Indice ou polluant</b> : NO₂, O₃, PM₁₀ ou PM₂,₅, à la commune comme au quartier.</li><li><b>Vignettes des DROM</b> en vue nationale, avec la mention « Indice non diffusé » quand le flux ne couvre pas le territoire.</li><li><b>Rendu lissé ou en mailles</b> au niveau quartier.</li><li><b>Options</b> (menu replié par défaut) : estimation sous la commune, règle de cohérence avec l'indice communal, rendu lissé, polluant responsable sur la carte, axes routiers, effet routier modulé et trafic réel (§ 5 et § 6).</li><li><b>Méthodologie</b> : ce cahier des charges, suivi de la note méthodologique détaillant les sources, les calculs et les règles de cohérence. Elle se termine par un lien de téléchargement de la note méthodologique de synthèse, au format PDF.</li><li><b>Performances</b> : indicateurs de qualité des calculs, sur les mesures du jour et, pour 7 et 30 jours, sur l'historique (§ 8).</li>
+<ul><li><b>Recherche</b> d'une commune ou d'une adresse, qui centre la carte sur le lieu.</li><li><b>Aujourd'hui ou demain</b> : les deux échéances du flux Atmo Data ; le choix est masqué dans l'onglet Geod'air, qui ne contient que les mesures du jour.</li><li><b>Indice actuel ou aperçu 2027</b> : l'aperçu ajoute un curseur horaire, une animation des 24 heures, ou la pire heure de la journée, et classe des concentrations simulées avec la grille européenne révisée en 2025.</li><li><b>Onglet Geod'air</b> : carte des concentrations de fond krigées à partir des mesures horaires des stations de fond, classées avec la grille européenne, avec animation des heures et estimation de l'incertitude (§ 7).</li><li><b>Indice ou polluant</b> : NO₂, O₃, PM₁₀ ou PM₂,₅, à la commune comme au quartier.</li><li><b>Vignettes des DROM</b> en vue nationale, avec la mention « Indice non diffusé » quand le flux ne couvre pas le territoire.</li><li><b>Rendu lissé ou en mailles</b> au niveau quartier.</li><li><b>Options</b> (menu replié par défaut) : estimation sous la commune, règle de cohérence avec l'indice communal, rendu lissé, polluant responsable sur la carte, axes routiers, effet routier modulé et trafic réel (§ 5 et § 6).</li><li><b>Méthodologie</b> : ce cahier des charges, suivi de la note méthodologique détaillant les sources, les calculs et les règles de cohérence. Elle se termine par un lien de téléchargement de la note méthodologique de synthèse, au format PDF.</li><li><b>Évaluation</b> : indicateurs de qualité des calculs, sur les mesures du jour et, pour 7 et 30 jours, sur l'historique (§ 8).</li>
 <li><b>Sources</b> : producteur, licence, branchement et fréquence d'actualisation de chaque donnée, avec l'état de lecture depuis l'ouverture de la page.</li><li><b>Légende</b> : quand un polluant est sélectionné, bornes de chaque classe en µg/m³ (grille 2020 pour l'indice actuel, grille européenne pour l'aperçu 2027 et Geod'air).</li><li><b>Copier le lien de cette vue</b> : adresse qui rouvre la vue affichée (lieu, zoom, onglet, polluant, heure). Fond satellite et opacité de la couche d'indice fixes (60 %) ; le panneau n'a plus de rubriques « Échelle affichée » ni « Réglages » depuis le 18 novembre. Le bouton ◀ masque le panneau pour montrer la carte en plein écran.</li><li><b>Barre de chargement</b> au centre de la carte à l'ouverture : lecture de l'indice ATMO des AASQA du jour, puis des prévisions Prev'air.</li></ul>
 <h2>Données</h2>
 <p>Toutes les sources de la maquette sont ouvertes ; seule l'API de Geod'air, utilisée en secours, demande une inscription et une clé personnelle. Leur liste complète (producteur, licence, branchement, fréquence d'actualisation) est dans l'onglet Sources ; leur lecture et leurs limites sont décrites au § 2, leur acheminement jusqu'à la page au § 3.</p>
@@ -397,7 +397,7 @@
 <li><b>Tâche.</b> Une tâche GitHub Actions du dépôt de la maquette (<code>.github/workflows/copie_lcsqa.yml</code>) enchaîne : mesures du LCSQA (fichiers du jour et de la veille, en-tête vérifié, fichier d'état <code>etat.json</code>, archive, § 2.3) ; trafic Bison Futé et trafic de la Ville de Paris (§ 5.8) ; vent et pluie AROME (§ 2.5) ; calage sur l'historique et performances quotidiennes, une fois par jour (§ 5.10 et § 8). Elle publie le tout sur la branche <code>donnees</code>, réécrite à chaque passage pour que l'historique du dépôt ne grossisse pas. Mise en service le 17 novembre à 15 h 17 : premier passage en 19 secondes, fichier du jour (6 Mo à cette heure) et de la veille (12,5 Mo).</li>
 <li><b>Déclenchement.</b> Toutes les 10 minutes par un appel de l'API GitHub depuis le service gratuit cron-job.org (<code>api.github.com/repos/julienrude-glitch/IATMO/actions/workflows/copie_lcsqa.yml/dispatches</code>), avec un jeton « fine-grained » limité au dépôt IATMO et à la seule permission Actions (lancer une tâche, sans accès au contenu), à durée limitée et révocable. La planification de GitHub, toutes les 30 minutes, reste en secours : elle sautait la plupart des passages (deux seulement entre le 17 novembre à 15 h 17 et le 18 à 9 h 45). Deux passages ne tournent jamais en même temps ; le bouton « Run workflow » propose une case « force » qui réextrait tout.</li>
 <li><b>Lecture par la page.</b> À l'adresse <code>raw.githubusercontent.com/…/donnees/</code>, qui autorise la lecture depuis toute page (<code>Access-Control-Allow-Origin: *</code>). Le bandeau de l'onglet Geod'air donne l'heure de la copie et la signale si elle a plus de trois heures. À défaut, la page tente data.gouv.fr directement (liste du dossier, puis nom <code>FR_E2_AAAA-MM-JJ.csv</code>) et donne la cause de chaque échec (copie absente, code d'erreur, lecture refusée par le navigateur).</li>
-<li><b>Suivi.</b> Journal des passages (<code>suivi/journal.json</code>) et heures d'arrivée des fichiers du LCSQA, présentés dans l'onglet Performances (§ 8).</li>
+<li><b>Suivi.</b> Journal des passages (<code>suivi/journal.json</code>) et heures d'arrivée des fichiers du LCSQA, présentés dans l'onglet Évaluation (§ 8).</li>
 <li><b>Limites.</b> GitHub peut retarder les tâches aux heures chargées et suspend la planification d'un dépôt public resté soixante jours sans activité. En service, cette collecte serait faite côté serveur.</li>
 </ul>
 <h3>3.2 Temps de chargement</h3>
@@ -523,7 +523,7 @@ c = +1 du côté de la rue abrité par le bâti amont (sous le vent), −1 du c�
 <li><b>Orientation.</b> Vent en travers de la rue : un tourbillon retient les polluants, le facteur monte jusqu'à 1,3. Vent dans l'axe : la rue est balayée, le facteur descend jusqu'à 0,7.</li>
 <li><b>Côté de la rue.</b> Par vent en travers, le tourbillon ramène les émissions vers la façade abritée : + 25 % de ce côté, − 25 % en face. Sur un cas de test (A ≈ 0,5, vent perpendiculaire), le facteur vaut 1,49 d'un côté et 1,11 de l'autre ; par vent dans l'axe, 1,0 des deux côtés.</li>
 <li><b>Heure.</b> L'orientation et le côté ne jouent que lorsqu'une heure est affichée (aperçu 2027, Geod'air). Pour l'indice du jour et la pire heure, seul le confinement est appliqué.</li>
-<li><b>Bâtiments lus.</b> Aux petites échelles, les tuiles du Plan IGN ne livrent qu'une partie des bâtiments (une centaine pour tout Paris au niveau Quartier, le 18 novembre). Le bâti n'est donc utilisé qu'à partir du zoom 15, ou plus tôt si la vue en contient au moins 20 par km². Ce seuil se vérifie sur la vraie carte avec l'outil « Bâti livré par le Plan IGN selon le zoom » de l'onglet Performances (§ 8). Sinon, le facteur de bâti reste neutre (× 1), le modèle de rue n'est pas appliqué, et la fiche au clic comme la ligne d'information invitent à zoomer au niveau de la rue.</li>
+<li><b>Bâtiments lus.</b> Aux petites échelles, les tuiles du Plan IGN ne livrent qu'une partie des bâtiments (une centaine pour tout Paris au niveau Quartier, le 18 novembre). Le bâti n'est donc utilisé qu'à partir du zoom 15, ou plus tôt si la vue en contient au moins 20 par km². Ce seuil se vérifie sur la vraie carte avec l'outil « Bâti livré par le Plan IGN selon le zoom » de l'onglet Évaluation (§ 8). Sinon, le facteur de bâti reste neutre (× 1), le modèle de rue n'est pas appliqué, et la fiche au clic comme la ligne d'information invitent à zoomer au niveau de la rue.</li>
 </ul>
 <p><b>Ce que ce modèle n'est pas.</b> Il s'inspire des modèles de rue canyon de type OSPM, dont il ne garde que la forme. Ce n'est pas GRAL : pas de champ de vent calculé autour des bâtiments, pas de suivi lagrangien de particules, pas d'émissions, pas de chimie NO-NO₂-O₃. La largeur de rue est estimée à partir de la densité bâtie et non mesurée ; l'axe retenu est le plus proche, sans traitement des carrefours ; le vent est celui d'AROME à 10 m au centre de la carte, pas celui de la rue. Les coefficients 0,3 et 0,25 sont des ordres de grandeur, non calés.</p>
 <p><b>GRAL, étape de validation.</b> GRAL (TU Graz, licence GPL 3) demande un moteur .NET, le bâti en trois dimensions, un inventaire d'émissions par tronçon et des heures de calcul : il ne peut tourner ni dans un navigateur ni dans la maquette. Dans le projet réel, un calcul GRAL sur quelques quartiers, ou les cartes à haute résolution des AASQA (Airparif, Atmo Auvergne-Rhône-Alpes, AtmoSud…), serviraient à caler puis à valider ce facteur de rue.</p>
@@ -555,7 +555,7 @@ a ∈ [0 ; 1], c ∈ [0 ; 1,5] : grille ; D : moindres carrés ; ancien modèle 
 <ul>
 <li><b>Résultats.</b> Sur les 17 et 18 novembre (23 stations, 37 heures), a = 0,2 et c = 0 ; le 18 seul (13 heures), a = 0,4 et c = 0. Erreur quadratique moyenne, station retirée tour à tour, le 18 : 6,6 µg/m³ pour le modèle calé, 7,0 pour un incrément constant, 7,5 pour l'ancien modèle. L'incrément croît donc bien moins vite que le trafic (un TMJA vingt fois plus fort ne double pas l'incrément), et le rapport H/L déclaré n'améliore pas l'estimation : l'ancien terme de confinement dégradait même le résultat.</li>
 <li><b>Application.</b> Chaque jour, a et c sont recalés sur les mesures du jour (12 stations documentées au moins, 6 heures par station) et remplacent la référence (a = 0,2, c = 0) s'ils font mieux que l'ancien modèle en validation croisée ; dès que l'archive couvre 7 jours complets, le calage sur l'historique (§ 5.10), plus robuste, les remplace. a amortit la pondération par le trafic réel (tr<sup>a</sup>, § 5.8) ; c règle le confinement du facteur de bâti (§ 5.5) et du modèle de rue (§ 5.7). L'incrément D au droit d'un grand axe reste calé sur l'ensemble des couples trafic / fond (§ 5.6).</li>
-<li><b>Limites.</b> Une à deux journées de novembre ; 24 stations, dont les incréments varient de −3 à 24 µg/m³ pour des raisons que les seules caractéristiques déclarées n'expliquent pas (appariement avec le fond, configuration locale, carrefours) ; largeurs et hauteurs estimées différemment selon les AASQA ; NO₂ seulement, les mêmes a et c étant appliqués aux particules. L'archive horaire du LCSQA (§ 2.3) permettra de caler sur plusieurs semaines, et les dossiers à venir d'élargir l'échantillon. Le détail par station est dans l'onglet Performances.</li>
+<li><b>Limites.</b> Une à deux journées de novembre ; 24 stations, dont les incréments varient de −3 à 24 µg/m³ pour des raisons que les seules caractéristiques déclarées n'expliquent pas (appariement avec le fond, configuration locale, carrefours) ; largeurs et hauteurs estimées différemment selon les AASQA ; NO₂ seulement, les mêmes a et c étant appliqués aux particules. L'archive horaire du LCSQA (§ 2.3) permettra de caler sur plusieurs semaines, et les dossiers à venir d'élargir l'échantillon. Le détail par station est dans l'onglet Évaluation.</li>
 </ul>
 <h3>5.10 Calage sur l'historique</h3>
 <p>Une fois par jour, après 4 h (quand le LCSQA a publié la fin de la veille), la tâche GitHub exécute le script <code>historique.py</code>, déposé à la racine de la branche principale du dépôt, sur l'archive de la branche de données : mesures horaires du LCSQA (180 jours gardés), vent et pluie AROME (30 jours), avec le référentiel des stations et les dossiers stations (<code>stations_ref.json</code>, <code>fiches_stations.json</code>, à la racine également). Les heures sont ramenées en heure de Paris. Sur les 30 derniers jours complets, il calcule :</p>
@@ -661,7 +661,7 @@ e_i = z_i − ẑ₋ᵢ(x_i) = w_i / Q_ii                 erreur de prévision, 
 <li>Mesures temps réel non validées ; une valeur aberrante se propage dans son voisinage.</li>
 <li>La version réelle devrait recourir à un krigeage avec dérive externe ou à une assimilation dans un modèle de chimie-transport, et publier la variance d'estimation.</li>
 </ul>
-<h2>8. Onglet Performances</h2>
+<h2>8. Onglet Évaluation</h2>
 <p>L'onglet évalue, dans le navigateur, les calculs de l'onglet Geod'air sur les mesures du jour en métropole, pour un polluant au choix (NO₂, O₃, PM₁₀, PM₂,₅). Il ne porte que sur les heures renseignées par au moins 40 % des stations de l'heure la plus fournie (et au moins vingt) ; les DROM, avec trop peu de stations, n'entrent que dans la cohérence avec l'indice. Le calcul prend une dizaine de secondes à l'ouverture de l'onglet, avec un message d'avancement, et reprend quand de nouvelles mesures sont lues.</p>
 <ul>
 <li><b>Validation croisée.</b> Chaque station de fond est retirée tour à tour (formule de Dubrule, § 7.6) : l'erreur e<sub>i</sub> = z<sub>i</sub> − ẑ<sub>−i</sub> est celle d'une estimation faite sans la station. « Méthode de la carte » : krigeage des résidus de la dérive Prev'air quand elle existe, krigeage ordinaire sinon ; « krigeage seul » : krigeage ordinaire des seules stations qui mesurent. Les coefficients de la dérive ne sont pas réajustés à chaque retrait, ce qui rend son score un peu optimiste. Indicateurs : erreur quadratique moyenne et biais sur toutes les heures, courbe heure par heure des deux méthodes, gain relatif de Prev'air.</li>
@@ -670,23 +670,23 @@ e_i = z_i − ẑ₋ᵢ(x_i) = w_i / Q_ii                 erreur de prévision, 
 <li><b>Cohérence avec l'indice des AASQA.</b> La commune de chaque station vient du géocodage inverse de la Géoplateforme (<code>data.geopf.fr/geocodage/reverse</code>), fait une fois puis gardé par le navigateur ; les arrondissements de Paris, Lyon et Marseille sont rapportés à la commune. Le sous-indice publié pour la commune (Atmo Data, jour même) est comparé à la classe, sur la grille de 2020, de la carte Geod'air au droit de la station, calculée sur les heures déjà mesurées : maximum horaire pour le NO₂ et l'O₃, moyenne pour les particules (trois heures au moins). La journée n'étant pas finie et l'indice publié étant une prévision, un écart n'est pas une erreur de l'un ou de l'autre. Les communes couvertes par un indice d'intercommunalité sont écartées.</li>
 <li><b>Effet routier aux stations documentées.</b> Incrément du NO₂ observé aux stations trafic documentées contre l'incrément du modèle calé (§ 5.9) et de l'ancien modèle, avec les valeurs de a et c et les erreurs en validation croisée ; tableau des stations par écart décroissant.</li>
 <li><b>Périodes de 7 et 30 jours.</b> Le même script calcule chaque jour, pour la veille, la validation croisée du krigeage sur toutes les heures bien renseignées (erreur, biais, bonne classe, MQI du 90<sup>e</sup> centile par polluant) et le bilan des copies du jour, publiés dans <code>suivi/performances.json</code> (90 jours). Krigeage ordinaire seulement : les prévisions Prev'air passées ne sont pas archivées, l'erreur historique est donc un peu plus forte que celle de la méthode de la carte. L'onglet affiche les moyennes sur la période et les courbes jour par jour.</li>
-<li><b>Retard de publication par AASQA.</b> Pour chaque heure du fichier et chaque organisme, délai entre la fin de l'heure mesurée (temps universel en métropole, heure locale dans les DROM, ramenée en temps universel) et sa première apparition dans la copie, à dix minutes près ; médiane et 90<sup>e</sup> centile par AASQA sur la période (30 jours gardés). Les heures déjà publiées au premier passage suivi d'une journée sont écartées.</li>
+<li><b>Délai de publication par AASQA.</b> Pour chaque heure du fichier et chaque organisme, délai entre la fin de l'heure mesurée (temps universel en métropole, heure locale dans les DROM, ramenée en temps universel) et sa première apparition dans la copie, à dix minutes près ; médiane et 90<sup>e</sup> centile par AASQA sur la période (30 jours gardés). Les heures déjà publiées au premier passage suivi d'une journée sont écartées.</li>
 <li><b>Chargement et calculs de la page.</b> Durée de lecture de chaque source depuis l'ouverture de la page, sur le poste de l'utilisateur, et durée des calculs (krigeage d'un polluant à une heure, carte Geod'air, descente d'échelle, lecture du bâti) : nombre, moyenne, maximum et total.</li>
 <li><b>Copies des données.</b> La tâche GitHub tient un journal de ses passages (<code>suivi/journal.json</code> : heure, durée, déclencheur, résultat de chaque partie, trois jours) et note la première apparition de chaque heure du fichier du LCSQA (en temps universel pour la métropole), le nombre de stations et les organismes (<code>suivi/lcsqa_arrivees.json</code>, trente jours, à dix minutes près). Les passages sans aucune copie réussie ne sont pas publiés : ils apparaissent comme des trous de plus de 25 minutes.</li>
 <li><b>Diagnostic technique.</b> Les rubriques destinées au réglage de la chaîne (copies des données, temps de chargement et de calcul, bâti livré par le Plan IGN) sont regroupées en bas de l'onglet, dans un bloc replié ; l'export en PDF l'ouvre pour l'imprimer.</li>
 <li><b>Bâti livré par le Plan IGN selon le zoom.</b> Le bouton « Mesurer ici » parcourt les zooms 16 à 12 au centre de la carte (la carte se déplace puis revient) et compte, pour chacun, les bâtiments des tuiles dans un carré central de taille fixe (au plus 1,2 km de côté, contenu dans la vue du zoom 16) et dans toute la vue. La part du maximum dans le carré central dit à partir de quel zoom la livraison est complète ; la densité de la vue est celle que teste le seuil de 20 bâtiments par km² ; la dernière colonne dit si le bâti entre dans le calcul. À lancer en ville dense et en zone rurale pour confirmer ou ajuster le seuil.</li>
 <li><b>Temps de calcul.</b> Les indicateurs du jour demandent 52 krigeages avec validation croisée pour 13 heures (environ 7 factorisations de matrices de 200 à 400 stations chacun). Trois mesures les rendent quasi immédiats : la factorisation de Cholesky (§ 7.6), qui ramène le calcul de 8,6 s à 2,2 s sur le poste d'essai ; le calcul d'avance, lancé cinq secondes après la lecture des mesures, par tranches de 25 ms quand le navigateur est inoccupé, si bien que l'onglet s'ouvre en moins de 0,2 s ; enfin, si l'onglet est ouvert avant la fin, le polluant affiché est calculé et montré en premier. Les modèles des heures qui ne sont pas à l'écran ne gardent pas leur factorisation (plusieurs Mo chacun), refaite à la demande pour la carte d'incertitude. Les krigeages profitent aussi à l'onglet Geod'air, dont les heures déjà calculées s'affichent sans délai.</li>
-<li><b>Export en PDF.</b> Le bouton « Exporter en PDF », en bas de l'onglet, ouvre la fenêtre d'impression du navigateur sur l'onglet seul, tel qu'il est affiché (polluant et période choisis, couleurs de l'écran), avec en tête le polluant, la période et l'heure d'édition ; choisir « Enregistrer au format PDF » comme imprimante (Edge, Firefox, Chrome). Le nom proposé pour le fichier est IATMO_Performances_AAAA-MM-JJ_polluant. Ce choix évite d'embarquer une bibliothèque de génération de PDF (plusieurs centaines de kilo-octets) et garde les graphiques en vectoriel.</li>
+<li><b>Export en PDF.</b> Le bouton « Exporter en PDF », en bas de l'onglet, ouvre la fenêtre d'impression du navigateur sur l'onglet seul, tel qu'il est affiché (polluant et période choisis, couleurs de l'écran), avec en tête le polluant, la période et l'heure d'édition ; choisir « Enregistrer au format PDF » comme imprimante (Edge, Firefox, Chrome). Le nom proposé pour le fichier est IATMO_Evaluation_AAAA-MM-JJ_polluant. Ce choix évite d'embarquer une bibliothèque de génération de PDF (plusieurs centaines de kilo-octets) et garde les graphiques en vectoriel.</li>
 <li><b>Interactions.</b> Choix du polluant ; survol d'un point ou d'une barre pour son détail ; clic sur une station (diagramme cible, tableau des écarts) pour centrer la carte dessus dans l'onglet Geod'air, sur une heure pour l'afficher.</li>
 <li><b>Pistes.</b> Archivage des prévisions Prev'air pour évaluer la méthode de la carte sur l'historique ; évaluation de l'effet routier sur plusieurs semaines aux stations documentées.</li>
 </ul>
 <h2>9. Note méthodologique de synthèse</h2>
 <p>Les choix de méthode et les options de la maquette sont résumés dans une note de neuf pages, à jour au 18 novembre 2026 : organisation générale et sources, commandes, krigeage et validation croisée, aperçu 2027, descente d'échelle (incrément routier, titration, calage, modèle de rue, cohérence), limites, pistes et questions ouvertes. Elle est intégrée à la page et se télécharge sans connexion.</p>
-<p><a href="note_methodologique.pdf" id="noteLien" class="lnk notePdf" download="IATMO_Note_methodologique.pdf" target="_blank" rel="noopener">Télécharger la note méthodologique (PDF, 9 pages, 134 Ko)</a></p>
+<p><a href="note_methodologique.pdf" id="noteLien" class="lnk notePdf" download="IATMO_Note_methodologique.pdf" target="_blank" rel="noopener">Télécharger la note méthodologique (PDF, 8 pages, 133 Ko)</a></p>
 
 </article></div>
-<div id="perf" class="sheet" role="dialog" aria-modal="true" aria-label="Performances"><article><button type="button" class="sheetClose">Fermer ✕</button>
-<h1>Performances</h1>
+<div id="perf" class="sheet" role="dialog" aria-modal="true" aria-label="Évaluation"><article><button type="button" class="sheetClose">Fermer ✕</button>
+<h1>Évaluation</h1>
 <p id="perfImpr" class="imprSeul"></p>
 <p class="by">Justesse des estimations de l'onglet Geod'air, cohérence avec l'indice des AASQA et fonctionnement de la chaîne de données, calculés dans le navigateur sur les mesures du jour en métropole. Méthode : onglet Méthodologie, note, § 8.</p>
 <div class="seg" id="perfPer"><button type="button" data-per="0">Aujourd'hui</button><button type="button" data-per="7">7 jours</button><button type="button" data-per="30">30 jours</button></div>
@@ -705,7 +705,7 @@ e_i = z_i − ẑ₋ᵢ(x_i) = w_i / Q_ii                 erreur de prévision, 
 <div id="perfJours"></div></section>
 <h2>Effet routier aux stations trafic documentées (NO₂)</h2>
 <div id="perfRoute"></div>
-<h2>Retard de publication des mesures par AASQA</h2>
+<h2>Délai de publication des mesures par AASQA</h2>
 <div id="perfRetards"></div>
 <details class="diag" id="perfDiag"><summary>Diagnostic technique : copies des données, chargement de la page, bâti livré par le Plan IGN</summary>
 <h2>Copies des données, dernières 24 heures</h2>
@@ -728,7 +728,7 @@ e_i = z_i − ẑ₋ᵢ(x_i) = w_i / Q_ii                 erreur de prévision, 
 <ul>
 <li><b>Déclenchement.</b> Toutes les 10 minutes par le service gratuit <a href="https://cron-job.org/" target="_blank" rel="noopener">cron-job.org</a>, qui appelle l'API GitHub avec un jeton limité au dépôt et aux Actions ; la planification de GitHub (à 17 et 47 minutes de chaque heure) reste en secours. Un bouton permet aussi de la lancer à la main, avec l'option « force ». Définition de la tâche : <a href="https://github.com/julienrude-glitch/IATMO/blob/main/.github/workflows/copie_lcsqa.yml" target="_blank" rel="noopener">copie_lcsqa.yml</a>.</li>
 <li><b>Étapes d'un passage.</b> Mesures du LCSQA (fichiers du jour et de la veille, archive de 180 jours) ; trafic Bison Futé (archive horaire de 60 jours) ; trafic de la Ville de Paris (une fois par jour, après 6 h) ; vent et pluie AROME (budget de 7 minutes) ; calage sur l'historique et performances quotidiennes (une fois par jour, après 4 h) ; publication sur la <a href="https://github.com/julienrude-glitch/IATMO/tree/donnees" target="_blank" rel="noopener">branche <code>donnees</code></a>, réécrite à chaque passage pour que le dépôt ne grossisse pas.</li>
-<li><b>Suivi.</b> Chaque passage est noté dans <a href="https://raw.githubusercontent.com/julienrude-glitch/IATMO/donnees/suivi/journal.json" target="_blank" rel="noopener"><code>suivi/journal.json</code></a> (trois jours), présenté dans l'onglet Performances (« Copies des données »), avec le retard de publication des mesures par AASQA.</li>
+<li><b>Suivi.</b> Chaque passage est noté dans <a href="https://raw.githubusercontent.com/julienrude-glitch/IATMO/donnees/suivi/journal.json" target="_blank" rel="noopener"><code>suivi/journal.json</code></a> (trois jours), présenté dans l'onglet Évaluation (« Copies des données »), avec le retard de publication des mesures par AASQA.</li>
 <li><b>Secrets.</b> Aucune clé n'est dans la page ni sur GitHub. La clé de l'API Geod'air reste sur le poste de l'utilisateur et ne sert qu'au relais local, en secours.</li>
 </ul>
 <p class="muted" id="srcEditeur">Éditeur : Julien Rude. Hébergement : GitHub Pages.</p>
@@ -844,7 +844,7 @@ var state = {
   version:0, fine:null, fineKey:"", cellSize:0, check:null
 };
 
-/* ================= Chronométrage de la page (onglet Performances) =================
+/* ================= Chronométrage de la page (onglet Évaluation) =================
    Chargements : début et fin depuis l'ouverture de la page ; calculs : nombre, durée totale, moyenne, maximum. */
 var PERFT = {evts:[], calc:{}};
 function tLoad(nom,t0,ok){ PERFT.evts.push({nom:nom,t0:t0,t1:performance.now(),ok:ok!==false}); }
@@ -1743,7 +1743,7 @@ function geoPrepare(){
   GEO.stations = list; GEO.sans = sans; GEO.ecart = ecart; GEO.hoursUse = src.hours; GEO.countsUse = src.counts;
   GEO.models = {}; GEO.domH = {}; GEO.version++; GEO.key = "";
   if(typeof perfOuvert==="function" && perfOuvert() && !GEO.sim) setTimeout(perfOuvrir,50);
-  else if(typeof perfFond==="function" && !GEO.sim) setTimeout(perfFond,5000);       // calcul d'avance de l'onglet Performances, quand le navigateur est libre
+  else if(typeof perfFond==="function" && !GEO.sim) setTimeout(perfFond,5000);       // calcul d'avance de l'onglet Évaluation, quand le navigateur est libre
   // Heure par défaut à revoir quand la liste des heures change, ou quand on passe des stations fictives aux mesures (mêmes heures)
   var cleH = (GEO.sim ? "fictif|" : "mesures|")+src.hours.join();
   if(state.geoI==null || state.geoI>=src.hours.length || GEO.hoursKey!==cleH || R){
@@ -3477,7 +3477,7 @@ document.querySelectorAll("#methodo .sommaire a").forEach(function(a){ a.addEven
 });
 /* ================= Onglet Sources =================
    Producteur, licence, branchement et fréquence d'actualisation de chaque source ; état de lecture depuis l'ouverture de la page
-   (temps de chargement notés par chronoP, mêmes noms que dans l'onglet Performances). */
+   (temps de chargement notés par chronoP, mêmes noms que dans l'onglet Évaluation). */
 function srcEvt(nom){ for(var i=PERFT.evts.length-1;i>=0;i--) if(PERFT.evts[i].nom===nom) return PERFT.evts[i]; return null; }
 function srcHeure(iso){ var d = iso ? new Date(iso) : null; return d && !isNaN(d) ? d.toLocaleString("fr-FR",{timeZone:"Europe/Paris",day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}).replace(" "," à ") : null; }
 function srcLu(nom,detail){ var e = srcEvt(nom); if(!e) return {t:"non lu dans cette session",c:"neutre"};
@@ -3489,7 +3489,7 @@ var SRC_LISTE = [
    e:function(){ return srcLu("Indice ATMO des AASQA (Atmo Data)",(function(){ var n = state.rec ? (state.rec.size!=null ? state.rec.size : Object.keys(state.rec).length) : 0; return n ? n.toLocaleString("fr-FR")+" communes" : null; })()); }},
   {d:"Mesures horaires aux stations (onglet Geod'air)", l:[["fichiers temps réel (data.gouv.fr)", "https://www.data.gouv.fr/datasets/5b98b648634f415309d52a50"], ["Geod'air", "https://www.geodair.fr/"], ["API Geod'air", "https://www.geodair.fr/donnees/api"]], p:"AASQA, LCSQA (Geod'air) ; Licence Ouverte ; mesures non validées",
    b:"Fichiers « temps réel » de <code>files.data.gouv.fr</code> copiés par la tâche GitHub (<code>lcsqa/</code>) ; secours : lecture directe, API Geod'air par le relais local, fichiers exportés",
-   a:"Source : chaque heure, délai variable selon l'AASQA (onglet Performances)<br>Copie : toutes les 10 minutes<br>Page : à l'ouverture, relue à chaque ouverture",
+   a:"Source : chaque heure, délai variable selon l'AASQA (onglet Évaluation)<br>Copie : toutes les 10 minutes<br>Page : à l'ouverture, relue à chaque ouverture",
    e:function(){ return srcLu("Mesures du LCSQA (copie GitHub)",GEO.copieMaj ? "copie du "+srcHeure(GEO.copieMaj) : null); }},
   {d:"Prévisions à 2 km (sous la commune, dérive du krigeage)", l:[["jeu de données (data.gouv.fr)", "https://www.data.gouv.fr/datasets/prevair-previsions-de-la-qualite-de-lair-pour-la-france-air-quality-forecasts-for-france"], ["Prev'air", "https://www.prevair.org/"]], p:"Ineris, plateforme Prev'air (www.prevair.org) ; Licence Ouverte",
    b:"Fichiers NetCDF publiés sur data.gouv.fr, trouvés par l'API du jeu de données et lus par le navigateur",
@@ -3512,7 +3512,7 @@ var SRC_LISTE = [
    a:"Source : une fois par jour, données de la veille<br>Copie : une fois par jour, après 6 h<br>Page : quand la vue est à moins de 45 km de Paris",
    e:function(){ return srcLu("Trafic Ville de Paris (copie GitHub)",PTRAF.ok ? PTRAF.pts.length+" arcs, jusqu'au "+PTRAF.dernier.slice(8,10)+"/"+PTRAF.dernier.slice(5,7) : null); }},
   {d:"Calage sur l'historique, suivi des performances", l:[["branche donnees (GitHub)", "https://github.com/julienrude-glitch/IATMO/tree/donnees"]], p:"IATMO (script historique.py), à partir des archives du LCSQA et d'AROME",
-   b:"Calcul par la tâche GitHub (<code>calage/calage.json</code>, <code>suivi/</code>), lu par la carte et par l'onglet Performances",
+   b:"Calcul par la tâche GitHub (<code>calage/calage.json</code>, <code>suivi/</code>), lu par la carte et par l'onglet Évaluation",
    a:"Calcul : une fois par jour, après 4 h, sur les 30 derniers jours<br>Page : à l'ouverture",
    e:function(){ return srcLu("Calage sur l'historique (copie GitHub)",CALH ? CALH.nj+" jour(s), calcul du "+srcHeure(CALH.maj) : "pas encore de calage publié"); }},
   {d:"Dossiers des stations trafic", l:[["LCSQA", "https://www.lcsqa.org/"]], p:"AASQA, transmis par le LCSQA (fiches descriptives des stations)",
@@ -3527,7 +3527,7 @@ var SRC_LISTE = [
    a:"Source : mises à jour périodiques de l'IGN<br>Page : à l'affichage",
    e:function(){ return BATI.ok ? {t:"bâti lu ("+(BATI.n||0).toLocaleString("fr-FR")+" bâtiments dans la vue)",c:"bon"} : {t:"fonds lus à l'affichage",c:"neutre"}; }},
   {d:"Recherche d'adresse, communes des stations", l:[["Géoplateforme de l'IGN", "https://geoservices.ign.fr/"]], p:"IGN, Géoplateforme (service de géocodage) ; Licence Ouverte",
-   b:"Service <code>data.geopf.fr/geocodage</code> : recherche, et géocodage inverse des stations pour l'onglet Performances (gardé par le navigateur)",
+   b:"Service <code>data.geopf.fr/geocodage</code> : recherche, et géocodage inverse des stations pour l'onglet Évaluation (gardé par le navigateur)",
    a:"Page : à chaque recherche ; stations : une fois",
    e:function(){ return {t:"à la demande",c:"neutre"}; }},
   {d:"Indice européen (couche)", l:[["indice européen (AEE)", "https://airindex.eea.europa.eu/AQI/index.html"]], p:"Agence européenne pour l'environnement, Copernicus (CAMS)",
@@ -3545,7 +3545,7 @@ function srcAfficher(){
       var liens = (x.l||[]).map(function(q){ return srcLien(q[0],q[1]); }).join(" · ");
       return '<tr><td><b>'+x.d+'</b>'+(liens ? '<div class="liens">'+liens+'</div>' : '')+'</td><td>'+p+'</td><td>'+x.b+'</td><td>'+x.a+'</td><td><span class="'+e.c+'">'+e.t+'</span></td></tr>'; }).join("")+'</tbody></table>';
 }
-/* ================= Onglet Performances =================
+/* ================= Onglet Évaluation =================
    Indicateurs calculés dans le navigateur sur les mesures du jour (onglet Geod'air, métropole) :
    validation croisée « station retirée tour à tour » du krigeage, avec et sans la dérive Prev'air ; taux de bonne classe (grille
    européenne) ; indicateur de qualité de modélisation MQI de FAIRMODE et diagramme cible ; cohérence avec les sous-indices publiés
@@ -3603,14 +3603,14 @@ function perfCalculer(fond){
     if(!PERF.fond) perfEtat(i<tasks.length ? (vu ? "Indicateurs du "+POL[p0][1]+" prêts ; calcul des autres polluants ("+(i-H.length)+" sur "+(tasks.length-H.length)+")…" : "Calcul des indicateurs : krigeage de "+i+" heures sur "+H.length+"…") : "");
     if(i<tasks.length){ suite(); return; }
     PERF.res = perfAgreger(H); PERF.key = perfCle(); PERF.busy = false; perfEtat("");
-    tCalc("Onglet Performances : "+tasks.length+" krigeages ("+(PERF.fond ? "d'avance" : "à l'ouverture")+")",performance.now()-t0);
+    tCalc("Onglet Évaluation : "+tasks.length+" krigeages ("+(PERF.fond ? "d'avance" : "à l'ouverture")+")",performance.now()-t0);
     PERF.fond = false;
     if(perfOuvert()){ perfAfficher(); perfCoherence(); }
   }
   function suite(){ if(PERF.fond && window.requestIdleCallback) requestIdleCallback(pas,{timeout:2000}); else setTimeout(pas,PERF.fond ? 40 : 0); }
   if(fond) suite(); else setTimeout(pas,30);
 }
-// Modèle avec sa factorisation (carte d'incertitude, fiche au clic) : recalculé si l'onglet Performances l'a libérée
+// Modèle avec sa factorisation (carte d'incertitude, fiche au clic) : recalculé si l'onglet Évaluation l'a libérée
 function geoModelSig(p,hk,dom){
   var gm = geoModel(p,hk,dom);
   if(gm && gm.libre){ delete GEO.models[hk+"|"+p+"|"+dom]; gm = geoModel(p,hk,dom); }
@@ -3906,7 +3906,7 @@ function perfHisto(nom){
   el.innerHTML = '<div class="leg"><span><i style="background:'+COUL_POL[PERF.pol]+'"></i>erreur de krigeage, station retirée</span><span><i style="background:#F0E641"></i>MQI du 90e centile, 7 jours glissants (axe de droite)</span><span><i class="tir" style="background:repeating-linear-gradient(90deg,#50CCAA 0 5px,transparent 5px 9px)"></i>objectif MQI = 1</span></div>'+h+
     '<p class="muted">Calculé chaque jour après 4 h par la tâche GitHub sur l\'archive des mesures du LCSQA (heures de Paris), pour la veille. Krigeage ordinaire, sans la dérive Prev\'air, dont les prévisions passées ne sont pas archivées : l\'erreur est donc un peu plus forte que celle de la méthode de la carte.</p>';
 }
-// ---------- Retard de publication par AASQA (suivi/lcsqa_arrivees.json) ----------
+// ---------- Délai de publication par AASQA (suivi/lcsqa_arrivees.json) ----------
 function perfRetards(){
   var el = document.getElementById("perfRetards"); if(!el) return;
   var A = PERF.arrivees; if(!A){ el.innerHTML = '<p class="muted">Suivi des arrivées non lu.</p>'; return; }
@@ -3927,13 +3927,13 @@ function perfRetards(){
   var orgs = Object.keys(R).filter(function(o){ return R[o].length>=2; }).map(function(o){ return {o:o,med:centile(R[o],0.5),p90:centile(R[o],0.9),n:R[o].length}; }).sort(function(a,b){ return a.med-b.med; });
   if(!orgs.length){ el.innerHTML = '<p class="muted">Pas encore assez d\'heures suivies sur la période (le suivi a commencé le 18 novembre après-midi).</p>'; return; }
   var W = 640, lh = 22, x0 = 230, Ht = orgs.length*lh+30, mx = Math.max(4,Math.ceil(Math.max.apply(null,orgs.map(function(a){ return a.p90; }))));
-  var X = function(v){ return x0+(W-x0-16)*v/mx; }, h = '<svg viewBox="0 0 '+W+' '+Ht+'" width="100%" role="img" aria-label="Retard de publication par AASQA">';
+  var X = function(v){ return x0+(W-x0-16)*v/mx; }, h = '<svg viewBox="0 0 '+W+' '+Ht+'" width="100%" role="img" aria-label="Délai de publication par AASQA">';
   for(var g=0;g<=mx;g+=Math.max(1,Math.round(mx/6))) h += '<line x1="'+X(g)+'" x2="'+X(g)+'" y1="4" y2="'+(Ht-22)+'" stroke="rgba(255,255,255,.08)"/><text x="'+X(g)+'" y="'+(Ht-8)+'" class="ax" text-anchor="middle">'+g+' h</text>';
   orgs.forEach(function(a,i){ var y = 6+i*lh;
-    h += '<text x="'+(x0-8)+'" y="'+(y+13)+'" class="ax" text-anchor="end">'+a.o+'</text><rect x="'+x0+'" y="'+(y+3)+'" width="'+Math.max(2,X(a.med)-x0)+'" height="13" rx="2" fill="#50f0e6"'+tipAttr(a.o+" : retard médian "+pfr(a.med)+" h, 90e centile "+pfr(a.p90)+" h, sur "+a.n+" heures")+'/>'+
+    h += '<text x="'+(x0-8)+'" y="'+(y+13)+'" class="ax" text-anchor="end">'+a.o+'</text><rect x="'+x0+'" y="'+(y+3)+'" width="'+Math.max(2,X(a.med)-x0)+'" height="13" rx="2" fill="#50f0e6"'+tipAttr(a.o+" : délai médian "+pfr(a.med)+" h, 90e centile "+pfr(a.p90)+" h, sur "+a.n+" heures")+'/>'+
       '<line x1="'+X(a.p90)+'" x2="'+X(a.p90)+'" y1="'+(y+2)+'" y2="'+(y+18)+'" stroke="#F0E641" stroke-width="2"/>'; });
   h += '</svg>';
-  el.innerHTML = '<div class="leg"><span><i style="background:#50f0e6"></i>retard médian</span><span><i style="background:#F0E641"></i>90e centile</span></div>'+h+
+  el.innerHTML = '<div class="leg"><span><i style="background:#50f0e6"></i>délai médian</span><span><i style="background:#F0E641"></i>90e centile</span></div>'+h+
     '<p class="muted">Délai entre la fin de l\'heure mesurée et sa première apparition dans le fichier du LCSQA, vue par la copie toutes les 10 minutes (précision de 10 minutes), '+(per ? "sur les "+jours.length+" derniers jours suivis" : "aujourd'hui")+'. Heures du fichier en temps universel pour la métropole, en heure locale pour les DROM.'+(ecart ? " "+ecart+" heures déjà publiées au premier passage suivi d'une journée sont écartées." : "")+'</p>';
 }
 // ---------- Bâti livré par le Plan IGN selon le zoom : mesure au centre de la carte, pour vérifier le seuil de densité ----------
@@ -3996,9 +3996,9 @@ function perfTemps(){
   box.addEventListener("click",function(e){ if(e.target && e.target.id==="batiMesure") batiMesurer(); });
   document.getElementById("perfPdf").addEventListener("click",function(){                 // export : impression de l'onglet seul, « Enregistrer au format PDF »
     var pols = ["NO2","O3","PM10","PM2.5"], polsT = ["NO₂","O₃","PM₁₀","PM₂,₅"], per = +PERF.per||0, t = document.title, fait = false;
-    document.getElementById("perfImpr").textContent = "IATMO – Performances · polluant : "+polsT[PERF.pol]+" · période : "+(per ? per+" derniers jours" : "aujourd'hui")+" · édité le "+
+    document.getElementById("perfImpr").textContent = "IATMO – Évaluation · polluant : "+polsT[PERF.pol]+" · période : "+(per ? per+" derniers jours" : "aujourd'hui")+" · édité le "+
       new Date().toLocaleString("fr-FR",{timeZone:"Europe/Paris",day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"}).replace(" "," à ");
-    document.title = "IATMO_Performances_"+parisDate(0)+"_"+pols[PERF.pol]+(per ? "_"+per+"j" : "");
+    document.title = "IATMO_Evaluation_"+parisDate(0)+"_"+pols[PERF.pol]+(per ? "_"+per+"j" : "");
     var fin = function(){ if(fait) return; fait = true; document.body.classList.remove("impPerf"); document.title = t; window.removeEventListener("afterprint",fin); };
     var dg = document.getElementById("perfDiag"), dgOuvert = dg && dg.open; if(dg) dg.open = true;
     var fin0 = fin; fin = function(){ fin0(); if(dg) dg.open = dgOuvert; };
