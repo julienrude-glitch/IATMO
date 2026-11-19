@@ -10,10 +10,12 @@
 #   suivi/mqi_fenetres.json : MQI par station et MQI du 90e centile sur les 7 et 30 derniers jours (diagramme cible de la page).
 #   suivi/calage_jours.json : progression du calage, jour après jour (400 jours) : paramètres calés sur les 30 jours précédant
 #                             chaque jour, intervalles à 90 % et test à l'aveugle sur ce jour (fond seul, paramètres d'origine, calés).
+#                             Correction apprise (gradient boosting et perceptron, scikit-learn) des résidus aux stations trafic : test à l'aveugle
+#                             et validation croisée par agglomération écartée (clé « ml »), pour les derniers jours.
 # MQI : guide FAIRMODE version 4.0 (mai 2026, tableau 1, directive 2024/2881) ; NO₂ horaire, O₃ maximum journalier sur 8 h,
 #       PM₁₀ et PM₂,₅ moyenne journalière. Paramètres à revoir avec la mise à jour annoncée pour fin 2026.
 # Heures : celles des fichiers du LCSQA (temps universel en métropole, heure locale dans les DROM) sont converties en heure de Paris.
-import csv, gzip, glob, json, math, os, sys, time, unicodedata, datetime as dt
+import csv, gzip, glob, hashlib, json, math, os, sys, time, unicodedata, warnings, datetime as dt
 from zoneinfo import ZoneInfo
 import numpy as np
 
@@ -388,37 +390,133 @@ print("calage :", len(jours), "jours,", len(paires), "couples ; D", CAL["D"], ";
 HIST_MIN = 7
 GREF = {1: 0.33, 2: 0.32, 3: 0.37, 4: 0.55, 5: 0.88, 6: 1.34, 7: 1.55, 8: 1.61, 9: 1.33, 10: 1.40, 11: 1.39}   # référence du 16/11, jours ouvrés
 def f_vent_ref(u): return max(0.6, min(1.6, math.sqrt(3 / max(u, 0.3))))                              # dilution, référence 3 m/s
+def lignes(jours_l, C):
+    """Couples station trafic / fond, heure par heure : (polluant, station, jour, heure, week-end, vent, pluie, fond, incrément
+    d'origine, incrément calé, mesure à la station trafic). Même calcul que la carte sans mesures du jour."""
+    hist = C["nj_obs"] >= HIST_MIN; out = []
+    for J in jours_l:
+        we = dt.date.fromisoformat(J).weekday() >= 5
+        for t, fs in paires:
+            fi = FICHES.get(t) if hist and C["fiches"] else None
+            if fi and not fi.get("tmja"): fi = None
+            for h in range(24):
+                hk = "%s %02d" % (J, h); dv = V.get((t, hk))
+                if not dv: continue
+                met = arome(coord(t), hk); u = met[0] if met else None; P = met[1] if met else None
+                Pp = P or 0.0; fvr = f_vent_ref(u) if u is not None else 1.0
+                fv = fvr
+                if u is not None and hist and C["vent"]: fv = max(0.6, min(1.6, (C["vent"]["u0"] / max(u, 0.3)) ** C["vent"]["a"]))
+                k = C["pluie"]["k"] if hist and C["pluie"] and C["pluie"]["k"] is not None and C["pluie"]["npluie"] >= 100 else 0.25
+                for p in ("NO2", "PM10", "PM25"):
+                    if p not in dv or C["D"].get(p) is None: continue
+                    F = fond_moyen(fs, hk, p)
+                    if F is None: continue
+                    if p == "NO2": dref = 8.8 * max(0.3, min(2.5, (1.0 if we else GREF.get(h, 1.0)) * fvr))
+                    else: dref = 0.3 * F * max(0.3, min(2.5, fvr * (1 - min(0.5, 0.25 * Pp))))
+                    fac = C["g"]["weekend" if we else "ouvre"].get(p, {}).get(h, 1.0) * fv * (1 if p == "NO2" else 1 - min(0.5, k * Pp))
+                    base = C["D"][p]
+                    if p == "NO2" and fi: base = C["fiches"]["D"] * pred({"q": fi["tmja"], "A": fi["A"] if fi.get("A") is not None else 1 / 3}, C["fiches"]["a"], C["fiches"]["c"])
+                    out.append((p, t, J, h, we, u, P, F, dref, base * max(0.3, min(2.5, fac)), dv[p]))
+    return out
 def tester(J, C):
-    we = dt.date.fromisoformat(J).weekday() >= 5; hist = C["nj_obs"] >= HIST_MIN
     acc = {p: [0, 0.0, 0.0, 0.0, 0.0] for p in ("NO2", "PM10", "PM25")}     # n, Σ(fond seul)², Σ(origine)², Σ(calé)², Σ biais calé
-    for t, fs in paires:
-        fi = FICHES.get(t) if hist and C["fiches"] else None
-        if fi and not fi.get("tmja"): fi = None
-        for h in range(24):
-            hk = "%s %02d" % (J, h); dv = V.get((t, hk))
-            if not dv: continue
-            met = arome(coord(t), hk); u = met[0] if met else None; P = met[1] if met else 0.0
-            fvr = f_vent_ref(u) if u is not None else 1.0
-            fv = fvr
-            if u is not None and hist and C["vent"]: fv = max(0.6, min(1.6, (C["vent"]["u0"] / max(u, 0.3)) ** C["vent"]["a"]))
-            k = C["pluie"]["k"] if hist and C["pluie"] and C["pluie"]["k"] is not None and C["pluie"]["npluie"] >= 100 else 0.25
-            for p, a in acc.items():
-                if p not in dv or C["D"].get(p) is None: continue
-                F = fond_moyen(fs, hk, p)
-                if F is None: continue
-                T = dv[p]
-                if p == "NO2": dref = 8.8 * max(0.3, min(2.5, (1.0 if we else GREF.get(h, 1.0)) * fvr))
-                else: dref = 0.3 * F * max(0.3, min(2.5, fvr * (1 - min(0.5, 0.25 * P))))
-                fac = C["g"]["weekend" if we else "ouvre"].get(p, {}).get(h, 1.0) * fv * (1 if p == "NO2" else 1 - min(0.5, k * P))
-                base = C["D"][p]
-                if p == "NO2" and fi: base = C["fiches"]["D"] * pred({"q": fi["tmja"], "A": fi["A"] if fi.get("A") is not None else 1 / 3}, C["fiches"]["a"], C["fiches"]["c"])
-                dc = base * max(0.3, min(2.5, fac))
-                a[0] += 1; a[1] += (F - T) ** 2; a[2] += (F + dref - T) ** 2; a[3] += (F + dc - T) ** 2; a[4] += F + dc - T
+    for p, t, _, h, we, u, P, F, dref, dc, T in lignes([J], C):
+        a = acc[p]; a[0] += 1; a[1] += (F - T) ** 2; a[2] += (F + dref - T) ** 2; a[3] += (F + dc - T) ** 2; a[4] += F + dc - T
     r = lambda s, n: round(math.sqrt(s / n), 2)
     return {p: {"n": a[0], "fond": r(a[1], a[0]), "ref": r(a[2], a[0]), "cale": r(a[3], a[0]), "biais": round(a[4] / a[0], 2)} for p, a in acc.items() if a[0] >= 50}
+
+# ---------- Correction apprise des résidus (gradient boosting), évaluée à l'aveugle et par agglomération écartée ----------
+# Le modèle paramétrique reste la base : un modèle de gradient boosting apprend, sur les 30 jours de la fenêtre, l'écart
+# résiduel mesure − (fond + incrément calé) aux stations trafic, à partir de variables disponibles aussi sur la carte.
+# Deux candidats comparés : gradient boosting (avec contraintes de monotonie) et perceptron multicouche (moyenne de graines).
+# Évaluation : (1) test à l'aveugle sur le jour J, toutes stations ; (2) NO₂ : validation croisée en 5 groupes de zones
+# administratives de surveillance (ZAS) : la correction est apprise sans les stations du groupe, puis appliquée à elles le jour J.
+try:
+    import sklearn; from sklearn.ensemble import HistGradientBoostingRegressor; from sklearn.neural_network import MLPRegressor; SKL = sklearn.__version__
+except Exception: SKL = None
+ML_MAX = int(os.environ.get("IATMO_ML_MAX", 3))            # jours évalués au plus par passage
+ML_VARS = [("heure", [0, 1]), ("week-end", [2]), ("vent", [3]), ("pluie", [4]), ("fond", [5]), ("incrément du modèle", [6]),
+           ("trafic (TMJA)", [7]), ("rapport H/L", [8]), ("distance à la bordure", [9])]
+ML_MANQ = [3, 4, 7, 8, 9]                                   # variables parfois absentes (perceptron : indicateur « absente »)
+# Contraintes de monotonie du gradient boosting sur la correction : croissante avec le trafic, décroissante avec la distance à la
+# bordure et, pour le NO₂, avec le vent (dilution ; pour les particules, le vent peut aussi remettre en suspension)
+ML_MONO = {"NO2": [0, 0, 0, -1, 0, 0, 0, 1, 0, -1], "PM10": [0, 0, 0, 0, 0, 0, 0, 1, 0, -1], "PM25": [0, 0, 0, 0, 0, 0, 0, 1, 0, -1]}
+MLP_GRAINES = (3, 2)                                        # perceptron : graines moyennées pour le test, pour chaque groupe de validation
+MLP_LIGNES = 20000                                          # perceptron : lignes horaires tirées au plus pour l'apprentissage (temps de calcul)
+def ml_matrice(L):
+    X = np.full((len(L), 10), np.nan); y = np.zeros(len(L)); base = np.zeros(len(L)); F = np.zeros(len(L)); T = np.zeros(len(L))
+    for i, (p, t, J, h, we, u, P, Fi, dref, dc, Ti) in enumerate(L):
+        fi = FICHES.get(t) or {}
+        X[i, :7] = [math.sin(2 * math.pi * h / 24), math.cos(2 * math.pi * h / 24), 1.0 if we else 0.0,
+                    u if u is not None else np.nan, P if P is not None else np.nan, Fi, dc]
+        if fi.get("tmja"): X[i, 7] = math.log(fi["tmja"])
+        if fi.get("A") is not None: X[i, 8] = fi["A"]
+        if fi.get("dbord") is not None: X[i, 9] = fi["dbord"]
+        base[i] = Fi + dc; F[i] = Fi; T[i] = Ti; y[i] = Ti - base[i]
+    return X, y, base, F, T
+class PerceptronMoyen:
+    """Perceptron multicouche (32 et 16 neurones, ReLU), variables normalisées, absentes remplacées par la moyenne avec un
+    indicateur, cible normalisée, arrêt anticipé ; moyenne de plusieurs graines ; au plus MLP_LIGNES lignes tirées au hasard."""
+    def __init__(self, graines): self.graines = graines
+    def _prep(self, X, fit=False):
+        manq = np.isnan(X[:, ML_MANQ]).astype(float); Xi = np.where(np.isnan(X), self.mu, X)
+        if fit: self.mn = Xi.mean(axis=0); self.sd = Xi.std(axis=0); self.sd[self.sd == 0] = 1.0
+        return np.hstack([(Xi - self.mn) / self.sd, manq])
+    def fit(self, X, y):
+        if len(X) > MLP_LIGNES: o = np.random.default_rng(1).choice(len(X), MLP_LIGNES, replace=False); X = X[o]; y = y[o]
+        with np.errstate(all="ignore"): mu = np.nanmean(X, axis=0)
+        self.mu = np.where(np.isnan(mu), 0.0, mu); Z = self._prep(X, True); self.ym = float(y.mean()); self.ys = float(y.std()) or 1.0
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")                 # convergence incomplète au bout de 80 passes : sans gravité ici
+            self.m = [MLPRegressor(hidden_layer_sizes=(32, 16), alpha=1e-3, learning_rate_init=1e-3, max_iter=80, batch_size=256, early_stopping=True,
+                                   validation_fraction=0.1, n_iter_no_change=8, random_state=g).fit(Z, (y - self.ym) / self.ys) for g in range(self.graines)]
+        return self
+    def predict(self, X):
+        Z = self._prep(X); return self.ym + self.ys * np.mean([m.predict(Z) for m in self.m], axis=0)
+CANDIDATS = {"gbm": (lambda p, cv: HistGradientBoostingRegressor(max_iter=150, learning_rate=0.05, max_leaf_nodes=15, min_samples_leaf=100,
+                                                                  l2_regularization=1.0, monotonic_cst=ML_MONO[p], random_state=0)),
+             "mlp": (lambda p, cv: PerceptronMoyen(MLP_GRAINES[1] if cv else MLP_GRAINES[0]))}
+def ml_rmse(a, b): return float(np.sqrt(np.mean((a - b) ** 2)))
+def ml_evaluer(J, C):
+    if C["nj_obs"] < HIST_MIN: return None
+    tr = lignes(C["jours"], C); te = lignes([J], C)
+    res = {"lib": "scikit-learn " + SKL + ", HistGradientBoostingRegressor (contraintes de monotonie)", "jours": C["nj_obs"], "test": {}, "cv": {}, "imp": {},
+           "mlp": {"lib": "scikit-learn " + SKL + ", MLPRegressor (32, 16), moyenne de %d graines" % MLP_GRAINES[0], "test": {}, "cv": {}, "imp": {}}}
+    zas = lambda t: (ST.get(t) or {}).get("zas") or t
+    for p in ("NO2", "PM10", "PM25"):
+        La = [r for r in tr if r[0] == p]; Lt = [r for r in te if r[0] == p]
+        if len(La) < 2000 or len(Lt) < 50: continue
+        Xa, ya, _, _, _ = ml_matrice(La); Xt, yt, bt, Ft, Tt = ml_matrice(Lt)
+        if p == "NO2":
+            gs = sorted({zas(r[1]) for r in La + Lt}, key=lambda g: hashlib.md5(g.encode()).hexdigest()); pli = {g: i % 5 for i, g in enumerate(gs)}
+            ga = np.array([pli[zas(r[1])] for r in La]); gt = np.array([pli[zas(r[1])] for r in Lt])
+        for cand, fab in CANDIDATS.items():
+            R = res if cand == "gbm" else res["mlp"]
+            m = fab(p, False).fit(Xa, ya); hy = np.maximum(0.0, bt + m.predict(Xt))
+            R["test"][p] = {"n": len(Lt), "hyb": round(ml_rmse(hy, Tt), 2), "biais": round(float(np.mean(hy - Tt)), 2)}
+            if p != "NO2": continue
+            # Importance par permutation (jour J) : hausse de l'erreur quand une variable est mélangée
+            rg = np.random.default_rng(0); e0 = ml_rmse(hy, Tt); imp = {}
+            for nom, cols in ML_VARS:
+                d = []
+                for _ in range(3):
+                    Xp = Xt.copy(); o = rg.permutation(len(Xp)); Xp[:, cols] = Xt[o][:, cols]
+                    d.append(ml_rmse(np.maximum(0.0, bt + m.predict(Xp)), Tt) - e0)
+                imp[nom] = round(float(np.mean(d)), 2)
+            R["imp"][p] = imp
+            # Validation croisée par agglomération écartée (5 groupes de ZAS)
+            se = [0.0, 0.0, 0.0]; n = 0
+            for f in range(5):
+                mt = gt == f
+                if not mt.any() or (ga != f).sum() < 1000: continue
+                mf = fab(p, True).fit(Xa[ga != f], ya[ga != f]); hf = np.maximum(0.0, bt[mt] + mf.predict(Xt[mt]))
+                se[0] += float(np.sum((Ft[mt] - Tt[mt]) ** 2)); se[1] += float(np.sum((bt[mt] - Tt[mt]) ** 2)); se[2] += float(np.sum((hf - Tt[mt]) ** 2)); n += int(mt.sum())
+            if n: R["cv"][p] = {"n": n, "fond": round(math.sqrt(se[0] / n), 2), "cale": round(math.sqrt(se[1] / n), 2), "hyb": round(math.sqrt(se[2] / n), 2), "groupes": len(gs)}
+    return res
 fcj = os.path.join(OUT, "suivi/calage_jours.json"); CJ = lire_json(fcj, [])
 NFICHES = sum(1 for f in FICHES.values() if f.get("tmja"))
 faits_cj = {e["jour"] for e in CJ if e.get("v") == 1}
+CJC = {}
 for J in [j for j in complets[-RATTRAPAGE:] if j not in faits_cj]:
     t1 = time.time(); C, IC = caler([j for j in complets if j < J][-30:], boot=True)
     e = {"v": 1, "jour": J, "fen": C["nj_obs"], "paires": len(paires), "fiches": NFICHES, "nst": C["nst"], "nh": C["n"],
@@ -426,7 +524,15 @@ for J in [j for j in complets[-RATTRAPAGE:] if j not in faits_cj]:
                "Df": C["fiches"]["D"] if C["fiches"] else None, "vent": C["vent"]["a"] if C["vent"] else None,
                "pluie": C["pluie"]["k"] if C["pluie"] else None},
          "ic": IC, "test": tester(J, C) if C["D"] else {}, "arome": J in AR}
-    CJ.append(e); print("progression du calage", J, ": fenêtre", e["fen"], "jours ; test", e["test"], ";", round(time.time() - t1, 1), "s")
+    CJ.append(e); CJC[J] = C; print("progression du calage", J, ": fenêtre", e["fen"], "jours ; test", e["test"], ";", round(time.time() - t1, 1), "s")
+# Correction apprise : derniers jours sans évaluation (au plus ML_MAX par passage)
+if SKL:
+    for e in [e for e in CJ if e["jour"] in complets[-ML_MAX:] and ("ml" not in e or (e["ml"] and "mlp" not in e["ml"]))]:
+        t1 = time.time(); J = e["jour"]; C = CJC.get(J) or caler([j for j in complets if j < J][-30:])[0]
+        e["ml"] = ml_evaluer(J, C) if C["D"] else None
+        print("correction apprise", J, ": gradient boosting", {k: v for k, v in (e["ml"] or {}).items() if k in ("test", "cv")},
+              "; perceptron", {k: v for k, v in ((e["ml"] or {}).get("mlp") or {}).items() if k in ("test", "cv")}, ";", round(time.time() - t1, 1), "s")
+else: print("correction apprise : scikit-learn absent, évaluation sautée")
 CJ = sorted(CJ, key=lambda e: e["jour"])[-400:]
 ecrire_json(fcj, CJ)
 print("durée totale", round(time.time() - T0, 1), "s")
