@@ -188,7 +188,7 @@
   @media (max-width:640px){.sheet article{padding:22px 18px 30px}}
 
   /* ---------- Version smartphone (body.m) ---------- */
-  #mbar,#mleg,#mclose{display:none}
+  #mbar,#mleg,#mclose,#mheure{display:none}
   body.m{height:100dvh;overflow:hidden}
   body.m #mbar{display:block;position:fixed;z-index:6;top:8px;left:8px;right:8px;padding:8px 10px}
   body.m #mbar .l1{display:flex;align-items:center;gap:8px;margin-bottom:7px}
@@ -224,6 +224,10 @@
   body.m .sheet table{display:block;overflow-x:auto;font-size:12.5px} body.m .sheet h1{font-size:23px}
   body.m #check{font-size:13px}
   body.m #panHide,body.m #panShow{display:none!important}
+  body.m #mheure{position:fixed;z-index:6;left:8px;right:8px;bottom:calc(52px + env(safe-area-inset-bottom));padding:6px 10px}
+  body.m.mh #mheure{display:block} body.m #mheure #hourRow{margin:0;gap:8px;font-size:14px;align-items:center;line-height:1} body.m #mheure input[type=range]{flex:1;min-width:0}
+  body.m #mheure #hourLbl{min-width:40px;text-align:right;font-weight:600} body.m #mheure .mini{padding:6px 10px;font-size:14px}
+  body.m.mh .maplibregl-ctrl-bottom-right{bottom:calc(104px + env(safe-area-inset-bottom))}
   body.m #perf svg .ax{font-size:16px} body.m #perf .leg{font-size:12px;gap:8px 12px} body.m #perf .kpis{grid-template-columns:1fr 1fr;gap:8px} body.m #perf .kv{font-size:21px}
   body.m #perf .kpi{padding:9px 10px} body.m #perf .ks{font-size:11.5px} body.m .perfExport button{display:block;margin:0 0 6px}
   body.m #topBtns button{font-size:14px;padding:8px 12px}
@@ -239,6 +243,7 @@
 <div id="chargeur" role="status" aria-live="polite"><div class="ch-titre">Chargement…</div><div class="ch-barre"><i></i></div><div class="ch-etapes"></div></div>
 <div id="mbar" class="panel"><div class="l1"><span class="brand"><span>IA</span>TMO</span><span id="mstatus">Chargement…</span><button type="button" id="mopen">Menu</button></div><div id="msearch"></div></div>
 <div id="mleg" class="panel"></div>
+<div id="mheure" class="panel"></div>
 
 <button type="button" id="panShow" class="panel" title="Afficher le panneau">☰ Panneau</button>
 <aside id="side" class="panel">
@@ -321,7 +326,7 @@
 <ul><li>Un clic sur une commune donne l'indice, les cinq sous-indices (NO₂, O₃, PM₁₀, PM₂,₅, SO₂) et l'AASQA productrice. La fiche est hiérarchisée : la classe en tête, puis le polluant responsable, les sous-indices et l'estimation au point, enfin un volet replié « Détails du calcul » (méthode, station la plus proche, incertitude), qui reste ouvert d'un clic à l'autre une fois ouvert.</li><li>Au niveau quartier, un bandeau permanent signale qu'il s'agit d'une estimation et non de l'indice officiel. Le contour de la commune reste visible.</li><li>La transition commune → quartier est un fondu, pour que l'on voie de quelle valeur communale part l'estimation.</li><li>L'estimation peut être désactivée : la carte reste alors à la commune à tous les zooms.</li></ul>
 <p>Commandes d'IATMO :</p>
 <ul><li><b>Recherche</b> d'une commune ou d'une adresse, qui centre la carte sur le lieu.</li><li><b>Aujourd'hui ou demain</b> : les deux échéances du flux Atmo Data ; le choix est masqué dans l'onglet Geod'air, qui ne contient que les mesures du jour.</li><li><b>Indice actuel ou aperçu 2027</b> : l'aperçu ajoute un curseur horaire, une animation des 24 heures, ou la pire heure de la journée, et classe des concentrations simulées avec la grille européenne révisée en 2025.</li><li><b>Onglet Geod'air</b> : carte des concentrations de fond krigées à partir des mesures horaires des stations de fond, classées avec la grille européenne, avec animation des heures et estimation de l'incertitude (§ 7).</li><li><b>Indice ou polluant</b> : NO₂, O₃, PM₁₀ ou PM₂,₅, à la commune comme au quartier.</li><li><b>Vignettes des DROM</b> en vue nationale, avec la mention « Indice non diffusé » quand le flux ne couvre pas le territoire.</li><li><b>Rendu lissé ou en mailles</b> au niveau quartier.</li><li><b>Options</b> (menu replié par défaut) : estimation sous la commune, règle de cohérence avec l'indice communal (case à cocher, puis percentile 90 ou maximum des mailles ; décochée, aucune contrainte), rendu lissé, axes routiers, effet routier modulé et trafic réel (§ 5 et § 6).</li><li><b>Méthodologie</b> : ce cahier des charges, suivi de la note méthodologique détaillant les sources, les calculs et les règles de cohérence. Elle se termine par un lien de téléchargement de la note méthodologique de synthèse, au format PDF.</li><li><b>Évaluation</b> : indicateurs de qualité des calculs, sur les mesures du jour et, pour 7 et 30 jours, sur l'historique (§ 8).</li>
-<li><b>Sources</b> : producteur, licence, branchement et fréquence d'actualisation de chaque donnée, avec l'état de lecture depuis l'ouverture de la page.</li><li><b>Légende</b> : quand un polluant est sélectionné, bornes de chaque classe en µg/m³ (grille 2020 pour l'indice actuel, grille européenne pour l'aperçu 2027 et Geod'air).</li><li><b>Copier le lien de cette vue</b> : adresse qui rouvre la vue affichée (lieu, zoom, onglet, polluant, heure). Fond satellite et opacité de la couche d'indice fixes (60 %) ; le panneau n'a plus de rubriques « Échelle affichée » ni « Réglages » depuis le 18 novembre. Le bouton ◀ masque le panneau pour montrer la carte en plein écran.</li><li><b>Smartphone</b> : sur un écran tactile étroit (téléphone, en vertical comme en horizontal), la page passe d'elle-même en affichage smartphone : barre du haut avec la recherche et l'état du flux, carte en plein écran, légende en bas, fiche au clic remontée au-dessus du point, bandeau d'avertissement abrégé ; le panneau devient un tiroir ouvert par le bouton « Menu », qui se referme au choix d'une ville ou d'un onglet ; Méthodologie, Évaluation et Sources s'ouvrent en plein écran, tableaux défilant à l'horizontale. Les vignettes des DROM laissent la place aux boutons « Outre-mer ». C'est la même page : rien à déposer en plus. Un lien en bas du tiroir rouvre la version ordinateur ; sur ordinateur, l'adresse terminée par <code>?vue=mobile</code> montre l'affichage smartphone (et <code>?vue=ordinateur</code> l'inverse).</li><li><b>Barre de chargement</b> au centre de la carte à l'ouverture : lecture de l'indice ATMO des AASQA du jour, puis des prévisions Prev'air.</li></ul>
+<li><b>Sources</b> : producteur, licence, branchement et fréquence d'actualisation de chaque donnée, avec l'état de lecture depuis l'ouverture de la page.</li><li><b>Légende</b> : quand un polluant est sélectionné, bornes de chaque classe en µg/m³ (grille 2020 pour l'indice actuel, grille européenne pour l'aperçu 2027 et Geod'air).</li><li><b>Copier le lien de cette vue</b> : adresse qui rouvre la vue affichée (lieu, zoom, onglet, polluant, heure). Fond satellite et opacité de la couche d'indice fixes (60 %) ; le panneau n'a plus de rubriques « Échelle affichée » ni « Réglages » depuis le 18 novembre. Le bouton ◀ masque le panneau pour montrer la carte en plein écran.</li><li><b>Smartphone</b> : sur un écran tactile étroit (téléphone, en vertical comme en horizontal), la page passe d'elle-même en affichage smartphone : barre du haut avec la recherche et l'état du flux, carte en plein écran, légende en bas, fiche au clic remontée au-dessus du point, bandeau d'avertissement abrégé ; le panneau devient un tiroir ouvert par le bouton « Menu », qui se referme au choix d'une ville ou d'un onglet, et au passage à l'Aperçu 2027 ou à Geod'air ; dans ces deux vues, le curseur horaire, le bouton de lecture de l'animation et sa vitesse sont posés sur une barre au-dessus de la légende, pour voir la carte s'animer ; Méthodologie, Évaluation et Sources s'ouvrent en plein écran, tableaux défilant à l'horizontale. Les vignettes des DROM laissent la place aux boutons « Outre-mer ». C'est la même page : rien à déposer en plus. Un lien en bas du tiroir rouvre la version ordinateur ; sur ordinateur, l'adresse terminée par <code>?vue=mobile</code> montre l'affichage smartphone (et <code>?vue=ordinateur</code> l'inverse).</li><li><b>Barre de chargement</b> au centre de la carte à l'ouverture : lecture de l'indice ATMO des AASQA du jour, puis des prévisions Prev'air.</li></ul>
 <h2>Données</h2>
 <p>Toutes les sources d'IATMO sont ouvertes ; seule l'API de Geod'air, utilisée en secours, demande une inscription et une clé personnelle. Leur liste complète (producteur, licence, branchement, fréquence d'actualisation) est dans l'onglet Sources ; leur lecture et leurs limites sont décrites au § 2, leur acheminement jusqu'à la page au § 3.</p>
 <p><b>Bascule 2027.</b> Le futur indice est horaire, calculé au minimum à la commune, avec un constat publié en règle générale trois heures après. Trois points, relevés dans les documents de travail sur le futur indice, conditionnent IATMO et restent ouverts :</p>
@@ -843,7 +848,7 @@ var GEOCODE = "https://data.geopf.fr/geocodage/search";
 var PAGE = 15000, MAX_PAGES = 6;
 var IA_ZOOM = 12, R = 6378137;
 var MOBILE = document.body.classList.contains("m");
-var PAD = MOBILE ? {top:120,bottom:60,left:10,right:10} : {top:20,bottom:20,left:330,right:20};
+var PAD = MOBILE ? {top:120,bottom:110,left:10,right:10} : {top:20,bottom:20,left:330,right:20};
 var DROM = [["972","Martinique",[-61.25,14.37,-60.78,14.9]],["971","Guadeloupe",[-61.85,15.8,-60.95,16.55]],
   ["974","La Réunion",[55.2,-21.42,55.85,-20.85]],["973","Guyane",[-54.7,2.1,-51.5,5.8]],["976","Mayotte",[44.98,-13.03,45.32,-12.62]]];
 
@@ -3353,6 +3358,7 @@ function updateScale(){
     document.getElementById("hourLbl").textContent = geoHour() ? geoHour().slice(11,13)+" h" : "—"; }
   else{ hr.min = 0; hr.max = 23; hr.value = state.hour; hr.disabled = state.pire; document.getElementById("hourLbl").textContent = heureLbl(); }
   document.getElementById("hourRow").style.display = (state.view==="2027" || ge) ? "flex" : "none";
+  if(MOBILE) document.body.classList.toggle("mh",state.view==="2027" || ge);            // téléphone : curseur horaire posé sur la carte
   document.getElementById("pireRow").style.display = (state.view==="2027" && !eu) ? "flex" : "none";
   document.getElementById("viewHint").textContent = ge ? "Mesures horaires du "+geoHeureTxt()+" (heure de Paris). Indice calculé avec la grille européenne révisée en 2025." : eu ? "Échéance : "+(eeaTime()!=null ? eeaLabel(eeaTime()) : "indisponible")+"." : state.view==="2027"
     ? "Indice horaire, grille européenne révisée en 2025. Libellés officiels français à arbitrer."
@@ -4499,6 +4505,9 @@ if(MOBILE){
   document.getElementById("go").addEventListener("click",function(e){ if(e.target.tagName==="BUTTON") tiroir(false); });
   document.getElementById("goDrom").addEventListener("click",function(e){ if(e.target.tagName==="BUTTON") tiroir(false); });
   ["methBtn","perfBtn","srcBtn"].forEach(function(id){ document.getElementById(id).addEventListener("click",function(){ tiroir(false); }); });   // les fiches s'ouvrent en plein écran
+  // Curseur horaire, lecture et vitesse de l'animation : sortis du tiroir, sur une barre au-dessus de la légende, pour voir la carte s'animer
+  document.getElementById("mheure").appendChild(document.getElementById("hourRow"));
+  document.getElementById("segView").addEventListener("click",function(e){ var b = e.target.closest("button"); if(b && b.getAttribute("data-v")!=="actuel") setTimeout(function(){ tiroir(false); },150); });
   var vo = document.getElementById("vueOrdi"); if(vo) vo.addEventListener("click",function(e){ e.preventDefault(); location.href = location.pathname+"?vue=ordinateur"+location.hash; });
 }
 else { var vm = document.getElementById("vueOrdi"); if(vm) vm.parentNode.style.display = "none"; }
