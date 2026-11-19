@@ -5,8 +5,8 @@
 #    autre page web (en-tête CORS absent), alors que raw.githubusercontent.com l'autorise.
 # 2. Débits et vitesses Bison Futé sur le réseau national routier non concédé (data.gouv.fr, Licence Ouverte) :
 #    fichiers bruts du moment, dernier état par point de mesure et archive horaire (60 jours), pour caler plus tard
-#    l'effet routier de la maquette sur le trafic réel ; fichier points.json (coordonnées, débits et vitesses du jour)
-#    lu par la maquette.
+#    l'effet routier d'IATMO sur le trafic réel ; fichier points.json (coordonnées, débits et vitesses du jour)
+#    lu par IATMO.
 # 4. AROME (Météo-France, data.gouv.fr) : vent à 10 m et pluie de chaque heure du jour, extraits du calcul le plus récent
 #    (seuls les champs utiles sont téléchargés) et moyennés sur une grille de 0,1° (environ 10 km), lue par la carte ; 30 jours gardés.
 # 5. Historique, une fois par jour : calage sur les 30 derniers jours (calage/calage.json) et performances quotidiennes du krigeage
@@ -399,7 +399,7 @@ jobs:
           etat["essai"] = maintenant.isoformat(timespec="seconds")
           API = os.environ.get("PARIS_API") or "https://opendata.paris.fr/api/explore/v2.1/catalog/datasets/"
           def get(url, delai=240):
-              req = urllib.request.Request(url, headers={"User-Agent": "IATMO-maquette", "Accept-Encoding": "gzip"})
+              req = urllib.request.Request(url, headers={"User-Agent": "IATMO", "Accept-Encoding": "gzip"})
               with urllib.request.urlopen(req, timeout=delai) as r:
                   b = r.read(); return gzip.decompress(b) if r.headers.get("Content-Encoding") == "gzip" else b
           def export(ds, select, where=None):
@@ -496,7 +496,7 @@ jobs:
           PARIS = ZoneInfo("Europe/Paris"); UTC = dt.timezone.utc
           os.chdir("out/arome"); BASE = os.environ["AROME_BASE"]; force = os.environ.get("FORCE") == "true"
           def requete(url, debut=None, fin=None, tete=False, delai=120):
-              req = urllib.request.Request(url, method="HEAD" if tete else "GET", headers={"User-Agent": "IATMO-maquette"})
+              req = urllib.request.Request(url, method="HEAD" if tete else "GET", headers={"User-Agent": "IATMO"})
               if debut is not None: req.add_header("Range", "bytes=%d-%d" % (debut, fin))
               with urllib.request.urlopen(req, timeout=delai) as r: return b"" if tete else r.read()
           def url_om(dom): return lambda run, p, pas: f"{BASE}/pnt/{run}/arome-om/{dom}/0025/{p}/arome-om-{dom}__0025__{p}__{pas:03d}H__{run}.grib2"
@@ -714,15 +714,15 @@ jobs:
         run: |
           set -euo pipefail
           cd out
-          printf '%s\n' "Copie automatique de données publiques pour la maquette IATMO (Licence Ouverte) :" \
+          printf '%s\n' "Copie automatique de données publiques pour IATMO (Licence Ouverte) :" \
             "- lcsqa/ : fichiers temps réel du LCSQA (data.gouv.fr), jour et veille ;" \
-            "- trafic/ : débits et vitesses Bison Futé sur le réseau national non concédé (data.gouv.fr) : fichiers bruts du moment, dernier état par point, points.json pour la maquette, archive horaire de 60 jours ; paris.json : débits horaires des capteurs permanents de la Ville de Paris (opendata.paris.fr, ODbL), moyenne par type de jour sur les 7 derniers jours ;" \
+            "- trafic/ : débits et vitesses Bison Futé sur le réseau national non concédé (data.gouv.fr) : fichiers bruts du moment, dernier état par point, points.json pour IATMO, archive horaire de 60 jours ; paris.json : débits horaires des capteurs permanents de la Ville de Paris (opendata.paris.fr, ODbL), moyenne par type de jour sur les 7 derniers jours ;" \
             "- arome/ : vent à 10 m et pluie AROME (Météo-France) heure par heure, aujourd'hui et demain : métropole sur une grille de 0,1° (AAAA-MM-JJ.bin, 30 jours gardés), DROM en AROME Outre-Mer (om-AAAA-MM-JJ.bin) ;" \
             "- archive/lcsqa/ : mesures horaires du LCSQA par station (NO, NO2, NOx, O3, PM10, PM2,5, SO2), un fichier compressé par jour sur 180 jours, et table des stations ;" \
-            "- suivi/ : journal des passages (3 jours), première apparition de chaque heure du LCSQA (30 jours) et performances quotidiennes du krigeage (90 jours), lus par l'onglet Performances ;" \
+            "- suivi/ : journal des passages (3 jours), première apparition de chaque heure du LCSQA (30 jours) et performances quotidiennes du krigeage (90 jours), progression du calage (calage_jours.json, 400 jours), lus par l'onglet Évaluation ;" \
             "- calage/ : calage de l'effet routier sur les 30 derniers jours (incrément, profil horaire, vent, pluie, trafic et confinement), lu par la carte." \
             "Branche réécrite à chaque passage par la tâche .github/workflows/copie_lcsqa.yml : ne pas y travailler." > LISEZMOI.txt
-          # Journal des passages (3 jours) : heure, durée, déclencheur et résultat de chaque partie, lu par l'onglet Performances
+          # Journal des passages (3 jours) : heure, durée, déclencheur et résultat de chaque partie, lu par l'onglet Évaluation
           mkdir -p suivi
           LCSQA="${{ steps.lcsqa.outcome }}" TRAFIC="${{ steps.trafic.outcome }}" AROME="${{ steps.arome.outcome }}" HIST="${{ steps.historique.outcome }}" PARIS_T="${{ steps.paris.outcome }}" EVT="${EVENEMENT}" python3 - <<'PY'
           import json, os, time, datetime as dt
