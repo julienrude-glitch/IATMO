@@ -565,7 +565,7 @@ a ∈ [0 ; 1], c ∈ [0 ; 1,5] : grille ; D : moindres carrés ; ancien modèle 
 <li><b>Effet de la pluie</b> sur les particules : Δ ≈ D · g(h) · (1 − min(0,5 ; k · P)), k ajusté sur une grille (au moins 100 heures-couples pluvieuses) ; il remplace l'hypothèse k = 0,25.</li>
 <li><b>Trafic et confinement</b> : ajustement du § 5.9 sur l'incrément moyen de chaque station documentée sur la période (24 heures au moins par station).</li>
 </ul>
-<p>Le résultat est publié dans <code>calage/calage.json</code>, lu par la carte à l'ouverture. Les exposants du vent et du trafic, le confinement et l'effet de la pluie calés sur l'historique remplacent ceux du jour dès que 7 jours complets sont disponibles ; l'incrément et son profil horaire restent ceux du jour quand les mesures du jour sont lues. La ligne d'information des options indique l'origine de chaque valeur. Le premier jour complet (le 18 novembre, en heure de Paris) a été calculé le 19 au matin ; les 7 jours seront atteints le 25 novembre.</p>
+<p>Le résultat est publié dans <code>calage/calage.json</code>, lu par la carte à l'ouverture. Les exposants du vent et du trafic, le confinement et l'effet de la pluie calés sur l'historique remplacent ceux du jour dès que 7 jours complets sont disponibles ; l'incrément et son profil horaire restent ceux du jour quand les mesures du jour sont lues. La ligne d'information des options indique l'origine de chaque valeur. Le premier jour complet (le 18 novembre, en heure de Paris) a été calculé le 19 au matin ; les 7 jours seront atteints le 25 novembre. Le même passage ajoute à <code>suivi/calage_jours.json</code> un test à l'aveugle du calage de la veille, présenté dans l'onglet Évaluation (§ 8, « Progression du calage »).</p>
 <h3>5.11 Rendu</h3>
 <p>En mode lissé, <i>T</i> est interpolé bilinéairement entre centres de mailles et la concentration est recalculée sur une trame six fois plus fine, puis classé : on obtient des iso-contours de classe. Le sous-indice de base reste celui de la maille la plus proche, d'où des discontinuités aux limites communales, inhérentes à une donnée d'entrée communale.</p>
 <p><b>Polluant responsable.</b> La fiche au clic nomme le ou les polluants dont le sous-indice fixe l'indice, pour l'indice du jour comme pour l'heure de l'aperçu 2027. L'option « Polluant responsable sur la carte » l'écrit au centre de chaque commune affichée (à partir du zoom 7,5), sauf si l'indice est « bon » ou si un seul polluant est affiché. La synthèse sur le futur indice laisse l'affichage du polluant responsable « à préciser » : la maquette montre les deux formes possibles.</p>
@@ -669,6 +669,7 @@ e_i = z_i − ẑ₋ᵢ(x_i) = w_i / Q_ii                 erreur de prévision, 
 <li><b>Indicateur MQI de FAIRMODE.</b> Selon le guide FAIRMODE sur les objectifs de qualité des modèles, version 4.0 (mai 2026, JRC146736, aligné sur la directive 2024/2881), tableau 1. Pour chaque station, MQI = RMSE / √(RMS<sub>U</sub>² + RMS<sub>UM</sub>²), avec une incertitude du modèle U<sub>M</sub> = β · U(O), soit RMSE / (√(1 + β²) · RMS<sub>U</sub>). L'incertitude de mesure U(O) vaut U<sub>∅</sub> à concentration nulle, croît linéairement jusqu'à U<sub>r</sub> · LV à la valeur limite, puis reste proportionnelle à la concentration. Paramètres : NO₂ (valeurs horaires) LV = 200 µg/m³, U<sub>r</sub> = 15 %, β = 3,2, U<sub>∅</sub> = 3 µg/m³ ; O₃ (maximum journalier des moyennes sur 8 heures) 120, 15 %, 2,2, 10 ; PM₁₀ (moyenne journalière) 45, 25 %, 2,2, 4 ; PM₂,₅ (moyenne journalière) 25, 25 %, 2,5, 3. L'objectif est atteint si 90 % des stations ont un MQI ≤ 1 : la tuile donne le MQI du 90<sup>e</sup> centile (rang 0,9 · N<sub>s</sub>, interpolation linéaire ; le guide demande au moins 10 stations). « Aujourd'hui », seul le NO₂ est évalué, sur les heures du jour (six au moins par station) ; l'O₃ et les particules n'ayant qu'une valeur par station et par jour, ils sont évalués sur 7 et 30 jours par la tâche GitHub, qui garde chaque jour les sommes par station (<code>suivi/mqi_jours.json</code>) et publie les MQI des fenêtres (<code>suivi/mqi_fenetres.json</code>), avec une couverture d'au moins 75 % de la station la mieux suivie ; la courbe jour par jour donne le MQI sur 7 jours glissants. Diagramme cible : en ordonnée, biais / (√(1 + β²) · RMS<sub>U</sub>) ; en abscisse, erreur centrée sur la même échelle, à gauche si elle vient surtout d'une corrélation imparfaite, à droite si elle vient surtout d'un écart d'écart-type ; la distance au centre est le MQI. Le guide annonce une mise à jour des paramètres d'ici fin 2026 (formulation du groupe CEN/WG43 en annexe : U(O) = U<sub>r</sub> · √((1 − α²) · O² + α² · RV²)) ; une révision du guide datée de septembre 2026 est signalée par le groupe de travail, non consultée. Limites : FAIRMODE évalue des modèles sur des séries annuelles ; ici, l'indicateur porte sur quelques jours et sur une interpolation évaluée station retirée, ce qui en fait un repère et non une évaluation réglementaire.</li>
 <li><b>Cohérence avec l'indice des AASQA.</b> La commune de chaque station vient du géocodage inverse de la Géoplateforme (<code>data.geopf.fr/geocodage/reverse</code>), fait une fois puis gardé par le navigateur ; les arrondissements de Paris, Lyon et Marseille sont rapportés à la commune. Le sous-indice publié pour la commune (Atmo Data, jour même) est comparé à la classe, sur la grille de 2020, de la carte Geod'air au droit de la station, calculée sur les heures déjà mesurées : maximum horaire pour le NO₂ et l'O₃, moyenne pour les particules (trois heures au moins). La journée n'étant pas finie et l'indice publié étant une prévision, un écart n'est pas une erreur de l'un ou de l'autre. Les communes couvertes par un indice d'intercommunalité sont écartées.</li>
 <li><b>Effet routier aux stations documentées.</b> Incrément du NO₂ observé aux stations trafic documentées contre l'incrément du modèle calé (§ 5.9) et de l'ancien modèle, avec les valeurs de a et c et les erreurs en validation croisée ; tableau des stations par écart décroissant.</li>
+<li><b>Progression du calage de la descente d'échelle.</b> Le calage du § 5.10 est refait chaque jour sur une fenêtre glissante de 30 jours ; la rubrique montre s'il améliore la carte. Pour chaque jour J, <code>historique.py</code> cale les paramètres sur les 30 jours d'archive qui précèdent J, puis les applique, à l'aveugle, aux couples station trafic / stations de fond de J (10 km au plus) : C = fond + Δ<sub>p</sub> · g<sub>p</sub>(h) · facteurs du vent et de la pluie, avec le trafic et le confinement pour les stations documentées. Le fond est la moyenne mesurée aux stations de fond appariées, ce qui isole l'incrément routier. Trois erreurs quadratiques moyennes horaires à la station trafic sont comparées : fond seul, paramètres d'origine (incrément de référence du 16 novembre et son profil pour le NO₂, rapport 1,3 du bilan 2024 pour les particules, trafic proportionnel et confinement 1, dilution par le vent en racine carrée, pluie 0,25) et paramètres calés. Le gain, 1 − erreur / erreur du fond seul, est tracé jour par jour et sur 7 jours glissants, avec celui des paramètres d'origine ; quatre tuiles donnent le remplissage de la fenêtre, les stations documentées utilisées, le volume de couples-heures et le gain sur 7 jours. Cinq petits graphiques suivent les paramètres (incrément moyen, exposant du trafic, confinement, exposant du vent, effet de la pluie) avec leur intervalle à 90 %, obtenu en tirant avec remise les jours (incrément, vent, pluie) ou les stations documentées (trafic, confinement), et leur valeur d'origine. Comme sur la carte, le vent, la pluie, le trafic et le confinement calés ne s'appliquent qu'à partir de 7 jours d'historique. Lecture : pendant le remplissage de la fenêtre, les intervalles doivent se resserrer et le gain se stabiliser au-dessus de celui des paramètres d'origine ; une fois la fenêtre pleine, le modèle n'accumule plus rien et les variations traduisent surtout la saison. Les jours manquants (passage de la tâche échoué) sont recalculés, sept au plus par passage. NO₂, PM₁₀ et PM₂,₅ ; l'ozone et le SO₂, sans incrément calé, renvoient au NO₂.</li>
 <li><b>Périodes de 7 et 30 jours.</b> Le même script calcule chaque jour, pour la veille, la validation croisée du krigeage sur toutes les heures bien renseignées (erreur, biais, bonne classe, MQI du 90<sup>e</sup> centile par polluant) et le bilan des copies du jour, publiés dans <code>suivi/performances.json</code> (90 jours). Krigeage ordinaire seulement : les prévisions Prev'air passées ne sont pas archivées, l'erreur historique est donc un peu plus forte que celle de la méthode de la carte. L'onglet affiche les moyennes sur la période et les courbes jour par jour.</li>
 <li><b>Délai de publication par AASQA.</b> Pour chaque heure du fichier et chaque organisme, délai entre la fin de l'heure mesurée (temps universel en métropole, heure locale dans les DROM, ramenée en temps universel) et sa première apparition dans la copie, à dix minutes près ; médiane et 90<sup>e</sup> centile par AASQA sur la période (30 jours gardés). Les heures déjà publiées au premier passage suivi d'une journée sont écartées.</li>
 <li><b>Chargement et calculs de la page.</b> Durée de lecture de chaque source depuis l'ouverture de la page, sur le poste de l'utilisateur, et durée des calculs (krigeage d'un polluant à une heure, carte Geod'air, descente d'échelle, lecture du bâti) : nombre, moyenne, maximum et total.</li>
@@ -682,7 +683,7 @@ e_i = z_i − ẑ₋ᵢ(x_i) = w_i / Q_ii                 erreur de prévision, 
 </ul>
 <h2>9. Note méthodologique de synthèse</h2>
 <p>Les choix de méthode et les options de la maquette sont résumés dans une note de neuf pages, à jour au 18 novembre 2026 : organisation générale et sources, commandes, krigeage et validation croisée, aperçu 2027, descente d'échelle (incrément routier, titration, calage, modèle de rue, cohérence), limites, pistes et questions ouvertes. Elle est intégrée à la page et se télécharge sans connexion.</p>
-<p><a href="note_methodologique.pdf" id="noteLien" class="lnk notePdf" download="IATMO_Note_methodologique.pdf" target="_blank" rel="noopener">Télécharger la note méthodologique (PDF, 8 pages, 133 Ko)</a></p>
+<p><a href="note_methodologique.pdf" id="noteLien" class="lnk notePdf" download="IATMO_Note_methodologique.pdf" target="_blank" rel="noopener">Télécharger la note méthodologique (PDF, 9 pages, 134 Ko)</a></p>
 
 </article></div>
 <div id="perf" class="sheet" role="dialog" aria-modal="true" aria-label="Évaluation"><article><button type="button" class="sheetClose">Fermer ✕</button>
@@ -705,6 +706,8 @@ e_i = z_i − ẑ₋ᵢ(x_i) = w_i / Q_ii                 erreur de prévision, 
 <div id="perfJours"></div></section>
 <h2>Effet routier aux stations trafic documentées (NO₂)</h2>
 <div id="perfRoute"></div>
+<h2>Progression du calage de la descente d'échelle</h2>
+<div id="perfCalage"></div>
 <h2>Délai de publication des mesures par AASQA</h2>
 <div id="perfRetards"></div>
 <details class="diag" id="perfDiag"><summary>Diagnostic technique : copies des données, chargement de la page, bâti livré par le Plan IGN</summary>
@@ -3512,7 +3515,7 @@ var SRC_LISTE = [
    a:"Source : une fois par jour, données de la veille<br>Copie : une fois par jour, après 6 h<br>Page : quand la vue est à moins de 45 km de Paris",
    e:function(){ return srcLu("Trafic Ville de Paris (copie GitHub)",PTRAF.ok ? PTRAF.pts.length+" arcs, jusqu'au "+PTRAF.dernier.slice(8,10)+"/"+PTRAF.dernier.slice(5,7) : null); }},
   {d:"Calage sur l'historique, suivi des performances", l:[["branche donnees (GitHub)", "https://github.com/julienrude-glitch/IATMO/tree/donnees"]], p:"IATMO (script historique.py), à partir des archives du LCSQA et d'AROME",
-   b:"Calcul par la tâche GitHub (<code>calage/calage.json</code>, <code>suivi/</code>), lu par la carte et par l'onglet Évaluation",
+   b:"Calcul par la tâche GitHub (<code>calage/calage.json</code>, <code>suivi/</code>, dont <code>suivi/calage_jours.json</code> pour la progression du calage), lu par la carte et par l'onglet Évaluation",
    a:"Calcul : une fois par jour, après 4 h, sur les 30 derniers jours<br>Page : à l'ouverture",
    e:function(){ return srcLu("Calage sur l'historique (copie GitHub)",CALH ? CALH.nj+" jour(s), calcul du "+srcHeure(CALH.maj) : "pas encore de calage publié"); }},
   {d:"Dossiers des stations trafic", l:[["LCSQA", "https://www.lcsqa.org/"]], p:"AASQA, transmis par le LCSQA (fiches descriptives des stations)",
@@ -3721,6 +3724,7 @@ function perfSuivi(){
     .then(function(){ return lire("lcsqa_arrivees.json").then(function(a){ PERF.arrivees = a; }).catch(function(){ PERF.arrivees = null; }); })
     .then(function(){ return lire("performances.json").then(function(a){ PERF.histo = a; }).catch(function(e){ PERF.histo = null; PERF.histoErr = e; }); })
     .then(function(){ return lire("mqi_fenetres.json").then(function(a){ PERF.fen = a; }).catch(function(){ PERF.fen = null; }); })
+    .then(function(){ return lire("calage_jours.json").then(function(a){ PERF.cj = Array.isArray(a) ? a : null; PERF.cjErr = null; }).catch(function(e){ PERF.cj = null; PERF.cjErr = e; }); })
     .then(function(){ if(perfOuvert()) perfAfficher(); });
 }
 /* ---------- Affichage ---------- */
@@ -3733,7 +3737,7 @@ function perfAfficher(){
   document.querySelectorAll("#perfPer button").forEach(function(b){ b.classList.toggle("on",+b.getAttribute("data-per")===per); });
   document.querySelectorAll("#perf [data-per]").forEach(function(sec){ if(sec.tagName==="BUTTON") return; var v = sec.getAttribute("data-per"); sec.style.display = (v==="jour" ? per===0 : v==="histo" ? per>0 : true) ? "" : "none"; });
   perfRetards(); perfTemps(); perfBatiG();
-  if(per>0){ perfHisto(nom); perfRouteG(); perfCopies(); return; }
+  if(per>0){ perfHisto(nom); perfRouteG(); perfCalageG(); perfCopies(); return; }
   // Indicateurs de synthèse
   var j = PERF.journal, ok24 = null, debutJ = null;
   if(j && j.length){ var lim = Date.now()-864e5; var r = j.filter(function(x){ return new Date(x.t).getTime()>=lim; }); ok24 = r.filter(function(x){ return x.lcsqa==="success"; }).length; debutJ = new Date(j[0].t); }
@@ -3748,7 +3752,7 @@ function perfAfficher(){
   var vide = !GEO.stations || GEO.sim ? "Mesures du jour non lues : les indicateurs portent sur les mesures réelles de l'onglet Geod'air." : !P ? (PERF.busy ? "Calcul en cours…" : "") : null;
   ["perfCible","perfHeuresG","perfCoh"].forEach(function(id){ if(vide!=null) document.getElementById(id).innerHTML = '<p class="muted">'+vide+'</p>'; });
   if(vide==null){ perfCible(P,nom); perfHeuresG(P,nom); perfCohG(nom); }
-  perfRouteG();
+  perfRouteG(); perfCalageG();
   perfCopies();
 }
 function perfCible(P,nom,idEl){
@@ -3835,6 +3839,87 @@ function perfRouteG(){
     '<p class="muted">NO₂, mesures du jour : incrément = station trafic − moyenne des stations de fond appariées (10 km au plus). Le modèle calé '+(C.cale ? "remplace" : "ne remplace pas")+' la référence : '+C.src+'. Sur 24 dossiers reçus, les caractéristiques retenues sont le TMJA et le rapport hauteur / largeur de la rue (0 sans bâti riverain).</p>'+
     '<table><thead><tr><th>Station</th><th>TMJA</th><th>H/L</th><th>Bordure (m)</th><th>Observé</th><th>Calé</th><th>Ancien</th></tr></thead><tbody>'+tab+'</tbody></table>'+
     (CALF.hist && CALH.fiches ? '<p class="muted">Valeurs appliquées à la carte : calage sur '+CALH.nj+' jours d\'archive ('+CALH.fiches.n+' stations) : exposant '+pfr(CALH.fiches.a,2)+', confinement '+pfr(CALH.fiches.c,2)+' ; erreur, station retirée : '+pfr(CALH.fiches.loo.cale)+' µg/m³ (ancien modèle '+pfr(CALH.fiches.loo.ancien)+', constant '+pfr(CALH.fiches.loo.constant)+'). Le nuage ci-dessus porte sur la seule journée.</p>' : "");
+}
+/* ---------- Progression du calage de la descente d'échelle (suivi/calage_jours.json, tâche GitHub) ----------
+   Chaque jour J : paramètres calés sur les 30 jours précédant J, testés à l'aveugle sur les couples trafic / fond de J,
+   contre le fond seul et les paramètres d'origine. Gain = 1 − erreur / erreur du fond seul. */
+function perfCalageG(){
+  var el = document.getElementById("perfCalage"); if(!el) return;
+  var J = PERF.cj;
+  if(!J || !J.length){ el.innerHTML = '<p class="muted">'+(PERF.cjErr===404 || !J ? "Progression du calage pas encore publiée : la tâche GitHub l'ajoute à son passage quotidien, après 4 h (fichier suivi/calage_jours.json)." : "Aucun jour testé pour l'instant.")+'</p>'; return; }
+  var K = POLK[PERF.pol] || "NO2", nomK = {NO2:"NO₂",PM10:"PM₁₀",PM25:"PM₂,₅"}[K], autre = !POLK[PERF.pol];
+  var dfr = function(j){ return j.slice(8,10)+"/"+j.slice(5,7); }, tj = function(j){ return Date.parse(j+"T12:00:00Z"); };
+  // Gain jour par jour et sur 7 jours glissants (erreurs quadratiques regroupées, pondérées par le nombre de couples-heures)
+  var G = J.map(function(e,i){
+    var q = e.test && e.test[K], r = {e:e, q:q, g:null, gr:null, g7:null, gr7:null, f7:null, c7:null};
+    if(q && q.fond>0){ r.g = 100*(1-q.cale/q.fond); r.gr = 100*(1-q.ref/q.fond); }
+    var sn = 0, sf = 0, sc = 0, sr = 0;
+    for(var k=i;k>=0 && tj(e.jour)-tj(J[k].jour)<7*864e5;k--){ var t = J[k].test && J[k].test[K]; if(t){ sn += t.n; sf += t.n*t.fond*t.fond; sc += t.n*t.cale*t.cale; sr += t.n*t.ref*t.ref; } }
+    if(sn && sf>0){ r.f7 = Math.sqrt(sf/sn); r.c7 = Math.sqrt(sc/sn); r.g7 = 100*(1-Math.sqrt(sc/sf)); r.gr7 = 100*(1-Math.sqrt(sr/sf)); }
+    return r; });
+  var der = J[J.length-1], gd = null; for(var i=G.length-1;i>=0;i--) if(G[i].g7!=null){ gd = G[i]; break; }
+  var g7av = null; if(gd){ for(var k2=G.length-1;k2>=0;k2--) if(G[k2].g7!=null && tj(gd.e.jour)-tj(G[k2].e.jour)>=7*864e5){ g7av = G[k2].g7; break; } }
+  var nst30 = null; for(var k3=J.length-1;k3>=0;k3--) if(tj(der.jour)-tj(J[k3].jour)>=30*864e5){ nst30 = J[k3].nst; break; }
+  var pleine = null; for(var k4=0;k4<J.length;k4++) if(J[k4].fen>=30){ pleine = k4; break; }
+  var tu = [
+    ["Fenêtre de calage", der.fen+" / 30", "jours d'archive avant le "+dfr(der.jour)+(der.fen<30 ? " · s'allonge d'un jour chaque jour" : " · fenêtre glissante"), der.fen>=30 ? "bon" : ""],
+    ["Stations documentées", der.nst+(der.nst>1 ? " utilisées" : " utilisée"), "sur "+der.fiches+" dossiers"+(nst30!=null && der.nst!==nst30 ? " · "+(der.nst>nst30?"+":"")+(der.nst-nst30)+" en 30 jours" : ""), ""],
+    ["Heures trafic / fond", der.nh && der.nh[K]!=null ? der.nh[K].toLocaleString("fr-FR") : "—", "couples-heures "+nomK+" de la fenêtre, "+der.paires+" stations trafic appariées", ""],
+    ["Gain sur 7 jours", gd ? Math.round(gd.g7)+" %" : "—", gd ? "erreur "+pfr(gd.c7)+" µg/m³ contre "+pfr(gd.f7)+" pour le fond seul"+(g7av!=null ? (Math.round(gd.g7-g7av)===0 ? " · stable sur 7 jours" : " · "+(gd.g7>g7av?"+":"−")+Math.abs(Math.round(gd.g7-g7av))+" pts en 7 jours") : "") : "pas encore de jour testé", gd ? (gd.g7>0 ? "bon" : "mauvais") : ""]];
+  var h = '<div class="kpis">'+tu.map(function(t){ return '<div class="kpi"><div class="kl">'+t[0]+'</div><div class="kv '+t[3]+'">'+t[1]+'</div><div class="ks">'+t[2]+'</div></div>'; }).join("")+'</div>';
+  if(autre) h += '<p class="muted">L\'ozone et le SO₂ n\'ont pas d\'incrément routier calé : la progression est montrée pour le NO₂.</p>';
+  if(!G.some(function(r){ return r.g!=null; })){ el.innerHTML = h+'<p class="muted">Pas encore de jour testé : le test à l\'aveugle d\'un jour demande au moins un jour d\'archive complet avant lui. Les courbes apparaissent au prochain passage quotidien de la tâche GitHub, après 4 h.</p>'; return; }
+  // 1. Gain sur le fond seul
+  var W = 640, Ht = 230, x0 = 46, y0 = 190, n = J.length, X = function(i){ return x0+14+(W-x0-30)*(n>1 ? i/(n-1) : 0.5); };
+  var lo = 0, hi = 40; G.forEach(function(r){ [r.g,r.gr,r.g7,r.gr7].forEach(function(v){ if(v!=null){ lo = Math.min(lo,v); hi = Math.max(hi,v); } }); });
+  lo = Math.floor(lo/10)*10; hi = Math.ceil(hi/10)*10; var Y = function(v){ return y0-(y0-16)*(v-lo)/(hi-lo); };
+  var sv = '<svg viewBox="0 0 '+W+' '+Ht+'" width="100%" role="img" aria-label="Gain de la descente d\'échelle sur le fond seul, jour par jour">';
+  for(var g=lo;g<=hi;g+=10) sv += '<line x1="'+x0+'" x2="'+(W-16)+'" y1="'+Y(g)+'" y2="'+Y(g)+'" stroke="rgba(255,255,255,'+(g===0?0.35:0.08)+')"/><text x="'+(x0-6)+'" y="'+(Y(g)+4)+'" class="ax" text-anchor="end">'+g+' %</text>';
+  if(pleine!=null && pleine>0) sv += '<line x1="'+X(pleine)+'" x2="'+X(pleine)+'" y1="16" y2="'+y0+'" stroke="rgba(255,255,255,.35)" stroke-dasharray="3 3"/><text x="'+(X(pleine)+4)+'" y="26" class="ax">fenêtre pleine</text>';
+  var lc = [], lr = [];
+  G.forEach(function(r,i){
+    if(r.g7!=null) lc.push(X(i).toFixed(1)+","+Y(r.g7).toFixed(1));
+    if(r.gr7!=null) lr.push(X(i).toFixed(1)+","+Y(r.gr7).toFixed(1));
+    if(r.g!=null){ var q = r.q, tx = r.e.jour.split("-").reverse().join("/")+" · "+nomK+", fenêtre de "+r.e.fen+" jour"+(r.e.fen>1?"s":"")+"\nerreur du fond seul "+pfr(q.fond)+" µg/m³\nparamètres d'origine "+pfr(q.ref)+" (gain "+Math.round(r.gr)+" %)\nparamètres calés la veille "+pfr(q.cale)+" (gain "+Math.round(r.g)+" %), biais "+pfr(q.biais)+"\n"+q.n.toLocaleString("fr-FR")+" couples-heures"+(r.e.arome ? "" : " · vent AROME absent");
+      sv += '<circle class="pt" cx="'+X(i).toFixed(1)+'" cy="'+Y(r.g).toFixed(1)+'" r="3.5" fill="rgba(80,240,230,.55)"'+tipAttr(tx)+'/>'; }
+    if(n<=10 || i%Math.ceil(n/8)===0 || i===n-1) sv += '<text x="'+X(i)+'" y="'+(y0+18)+'" class="ax" text-anchor="middle">'+dfr(r.e.jour)+'</text>';
+  });
+  if(lr.length>1) sv += '<polyline fill="none" stroke="rgba(255,255,255,.55)" stroke-width="1.6" stroke-dasharray="5 4" points="'+lr.join(" ")+'"/>';
+  if(lc.length>1) sv += '<polyline fill="none" stroke="#50f0e6" stroke-width="2.4" points="'+lc.join(" ")+'"/>';
+  sv += '<text x="'+x0+'" y="10" class="ax">erreur évitée par rapport au fond seul</text></svg>';
+  h += '<h3>Gain sur le fond seul, '+nomK+', test à l\'aveugle</h3><div class="leg"><span><i style="background:#50f0e6"></i>paramètres calés la veille, 7 jours glissants</span><span><i style="background:rgba(80,240,230,.55);width:8px;height:8px;border-radius:50%"></i>valeur du jour</span><span><i class="tir"></i>paramètres d\'origine, 7 jours glissants</span></div>'+sv;
+  // 2. Stabilité des paramètres : valeur, intervalle à 90 %, valeur d'origine
+  var par = [
+    {t:"Incrément moyen "+nomK+" (µg/m³)", v:function(e){ return e.p && e.p.D ? e.p.D[K] : null; }, ic:function(e){ return e.ic && e.ic.D ? e.ic.D[K] : null; }, ref:K==="NO2" ? 8.8 : null, d:1},
+    {t:"Exposant du trafic", v:function(e){ return e.p ? e.p.a : null; }, ic:function(e){ return e.ic ? e.ic.a : null; }, ref:1, d:2},
+    {t:"Confinement par le bâti", v:function(e){ return e.p ? e.p.c : null; }, ic:function(e){ return e.ic ? e.ic.c : null; }, ref:1, d:2},
+    {t:"Exposant du vent", v:function(e){ return e.p ? e.p.vent : null; }, ic:function(e){ return e.ic ? e.ic.vent : null; }, ref:0.5, d:2},
+    {t:"Effet de la pluie (particules)", v:function(e){ return e.p ? e.p.pluie : null; }, ic:function(e){ return e.ic ? e.ic.pluie : null; }, ref:0.25, d:2}];
+  var mini = par.map(function(P){
+    var w = 300, ht = 132, a0 = 40, b0 = 104, vals = [];
+    J.forEach(function(e){ var v = P.v(e), c = P.ic(e); if(v!=null) vals.push(v); if(c){ vals.push(c[0],c[1]); } });
+    if(!vals.length) return '<div><div class="kl">'+P.t+'</div><p class="muted">Pas encore calé.</p></div>';
+    if(P.ref!=null) vals.push(P.ref);
+    var mn = Math.min.apply(null,vals), mx = Math.max.apply(null,vals); if(mx-mn<1e-6){ mn -= 0.5; mx += 0.5; } var pad = (mx-mn)*0.12; mn -= pad; mx += pad;
+    var xs = function(i){ return a0+6+(w-a0-14)*(n>1 ? i/(n-1) : 0.5); }, ys = function(v){ return b0-(b0-10)*(v-mn)/(mx-mn); };
+    var s = '<svg viewBox="0 0 '+w+' '+ht+'" width="100%" role="img" aria-label="'+P.t+' jour par jour">';
+    [mn+pad,(mn+mx)/2,mx-pad].forEach(function(v){ s += '<line x1="'+a0+'" x2="'+(w-8)+'" y1="'+ys(v)+'" y2="'+ys(v)+'" stroke="rgba(255,255,255,.08)"/><text x="'+(a0-5)+'" y="'+(ys(v)+4)+'" class="ax" text-anchor="end">'+pfr(v,P.d)+'</text>'; });
+    if(pleine!=null && pleine>0) s += '<line x1="'+xs(pleine)+'" x2="'+xs(pleine)+'" y1="10" y2="'+b0+'" stroke="rgba(255,255,255,.3)" stroke-dasharray="3 3"/>';
+    if(P.ref!=null) s += '<line x1="'+a0+'" x2="'+(w-8)+'" y1="'+ys(P.ref)+'" y2="'+ys(P.ref)+'" stroke="rgba(255,255,255,.5)" stroke-dasharray="5 4"/><text x="'+(w-8)+'" y="'+(ys(P.ref)-4)+'" class="ax" text-anchor="end">origine '+pfr(P.ref,P.d)+'</text>';
+    var hautB = [], basB = [], ligne = [];
+    J.forEach(function(e,i){ var c = P.ic(e), v = P.v(e); if(c){ hautB.push(xs(i).toFixed(1)+","+ys(c[1]).toFixed(1)); basB.unshift(xs(i).toFixed(1)+","+ys(c[0]).toFixed(1)); } if(v!=null) ligne.push(xs(i).toFixed(1)+","+ys(v).toFixed(1)); });
+    if(hautB.length>1) s += '<polygon points="'+hautB.concat(basB).join(" ")+'" fill="rgba(80,240,230,.16)"/>';
+    if(ligne.length>1) s += '<polyline fill="none" stroke="#50f0e6" stroke-width="2" points="'+ligne.join(" ")+'"/>';
+    J.forEach(function(e,i){ var v = P.v(e), c = P.ic(e); if(v==null) return; s += '<circle class="pt" cx="'+xs(i).toFixed(1)+'" cy="'+ys(v).toFixed(1)+'" r="'+(n>40?2:3)+'" fill="#50f0e6"'+tipAttr(e.jour.split("-").reverse().join("/")+" · "+P.t+" : "+pfr(v,P.d)+(c ? " (intervalle à 90 % : "+pfr(c[0],P.d)+" à "+pfr(c[1],P.d)+")" : "")+" · fenêtre de "+e.fen+" jour"+(e.fen>1?"s":""))+'/>'; });
+    s += '<text x="'+xs(0)+'" y="'+(b0+18)+'" class="ax">'+dfr(J[0].jour)+'</text><text x="'+xs(n-1)+'" y="'+(b0+18)+'" class="ax" text-anchor="end">'+dfr(der.jour)+'</text></svg>';
+    return '<div><div class="kl">'+P.t+'</div>'+s+'</div>'; });
+  h += '<h3>Stabilité des paramètres calés</h3><div class="leg"><span><i style="background:#50f0e6"></i>valeur calée sur les 30 jours précédents</span><span><i style="background:rgba(80,240,230,.3);height:8px"></i>intervalle à 90 %</span><span><i class="tir"></i>valeur d\'origine</span></div>'+
+    '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px 18px">'+mini.join("")+'</div>';
+  h += '<p class="muted">Calcul quotidien de la tâche GitHub, après 4 h. Pour chaque jour, les paramètres sont calés sur les 30 jours d\'archive qui le précèdent, puis appliqués aux couples station trafic / stations de fond de ce jour (10 km au plus) : le modèle n\'est jamais noté sur les données qui ont servi à le caler. '+
+    'Le fond est la moyenne mesurée aux stations de fond appariées, ce qui isole l\'incrément routier ; l\'erreur est l\'écart quadratique moyen horaire à la station trafic. Paramètres d\'origine : incrément de référence du 16 novembre pour le NO₂ (+ 8,8 µg/m³) et son profil des jours ouvrés, rapport 1,3 du bilan 2024 pour les particules, trafic proportionnel et confinement 1, dilution par le vent en racine carrée, effet de la pluie 0,25. '+
+    'Comme sur la carte, le vent, la pluie, le trafic et le confinement calés ne s\'appliquent qu\'à partir de 7 jours d\'historique. Intervalles à 90 % : jours tirés avec remise pour l\'incrément, le vent et la pluie, stations documentées tirées avec remise pour le trafic et le confinement. '+
+    'Le modèle n\'apprend pas au-delà de sa fenêtre : une fois celle-ci pleine (30 jours), les variations traduisent surtout la saison ; il progresse ensuite avec de nouveaux dossiers de stations ou de meilleures données de trafic.</p>';
+  el.innerHTML = h;
 }
 function perfCopies(){
   var el = document.getElementById("perfCopies"); if(!el) return;
