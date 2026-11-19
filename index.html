@@ -39,6 +39,7 @@
   #chargeur.termine .ch-barre i{animation:none}
   @keyframes chpulse{from{opacity:.55}to{opacity:1}}
   #chargeur .ch-etapes{display:flex;gap:14px;margin-top:9px;font-size:11.5px;color:var(--muted)}
+  #chargeur .ch-lent{margin-top:9px;font-size:11.5px;line-height:1.4;color:#ffb469} #chargeur .ch-err{margin-top:7px;font-size:11.5px;line-height:1.4;color:#ff7a7a;word-break:break-word}
   #chargeur .ch-etapes .fini{color:var(--accent)} #chargeur .ch-etapes .echec{color:#ffb469} #chargeur .ch-etapes .cours{color:var(--txt)}
   .legend small{margin-left:auto;color:var(--muted);font-size:11.5px;font-variant-numeric:tabular-nums}
   .legend .leg-t{font-size:11px;color:var(--muted);padding-bottom:4px}
@@ -222,13 +223,21 @@
   body.m .sheetClose{margin:0 0 8px 8px;font-size:14px;padding:8px 12px}
   body.m .sheet table{display:block;overflow-x:auto;font-size:12.5px} body.m .sheet h1{font-size:23px}
   body.m #check{font-size:13px}
+  body.m #panHide,body.m #panShow{display:none!important}
+  body.m #perf svg .ax{font-size:16px} body.m #perf .leg{font-size:12px;gap:8px 12px} body.m #perf .kpis{grid-template-columns:1fr 1fr;gap:8px} body.m #perf .kv{font-size:21px}
+  body.m #perf .kpi{padding:9px 10px} body.m #perf .ks{font-size:11.5px} body.m .perfExport button{display:block;margin:0 0 6px}
+  body.m #topBtns button{font-size:14px;padding:8px 12px}
+  #vueLien{display:none} body.m #vueLien{display:block;margin:16px 0 4px;font-size:13px;color:var(--muted)} #vueLien a{color:var(--accent)}
   @media (max-width:640px){#side{width:calc(100% - 28px);max-height:46%}}
 </style>
 </head>
 <body>
+<script>/* Affichage smartphone : écran tactile étroit (téléphone, en vertical comme en horizontal), ou ?vue=mobile ; ?vue=ordinateur l'annule */
+(function(){ try{ var q = (location.search.match(/[?&]vue=([a-z]+)/)||[])[1], tactile = matchMedia("(pointer:coarse)").matches, etroit = Math.min(screen.width,screen.height)<=600 || matchMedia("(max-width:700px)").matches;
+  if(q==="mobile" || (q!=="ordinateur" && tactile && etroit)) document.body.classList.add("m"); }catch(e){} })();</script>
 <div id="map"></div>
 <div id="chargeur" role="status" aria-live="polite"><div class="ch-titre">Chargement…</div><div class="ch-barre"><i></i></div><div class="ch-etapes"></div></div>
-<div id="mbar" class="panel"><div class="l1"><span class="brand"><span>IA</span>TMO</span><span id="mstatus">Chargement…</span><button type="button" id="mopen">Réglages</button></div><div id="msearch"></div></div>
+<div id="mbar" class="panel"><div class="l1"><span class="brand"><span>IA</span>TMO</span><span id="mstatus">Chargement…</span><button type="button" id="mopen">Menu</button></div><div id="msearch"></div></div>
 <div id="mleg" class="panel"></div>
 
 <button type="button" id="panShow" class="panel" title="Afficher le panneau">☰ Panneau</button>
@@ -291,6 +300,7 @@
   <div class="go" id="go"></div>
   <h2>Outre-mer</h2>
   <div class="go" id="goDrom"></div>
+<p id="vueLien">Affichage pour smartphone. <a href="#" id="vueOrdi">Afficher la version ordinateur</a></p>
 </aside>
 
 <div id="insets" class="off"></div>
@@ -311,7 +321,7 @@
 <ul><li>Un clic sur une commune donne l'indice, les cinq sous-indices (NO₂, O₃, PM₁₀, PM₂,₅, SO₂) et l'AASQA productrice. La fiche est hiérarchisée : la classe en tête, puis le polluant responsable, les sous-indices et l'estimation au point, enfin un volet replié « Détails du calcul » (méthode, station la plus proche, incertitude), qui reste ouvert d'un clic à l'autre une fois ouvert.</li><li>Au niveau quartier, un bandeau permanent signale qu'il s'agit d'une estimation et non de l'indice officiel. Le contour de la commune reste visible.</li><li>La transition commune → quartier est un fondu, pour que l'on voie de quelle valeur communale part l'estimation.</li><li>L'estimation peut être désactivée : la carte reste alors à la commune à tous les zooms.</li></ul>
 <p>Commandes d'IATMO :</p>
 <ul><li><b>Recherche</b> d'une commune ou d'une adresse, qui centre la carte sur le lieu.</li><li><b>Aujourd'hui ou demain</b> : les deux échéances du flux Atmo Data ; le choix est masqué dans l'onglet Geod'air, qui ne contient que les mesures du jour.</li><li><b>Indice actuel ou aperçu 2027</b> : l'aperçu ajoute un curseur horaire, une animation des 24 heures, ou la pire heure de la journée, et classe des concentrations simulées avec la grille européenne révisée en 2025.</li><li><b>Onglet Geod'air</b> : carte des concentrations de fond krigées à partir des mesures horaires des stations de fond, classées avec la grille européenne, avec animation des heures et estimation de l'incertitude (§ 7).</li><li><b>Indice ou polluant</b> : NO₂, O₃, PM₁₀ ou PM₂,₅, à la commune comme au quartier.</li><li><b>Vignettes des DROM</b> en vue nationale, avec la mention « Indice non diffusé » quand le flux ne couvre pas le territoire.</li><li><b>Rendu lissé ou en mailles</b> au niveau quartier.</li><li><b>Options</b> (menu replié par défaut) : estimation sous la commune, règle de cohérence avec l'indice communal (case à cocher, puis percentile 90 ou maximum des mailles ; décochée, aucune contrainte), rendu lissé, axes routiers, effet routier modulé et trafic réel (§ 5 et § 6).</li><li><b>Méthodologie</b> : ce cahier des charges, suivi de la note méthodologique détaillant les sources, les calculs et les règles de cohérence. Elle se termine par un lien de téléchargement de la note méthodologique de synthèse, au format PDF.</li><li><b>Évaluation</b> : indicateurs de qualité des calculs, sur les mesures du jour et, pour 7 et 30 jours, sur l'historique (§ 8).</li>
-<li><b>Sources</b> : producteur, licence, branchement et fréquence d'actualisation de chaque donnée, avec l'état de lecture depuis l'ouverture de la page.</li><li><b>Légende</b> : quand un polluant est sélectionné, bornes de chaque classe en µg/m³ (grille 2020 pour l'indice actuel, grille européenne pour l'aperçu 2027 et Geod'air).</li><li><b>Copier le lien de cette vue</b> : adresse qui rouvre la vue affichée (lieu, zoom, onglet, polluant, heure). Fond satellite et opacité de la couche d'indice fixes (60 %) ; le panneau n'a plus de rubriques « Échelle affichée » ni « Réglages » depuis le 18 novembre. Le bouton ◀ masque le panneau pour montrer la carte en plein écran.</li><li><b>Barre de chargement</b> au centre de la carte à l'ouverture : lecture de l'indice ATMO des AASQA du jour, puis des prévisions Prev'air.</li></ul>
+<li><b>Sources</b> : producteur, licence, branchement et fréquence d'actualisation de chaque donnée, avec l'état de lecture depuis l'ouverture de la page.</li><li><b>Légende</b> : quand un polluant est sélectionné, bornes de chaque classe en µg/m³ (grille 2020 pour l'indice actuel, grille européenne pour l'aperçu 2027 et Geod'air).</li><li><b>Copier le lien de cette vue</b> : adresse qui rouvre la vue affichée (lieu, zoom, onglet, polluant, heure). Fond satellite et opacité de la couche d'indice fixes (60 %) ; le panneau n'a plus de rubriques « Échelle affichée » ni « Réglages » depuis le 18 novembre. Le bouton ◀ masque le panneau pour montrer la carte en plein écran.</li><li><b>Smartphone</b> : sur un écran tactile étroit (téléphone, en vertical comme en horizontal), la page passe d'elle-même en affichage smartphone : barre du haut avec la recherche et l'état du flux, carte en plein écran, légende en bas, fiche au clic remontée au-dessus du point, bandeau d'avertissement abrégé ; le panneau devient un tiroir ouvert par le bouton « Menu », qui se referme au choix d'une ville ou d'un onglet ; Méthodologie, Évaluation et Sources s'ouvrent en plein écran, tableaux défilant à l'horizontale. Les vignettes des DROM laissent la place aux boutons « Outre-mer ». C'est la même page : rien à déposer en plus. Un lien en bas du tiroir rouvre la version ordinateur ; sur ordinateur, l'adresse terminée par <code>?vue=mobile</code> montre l'affichage smartphone (et <code>?vue=ordinateur</code> l'inverse).</li><li><b>Barre de chargement</b> au centre de la carte à l'ouverture : lecture de l'indice ATMO des AASQA du jour, puis des prévisions Prev'air.</li></ul>
 <h2>Données</h2>
 <p>Toutes les sources d'IATMO sont ouvertes ; seule l'API de Geod'air, utilisée en secours, demande une inscription et une clé personnelle. Leur liste complète (producteur, licence, branchement, fréquence d'actualisation) est dans l'onglet Sources ; leur lecture et leurs limites sont décrites au § 2, leur acheminement jusqu'à la page au § 3.</p>
 <p><b>Bascule 2027.</b> Le futur indice est horaire, calculé au minimum à la commune, avec un constat publié en règle générale trois heures après. Trois points, relevés dans les documents de travail sur le futur indice, conditionnent IATMO et restent ouverts :</p>
@@ -991,6 +1001,7 @@ var SOURCES = {
 var VIDE = (function(){ var c = document.createElement("canvas"); c.width = c.height = 1; return c.toDataURL("image/png"); })();
 var map = new maplibregl.Map({
   container:"map", bounds:[[-5.4,41.2],[9.8,51.3]], fitBoundsOptions:{padding:PAD},
+  pixelRatio:MOBILE ? Math.min(2,window.devicePixelRatio||1) : (window.devicePixelRatio||1),   // téléphone : moins de mémoire graphique
   minZoom:2, maxZoom:17.5, attributionControl:false,
   style:{version:8,
     glyphs:"https://data.geopf.fr/annexes/ressources/vectorTiles/fonts/{fontstack}/{range}.pbf",
@@ -1057,7 +1068,7 @@ map.on("load",function(){
   map.on("click",onClick);
   map.on("mousemove","commune-fill",function(){ map.getCanvas().style.cursor="pointer"; });
   map.on("mouseleave","commune-fill",function(){ map.getCanvas().style.cursor=""; });
-  state.dates = [parisDate(0),parisDate(1)];
+  CARTE_PRETE = true; chMaj("carte",1,"fini"); chMaj("atmo",null,"cours");
   updateScale(); appliquerAdresse(); selectDay(ADR.d==='1' && ADR.v!=='geodair' ? 1 : 0); if(ADR.f==='plan') appliquerFond('plan');
   var suite = false, apres = function(){ if(suite) return; suite = true; buildInsets(); initGeo(); trafLire(); aromeLire(); calhLire(); };   // vignettes des DROM et Geod'air : après le premier affichage
   map.once("idle",apres); setTimeout(apres,4000);
@@ -1132,7 +1143,7 @@ function loadAll(date,getPage){
     return getPage(date,i*PAGE).then(function(j){
       var f = (j && j.features) || [];
       all = all.concat(f);
-      chMaj("atmo",all.length/Math.max(all.length+1,(j && (j.numberMatched||j.totalFeatures)) || 35000));
+      chMaj("atmo",all.length/Math.max(all.length+1,(j && (j.numberMatched||j.totalFeatures)) || 35000)); chDetail("atmo",all.length.toLocaleString("fr-FR")+" zones reçues");
       setStatus("loading","Chargement…","Indice du "+frDate(date)+" : "+all.length.toLocaleString("fr-FR")+" zones reçues");
       if(f.length===PAGE && i+1<MAX_PAGES) return next(i+1);
       return all;
@@ -1143,7 +1154,9 @@ function loadAll(date,getPage){
 /* Mémoire du navigateur (IndexedDB) : l'indice d'un jour, relu sans réseau pendant une heure, et en secours si le flux ne répond pas */
 var MEMO_MIN = 60;
 function memo(mode,cle,val){
-  return new Promise(function(res){
+  return new Promise(function(res0){
+    var fait = false, res = function(v){ if(!fait){ fait = true; res0(v); } };
+    setTimeout(function(){ res(null); },3000);                                 // garde-fou : certains navigateurs mobiles n'appellent jamais onsuccess
     try{
       var rq = indexedDB.open("iatmo",1);
       rq.onupgradeneeded = function(){ rq.result.createObjectStore("kv"); };
@@ -1169,9 +1182,14 @@ function memoDepuis(m){
   var g = function(a,map){ a.forEach(function(r){ map.set(r[0],{q:r[1],s:r[2],src:m.srcs[r[3]]||"",maj:r[4],reel:true}); }); };
   g(m.rec,st.rec); g(m.epci,st.epci); st.nz = m.rec.length+m.epci.length; return st;
 }
+var EN_COURS = {};
 function loadDay(i){
   var date = state.dates[i];
   if(state.store[date]) return Promise.resolve(state.store[date]);
+  if(EN_COURS[date]) return EN_COURS[date];
+  return (EN_COURS[date] = loadDay0(date).then(function(st){ delete EN_COURS[date]; return st; },function(e){ delete EN_COURS[date]; throw e; }));
+}
+function loadDay0(date){
   setStatus("loading","Chargement…","Indice ATMO du "+frDate(date)+" (Atmo Data)");
   return memo("get","jour-"+date).then(function(m){
     if(m && m.rec && m.rec.length && Date.now()-m.a<MEMO_MIN*60000){ var st0 = memoDepuis(m); state.store[date] = st0; return st0; }
@@ -1213,7 +1231,7 @@ function selectDay(i){
     if(st.mode==="reel") setStatus("ok",(i?"Prévision des AASQA pour le ":"Indice ATMO des AASQA du ")+d,   // une seule ligne, sauf flux injoignable
       st.memo && st.vieux ? "<b style='color:#ffb469'>Flux injoignable : lecture de "+new Date(st.memo).toLocaleTimeString("fr-FR",{timeZone:"Europe/Paris",hour:"2-digit",minute:"2-digit"})+", gardée par le navigateur.</b>" : "");
     else setStatus("sim","Données simulées","Flux Atmo Data inaccessible depuis ce poste ("+esc(st.err)+"). Les couleurs affichées sont fictives.");
-    if(CH.actif && CH.etapes[0].etat==="cours"){ chMaj("atmo",1,st.mode==="reel" ? "fini" : "echec"); chPrev(); }
+    if(CH.actif && CH.etapes[1].etat==="cours"){ chMaj("atmo",1,st.mode==="reel" ? "fini" : "echec"); chPrev(); }
   });
 }
 
@@ -2141,29 +2159,44 @@ function prevAuto(prog){
 }
 
 /* ================= Barre de chargement à l'ouverture : indice des AASQA, puis Prev'air ================= */
-var CH = {actif:true, etapes:[{cle:"atmo",lib:"",f:0,etat:"cours"},{cle:"prev",lib:"Chargement de Prev'air…",f:0,etat:"attente"}]};
+var CH = {actif:true, t0:Date.now(), etapes:[{cle:"carte",lib:"Chargement du fond de carte de l'IGN…",f:0,etat:"cours"},{cle:"atmo",lib:"",f:0,etat:"attente"},{cle:"prev",lib:"Chargement de Prev'air…",f:0,etat:"attente"}]}, CARTE_PRETE = false;
+function chDetail(cle,t){ CH.etapes.forEach(function(e){ if(e.cle===cle) e.det = t; }); chMaj(cle); }
 function chMaj(cle,f,etat){
   if(!CH.actif) return;
   CH.etapes.forEach(function(e){ if(e.cle!==cle) return; if(f!=null) e.f = Math.max(e.f,Math.min(1,f)); if(etat) e.etat = etat; });
   var el = document.getElementById("chargeur"); if(!el) return;
+  if(etat && etat!=="attente"){ var ml = el.querySelector(".ch-lent"); if(ml) ml.textContent = ""; }          // étape suivante : message de lenteur effacé
   var cours = CH.etapes.filter(function(e){ return e.etat==="cours"; })[0], tot = 0;
   CH.etapes.forEach(function(e){ tot += (e.etat==="fini" || e.etat==="echec") ? 1 : e.f; });
-  if(cours) el.querySelector(".ch-titre").textContent = cours.lib;
+  if(cours) el.querySelector(".ch-titre").textContent = cours.lib+(cours.det ? " "+cours.det : "");
   el.querySelector(".ch-barre i").style.width = Math.round(100*tot/CH.etapes.length)+"%";
   el.querySelector(".ch-etapes").innerHTML = CH.etapes.map(function(e){
-    var lib = e.cle==="atmo" ? "Indice ATMO des AASQA" : "Prévisions Prev'air";
+    var lib = e.cle==="carte" ? "Fond de carte" : e.cle==="atmo" ? "Indice ATMO des AASQA" : "Prévisions Prev'air";
     return "<span class='"+e.etat+"'>"+(e.etat==="fini" ? "✓ " : e.etat==="echec" ? "✗ " : "")+lib+"</span>"; }).join("");
   if(CH.etapes.every(function(e){ return e.etat==="fini" || e.etat==="echec"; })){
     CH.actif = false; el.classList.add("termine");
     var ko = CH.etapes.filter(function(e){ return e.etat==="echec"; });
-    el.querySelector(".ch-titre").textContent = ko.length ? "Chargement terminé, avec "+(ko.length===2 ? "deux sources non lues" : (ko[0].cle==="atmo" ? "l'indice des AASQA" : "Prev'air")+" non lu") : "Chargement terminé";
+    el.querySelector(".ch-titre").textContent = ko.length ? "Chargement terminé, avec "+(ko.length>1 ? ko.length+" sources non lues" : (ko[0].cle==="atmo" ? "l'indice des AASQA" : ko[0].cle==="carte" ? "le fond de carte" : "Prev'air")+" non lu") : "Chargement terminé";
     setTimeout(function(){ el.classList.add("fin"); setTimeout(function(){ el.style.display = "none"; },450); },CH.etapes.some(function(e){ return e.etat==="echec"; }) ? 1600 : 500);
   }
 }
 (function(){
-  CH.etapes[0].lib = "Chargement de l'indice ATMO des AASQA du "+frDate(parisDate(0))+"…";
-  var el = document.getElementById("chargeur"); if(el){ el.style.display = "block"; chMaj("atmo",0.04); }
-  setTimeout(function(){ if(CH.actif){ CH.etapes.forEach(function(e){ if(e.etat!=="fini") e.etat = "echec"; }); chMaj("atmo"); } },90000);   // garde-fou
+  CH.etapes[1].lib = "Chargement de l'indice ATMO des AASQA du "+frDate(parisDate(0))+"…";
+  var el = document.getElementById("chargeur"); if(el){ el.style.display = "block"; chMaj("carte",0.1); }
+  // Indice téléchargé tout de suite, pendant que le fond de carte se charge ; affiché quand la carte est prête
+  state.dates = [parisDate(0),parisDate(1)];
+  var j0 = ADR.d==='1' && ADR.v!=='geodair' ? 1 : 0; loadDay(j0).catch(function(){});
+  // Lenteurs : message sous la barre, pour savoir quelle étape attend
+  var lent = function(){ if(!CH.actif || !el) return; var c = CH.etapes.filter(function(e){ return e.etat==="cours"; })[0], s = Math.round((Date.now()-CH.t0)/1000), m = el.querySelector(".ch-lent");
+    if(!m){ m = document.createElement("div"); m.className = "ch-lent"; el.appendChild(m); }
+    m.textContent = !c ? "" : c.cle==="carte" ? "Fond de carte toujours attendu après "+s+" s : réseau lent, serveurs de l'IGN injoignables ou affichage 3D (WebGL) refusé par le navigateur."
+      : c.cle==="atmo" ? "Indice toujours attendu après "+s+" s : le flux Atmo Data répond lentement ou est bloqué par le réseau (essai de secours au bout de 45 s)." : "";
+    setTimeout(lent,5000); };
+  setTimeout(lent,15000);
+  setTimeout(function(){ if(CH.actif){ CH.etapes.forEach(function(e){ if(e.etat!=="fini") e.etat = "echec"; }); chMaj("atmo"); } },120000);   // garde-fou
+  // Erreur de la page pendant le chargement : affichée dans l'encadré (utile sur téléphone, sans console)
+  window.addEventListener("error",function(ev){ if(!CH.actif || !el) return; var m = el.querySelector(".ch-err"); if(!m){ m = document.createElement("div"); m.className = "ch-err"; el.appendChild(m); }
+    m.textContent = "Erreur de la page : "+((ev && ev.message) || "inconnue")+(ev && ev.lineno ? " (ligne "+ev.lineno+")" : ""); });
 })();
 function chPrev(){ chMaj("prev",0,"cours"); prevAuto(function(f){ chMaj("prev",f); }).then(function(ok){ chMaj("prev",1,ok ? "fini" : "echec"); }); }
 
@@ -3305,7 +3338,7 @@ function updateScale(){
   if(ge) msg = ["<b>Geod'air</b> — fond krigé à partir des stations urbaines et périurbaines de fond et des stations rurales"+
     (GEO.sim ? " ; <b>stations fictives</b>, faute de fichiers lus." : " ; mesures temps réel non validées.")+" Ce n'est pas l'indice ATMO."];
   if(MOBILE && eu) msg = ["<b>Indice européen de l'AEE</b> · donnée réelle modélisée"];
-  if(MOBILE && !eu){ msg = []; if(lvl===3) msg.push("<b>Estimation simulée</b> sous la commune"); if(state.view==="2027") msg.push("<b>Aperçu 2027 simulé</b>"); if(state.mode==="cas") msg.push("<b>Cas fictif</b>"); }
+  if(MOBILE && !eu){ msg = []; if(ge) msg.push("<b>Geod'air</b> · "+(GEO.sim ? "stations fictives" : "mesures non validées")); else if(lvl===3) msg.push("<b>Estimation simulée</b> sous la commune"); if(state.view==="2027" && !ge) msg.push("<b>Aperçu 2027 simulé</b>"); if(state.mode==="cas") msg.push("<b>Cas fictif</b>"); }
   ban.innerHTML = msg.join(MOBILE?" · ":"<br>"); ban.style.display = msg.length ? "block" : "none";
   document.getElementById("insets").className = (z<7 && !eu) ? "" : "off";
   document.getElementById("geoBox").style.display = ge ? "block" : "none";
@@ -4465,7 +4498,10 @@ if(MOBILE){
   map.on("click",function(){ tiroir(false); });
   document.getElementById("go").addEventListener("click",function(e){ if(e.target.tagName==="BUTTON") tiroir(false); });
   document.getElementById("goDrom").addEventListener("click",function(e){ if(e.target.tagName==="BUTTON") tiroir(false); });
+  ["methBtn","perfBtn","srcBtn"].forEach(function(id){ document.getElementById(id).addEventListener("click",function(){ tiroir(false); }); });   // les fiches s'ouvrent en plein écran
+  var vo = document.getElementById("vueOrdi"); if(vo) vo.addEventListener("click",function(e){ e.preventDefault(); location.href = location.pathname+"?vue=ordinateur"+location.hash; });
 }
+else { var vm = document.getElementById("vueOrdi"); if(vm) vm.parentNode.style.display = "none"; }
 
 /* ---------- Commandes ---------- */
 buildLegend();
