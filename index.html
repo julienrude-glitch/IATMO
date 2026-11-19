@@ -273,7 +273,6 @@
   <label class="row">Cohérence <select id="rule" aria-label="Règle de cohérence avec la commune">
     <option value="p90">Percentile 90 des mailles</option><option value="max">Maximum des mailles</option><option value="libre">Aucune contrainte</option></select></label>
   <label class="row"><input type="checkbox" id="smoothToggle" checked> Rendu lissé</label>
-  <label class="row"><input type="checkbox" id="respToggle"> Polluant responsable sur la carte</label>
   <label class="row"><input type="checkbox" id="roadToggle" checked> Axes routiers</label>
   <label class="row"><input type="checkbox" id="modToggle" checked> Effet routier modulé (bâti, trafic, vent, pluie)</label>
   <label class="row"><input type="checkbox" id="trafToggle" checked> Trafic réel des axes nationaux (Bison Futé)</label>
@@ -310,7 +309,7 @@
 <p>Règles d'interface :</p>
 <ul><li>Un clic sur une commune donne l'indice, les cinq sous-indices (NO₂, O₃, PM₁₀, PM₂,₅, SO₂) et l'AASQA productrice. La fiche est hiérarchisée : la classe en tête, puis le polluant responsable, les sous-indices et l'estimation au point, enfin un volet replié « Détails du calcul » (méthode, station la plus proche, incertitude), qui reste ouvert d'un clic à l'autre une fois ouvert.</li><li>Au niveau quartier, un bandeau permanent signale qu'il s'agit d'une estimation et non de l'indice officiel. Le contour de la commune reste visible.</li><li>La transition commune → quartier est un fondu, pour que l'on voie de quelle valeur communale part l'estimation.</li><li>L'estimation peut être désactivée : la carte reste alors à la commune à tous les zooms.</li></ul>
 <p>Commandes de la maquette :</p>
-<ul><li><b>Recherche</b> d'une commune ou d'une adresse, qui centre la carte sur le lieu.</li><li><b>Aujourd'hui ou demain</b> : les deux échéances du flux Atmo Data ; le choix est masqué dans l'onglet Geod'air, qui ne contient que les mesures du jour.</li><li><b>Indice actuel ou aperçu 2027</b> : l'aperçu ajoute un curseur horaire, une animation des 24 heures, ou la pire heure de la journée, et classe des concentrations simulées avec la grille européenne révisée en 2025.</li><li><b>Onglet Geod'air</b> : carte des concentrations de fond krigées à partir des mesures horaires des stations de fond, classées avec la grille européenne, avec animation des heures et estimation de l'incertitude (§ 7).</li><li><b>Indice ou polluant</b> : NO₂, O₃, PM₁₀ ou PM₂,₅, à la commune comme au quartier.</li><li><b>Vignettes des DROM</b> en vue nationale, avec la mention « Indice non diffusé » quand le flux ne couvre pas le territoire.</li><li><b>Rendu lissé ou en mailles</b> au niveau quartier.</li><li><b>Options</b> (menu replié par défaut) : estimation sous la commune, règle de cohérence avec l'indice communal, rendu lissé, polluant responsable sur la carte, axes routiers, effet routier modulé et trafic réel (§ 5 et § 6).</li><li><b>Méthodologie</b> : ce cahier des charges, suivi de la note méthodologique détaillant les sources, les calculs et les règles de cohérence. Elle se termine par un lien de téléchargement de la note méthodologique de synthèse, au format PDF.</li><li><b>Évaluation</b> : indicateurs de qualité des calculs, sur les mesures du jour et, pour 7 et 30 jours, sur l'historique (§ 8).</li>
+<ul><li><b>Recherche</b> d'une commune ou d'une adresse, qui centre la carte sur le lieu.</li><li><b>Aujourd'hui ou demain</b> : les deux échéances du flux Atmo Data ; le choix est masqué dans l'onglet Geod'air, qui ne contient que les mesures du jour.</li><li><b>Indice actuel ou aperçu 2027</b> : l'aperçu ajoute un curseur horaire, une animation des 24 heures, ou la pire heure de la journée, et classe des concentrations simulées avec la grille européenne révisée en 2025.</li><li><b>Onglet Geod'air</b> : carte des concentrations de fond krigées à partir des mesures horaires des stations de fond, classées avec la grille européenne, avec animation des heures et estimation de l'incertitude (§ 7).</li><li><b>Indice ou polluant</b> : NO₂, O₃, PM₁₀ ou PM₂,₅, à la commune comme au quartier.</li><li><b>Vignettes des DROM</b> en vue nationale, avec la mention « Indice non diffusé » quand le flux ne couvre pas le territoire.</li><li><b>Rendu lissé ou en mailles</b> au niveau quartier.</li><li><b>Options</b> (menu replié par défaut) : estimation sous la commune, règle de cohérence avec l'indice communal, rendu lissé, axes routiers, effet routier modulé et trafic réel (§ 5 et § 6).</li><li><b>Méthodologie</b> : ce cahier des charges, suivi de la note méthodologique détaillant les sources, les calculs et les règles de cohérence. Elle se termine par un lien de téléchargement de la note méthodologique de synthèse, au format PDF.</li><li><b>Évaluation</b> : indicateurs de qualité des calculs, sur les mesures du jour et, pour 7 et 30 jours, sur l'historique (§ 8).</li>
 <li><b>Sources</b> : producteur, licence, branchement et fréquence d'actualisation de chaque donnée, avec l'état de lecture depuis l'ouverture de la page.</li><li><b>Légende</b> : quand un polluant est sélectionné, bornes de chaque classe en µg/m³ (grille 2020 pour l'indice actuel, grille européenne pour l'aperçu 2027 et Geod'air).</li><li><b>Copier le lien de cette vue</b> : adresse qui rouvre la vue affichée (lieu, zoom, onglet, polluant, heure). Fond satellite et opacité de la couche d'indice fixes (60 %) ; le panneau n'a plus de rubriques « Échelle affichée » ni « Réglages » depuis le 18 novembre. Le bouton ◀ masque le panneau pour montrer la carte en plein écran.</li><li><b>Barre de chargement</b> au centre de la carte à l'ouverture : lecture de l'indice ATMO des AASQA du jour, puis des prévisions Prev'air.</li></ul>
 <h2>Données</h2>
 <p>Toutes les sources de la maquette sont ouvertes ; seule l'API de Geod'air, utilisée en secours, demande une inscription et une clé personnelle. Leur liste complète (producteur, licence, branchement, fréquence d'actualisation) est dans l'onglet Sources ; leur lecture et leurs limites sont décrites au § 2, leur acheminement jusqu'à la page au § 3.</p>
@@ -568,7 +567,7 @@ a ∈ [0 ; 1], c ∈ [0 ; 1,5] : grille ; D : moindres carrés ; ancien modèle 
 <p>Le résultat est publié dans <code>calage/calage.json</code>, lu par la carte à l'ouverture. Les exposants du vent et du trafic, le confinement et l'effet de la pluie calés sur l'historique remplacent ceux du jour dès que 7 jours complets sont disponibles ; l'incrément et son profil horaire restent ceux du jour quand les mesures du jour sont lues. La ligne d'information des options indique l'origine de chaque valeur. Le premier jour complet (le 18 novembre, en heure de Paris) a été calculé le 19 au matin ; les 7 jours seront atteints le 25 novembre. Le même passage ajoute à <code>suivi/calage_jours.json</code> un test à l'aveugle du calage de la veille, présenté dans l'onglet Évaluation (§ 8, « Progression du calage »).</p>
 <h3>5.11 Rendu</h3>
 <p>En mode lissé, <i>T</i> est interpolé bilinéairement entre centres de mailles et la concentration est recalculée sur une trame six fois plus fine, puis classé : on obtient des iso-contours de classe. Le sous-indice de base reste celui de la maille la plus proche, d'où des discontinuités aux limites communales, inhérentes à une donnée d'entrée communale.</p>
-<p><b>Polluant responsable.</b> La fiche au clic nomme le ou les polluants dont le sous-indice fixe l'indice, pour l'indice du jour comme pour l'heure de l'aperçu 2027. L'option « Polluant responsable sur la carte » l'écrit au centre de chaque commune affichée (à partir du zoom 7,5), sauf si l'indice est « bon » ou si un seul polluant est affiché. La synthèse sur le futur indice laisse l'affichage du polluant responsable « à préciser » : la maquette montre les deux formes possibles.</p>
+<p><b>Polluant responsable.</b> La fiche au clic nomme le ou les polluants dont le sous-indice fixe l'indice, pour l'indice du jour comme pour l'heure de l'aperçu 2027. Elle ne le fait pas quand l'indice est « bon ». La synthèse sur le futur indice laisse l'affichage du polluant responsable « à préciser ».</p>
 <h3>5.12 Ce que ce calcul n'est pas</h3>
 <ul>
 <li>Les concentrations de départ sont reconstituées à partir de classes : leur position dans la classe vient de Prev'air quand il est chargé, sinon elle est arbitraire.</li>
@@ -898,8 +897,8 @@ function profil(p,h){
   if(p===4) return 0.85+0.15*gauss(h,11,4);
   return 0.8+0.45*Math.max(gauss(h,8,2.5),gauss(h,20,3));
 }
-/* Centre de l'emprise de chaque commune (étiquettes du polluant responsable) ; décalage horaire des DROM (heure locale des fiches Geod'air) */
-var CENTRE = {}, MESFIN = {v:-1, der:null}, DEC_DROM = {"971":-4,"972":-4,"973":-3,"974":4,"976":3};
+/* Décalage horaire des DROM (heure locale des fiches Geod'air) ; dernière heure bien renseignée des mesures du jour */
+var MESFIN = {v:-1, der:null}, DEC_DROM = {"971":-4,"972":-4,"973":-3,"974":4,"976":3};
 function mesuresFin(){                         // dernière heure suffisamment renseignée des mesures du jour (clé « AAAA/MM/JJ HH », heure de Paris)
   if(MESFIN.v!==GEO.version){
     MESFIN = {v:GEO.version, der:null};
@@ -924,18 +923,16 @@ function concentration(rec,code,p,h){
 /* Valeur Prev'air de chaque commune (au centre de son emprise), calculée au fil des tuiles chargées */
 var PREVC = {};
 function prevCommunes(){
-  if(!map.getSource("admin")) return;
+  if(!Object.keys(PREV).length || !map.getSource("admin")) return;
   var feats; try{ feats = map.querySourceFeatures("admin",{sourceLayer:"commune"}); }catch(e){ return; }
-  var n = 0, nc = 0, ks = Object.keys(PREV);
+  var n = 0, ks = Object.keys(PREV);
   feats.forEach(function(f){
-    var code = f.id!=null ? String(f.id) : String((f.properties||{}).code_insee||""); if(!code || (PREVC[code] && CENTRE[code]) || (!ks.length && CENTRE[code])) return;
+    var code = f.id!=null ? String(f.id) : String((f.properties||{}).code_insee||""); if(!code || PREVC[code]) return;
     var g = f.geometry, r = g.type==="Polygon" ? g.coordinates[0] : g.type==="MultiPolygon" ? g.coordinates[0][0] : null; if(!r) return;
     var x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
     for(var i=0;i<r.length;i++){ if(r[i][0]<x0) x0 = r[i][0]; if(r[i][0]>x1) x1 = r[i][0]; if(r[i][1]<y0) y0 = r[i][1]; if(r[i][1]>y1) y1 = r[i][1]; }
-    if(!CENTRE[code]){ CENTRE[code] = [(x0+x1)/2,(y0+y1)/2]; nc++; }
-    if(ks.length && !PREVC[code]){ var v = [null,null,null,null,null]; ks.forEach(function(p){ v[p] = prevVal(+p,(x0+x1)/2,(y0+y1)/2); }); PREVC[code] = v; n++; }
+    var v = [null,null,null,null,null]; ks.forEach(function(p){ v[p] = prevVal(+p,(x0+x1)/2,(y0+y1)/2); }); PREVC[code] = v; n++;
   });
-  if(nc && state.resp) respMaj();
   if(!n) return;
   clearTimeout(prevCommunes.t); prevCommunes.t = setTimeout(prevCommunesFin,400); }
 function prevCommunesFin(){
@@ -1306,7 +1303,6 @@ function refresh(){
   maps.forEach(resolveMissing);
   if(map.getLayer("commune-fill")) map.setPaintProperty("commune-fill","fill-opacity",communeOpacity());
   updateEea(); updateFine(true); updateGeo(true); updateScale(); insetNotes(); buildLegend(); majAdresse();
-  if(state.resp) respMaj();
 }
 var CITIES = [[2.35,48.86,1.9,55],[4.84,45.76,1.6,40],[5.38,43.3,1.6,40],[3.06,50.63,1.4,40],[7.75,48.58,1.3,30],
   [1.44,43.6,1.1,30],[-0.58,44.84,1.0,30],[-1.55,47.22,0.9,28],[5.72,45.19,1.4,25],[1.1,49.44,1.1,28],[7.27,43.7,1.2,25],[-1.68,48.11,0.7,25]];
@@ -3404,29 +3400,6 @@ function onClick(e){
   if(MOBILE) map.easeTo({center:e.lngLat,offset:[0,190],duration:300});     // laisse la place à la fiche au-dessus du point
 }
 
-/* ---------- Polluant responsable sur la carte (option) : étiquette au centre des communes affichées, pour l'indice du jour ou
-   l'heure de l'aperçu 2027 ; rien quand l'indice est « bon » (tous les sous-indices à 1) ni quand un seul polluant est affiché ---------- */
-var RESP_ABR = ["NO₂","O₃","PM₁₀","PM₂,₅","SO₂"];
-function respMaj(){
-  var src = map.getSource("resp"); if(!src) return;
-  var vis = state.resp && state.pol==="idx" && !geoOn() && !eeaOn() && map.getZoom()>=7.5;
-  map.setLayoutProperty("resp","visibility",vis ? "visible" : "none"); if(!vis){ src.setData({type:"FeatureCollection",features:[]}); return; }
-  var b = map.getBounds(), w = b.getWest(), e = b.getEast(), so = b.getSouth(), no = b.getNorth(), fs = [];
-  state.rec.forEach(function(rec,code){
-    var c = CENTRE[code]; if(!c || c[0]<w || c[0]>e || c[1]<so || c[1]>no) return;
-    var sb = state.view==="2027" ? subsCourants(rec,code) : subsJour(rec,code), q = Math.max.apply(null,sb); if(q<=1 || (state.view!=="2027" && !rec.s)) return;
-    var r = []; for(var i=0;i<5;i++) if(sb[i]===q) r.push(RESP_ABR[i]);
-    fs.push({type:"Feature",properties:{t:r.join(" · ")},geometry:{type:"Point",coordinates:c}});
-  });
-  src.setData({type:"FeatureCollection",features:fs.slice(0,4000)});
-}
-document.getElementById("respToggle").addEventListener("change",function(){ state.resp = this.checked; respMaj(); });
-map.on("load",function(){
-  map.addSource("resp",{type:"geojson",data:{type:"FeatureCollection",features:[]}});
-  map.addLayer({id:"resp",type:"symbol",source:"resp",layout:{visibility:"none","text-field":["get","t"],"text-font":["Source Sans Pro Regular"],"text-size":11.5,"text-padding":4},
-    paint:{"text-color":"#ffffff","text-halo-color":"rgba(13,27,36,.9)","text-halo-width":1.6}});
-});
-map.on("moveend",function(){ if(state.resp) respMaj(); });
 
 /* ---------- Recherche d'une commune ou d'une adresse (géocodage de la Géoplateforme) ---------- */
 var marker = null, searchT = null, searchN = 0, lastRes = [];
