@@ -413,7 +413,7 @@ def lignes(jours_l, C):
                     if F is None: continue
                     if p == "NO2": dref = 8.8 * max(0.3, min(2.5, (1.0 if we else GREF.get(h, 1.0)) * fvr))
                     else: dref = 0.3 * F * max(0.3, min(2.5, fvr * (1 - min(0.5, 0.25 * Pp))))
-                    fac = C["g"]["weekend" if we else "ouvre"].get(p, {}).get(h, 1.0) * fv * (1 if p == "NO2" else 1 - min(0.5, k * Pp))
+                    fac = C["g"]["weekend" if we else "ouvre"].get(p, {}).get(h, 1.0) * fv * (1 - min(0.5, k * Pp) if p == "PM10" else 1)   # pluie : PM10 seulement, comme la carte
                     base = C["D"][p]
                     if p == "NO2" and fi: base = C["fiches"]["D"] * pred({"q": fi["tmja"], "A": fi["A"] if fi.get("A") is not None else 1 / 3}, C["fiches"]["a"], C["fiches"]["c"])
                     out.append((p, t, J, h, we, u, P, F, dref, base * max(0.3, min(2.5, fac)), dv[p]))
