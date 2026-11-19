@@ -559,7 +559,7 @@ a ∈ [0 ; 1], c ∈ [0 ; 1,5] : grille ; D : moindres carrés ; ancien modèle 
 <li><b>Effet de la pluie</b> sur les particules : Δ ≈ D · g(h) · (1 − min(0,5 ; k · P)), k ajusté sur une grille (au moins 100 heures-couples pluvieuses) ; il remplace l'hypothèse k = 0,25.</li>
 <li><b>Trafic et confinement</b> : ajustement du § 5.9 sur l'incrément moyen de chaque station documentée sur la période (24 heures au moins par station).</li>
 </ul>
-<p>Le résultat est publié dans <code>calage/calage.json</code>, lu par la carte à l'ouverture. Les exposants du vent et du trafic, le confinement et l'effet de la pluie calés sur l'historique remplacent ceux du jour dès que 7 jours complets sont disponibles ; l'incrément et son profil horaire restent ceux du jour quand les mesures du jour sont lues. La ligne d'information des options indique l'origine de chaque valeur. Le premier jour complet (le 18 novembre, en heure de Paris) a été calculé le 19 au matin ; les 7 jours seront atteints le 25 novembre. Le même passage ajoute à <code>suivi/calage_jours.json</code> un test à l'aveugle du calage de la veille, présenté dans l'onglet Évaluation (§ 8, « Progression du calage »).</p>
+<p>Le résultat est publié dans <code>calage/calage.json</code>, lu par la carte à l'ouverture. Les exposants du vent et du trafic, le confinement et l'effet de la pluie calés sur l'historique remplacent ceux du jour dès que 7 jours complets sont disponibles ; l'incrément et son profil horaire restent ceux du jour quand les mesures du jour sont lues. La ligne d'information des options indique l'origine de chaque valeur. Le premier jour complet (le 18 novembre, en heure de Paris) a été calculé le 19 au matin ; les 7 jours seront atteints le 25 novembre. Le même passage ajoute à <code>suivi/calage_jours.json</code> un test à l'aveugle du calage de la veille et l'évaluation d'une correction apprise des résidus par gradient boosting, présentés dans l'onglet Évaluation (§ 8, « Progression du calage »).</p>
 <h3>5.11 Rendu</h3>
 <p>En mode lissé, <i>T</i> est interpolé bilinéairement entre centres de mailles et la concentration est recalculée sur une trame six fois plus fine, puis classé : on obtient des iso-contours de classe. Le sous-indice de base reste celui de la maille la plus proche, d'où des discontinuités aux limites communales, inhérentes à une donnée d'entrée communale.</p>
 <p><b>Polluant responsable.</b> La fiche au clic nomme le ou les polluants dont le sous-indice fixe l'indice, pour l'indice du jour comme pour l'heure de l'aperçu 2027. Elle ne le fait pas quand l'indice est « bon ». La synthèse sur le futur indice laisse l'affichage du polluant responsable « à préciser ».</p>
@@ -664,6 +664,7 @@ e_i = z_i − ẑ₋ᵢ(x_i) = w_i / Q_ii                 erreur de prévision, 
 <li><b>Cohérence avec l'indice des AASQA.</b> La commune de chaque station vient du géocodage inverse de la Géoplateforme (<code>data.geopf.fr/geocodage/reverse</code>), fait une fois puis gardé par le navigateur ; les arrondissements de Paris, Lyon et Marseille sont rapportés à la commune. Le sous-indice publié pour la commune (Atmo Data, jour même) est comparé à la classe, sur la grille de 2020, de la carte Geod'air au droit de la station, calculée sur les heures déjà mesurées : maximum horaire pour le NO₂ et l'O₃, moyenne pour les particules (trois heures au moins). La journée n'étant pas finie et l'indice publié étant une prévision, un écart n'est pas une erreur de l'un ou de l'autre. Les communes couvertes par un indice d'intercommunalité sont écartées.</li>
 <li><b>Effet routier aux stations documentées.</b> Incrément du NO₂ observé aux stations trafic documentées contre l'incrément du modèle calé (§ 5.9) et de l'ancien modèle, avec les valeurs de a et c et les erreurs en validation croisée ; tableau des stations par écart décroissant.</li>
 <li><b>Progression du calage de la descente d'échelle.</b> Le calage du § 5.10 est refait chaque jour sur une fenêtre glissante de 30 jours ; la rubrique montre s'il améliore la carte. Pour chaque jour J, <code>historique.py</code> cale les paramètres sur les 30 jours d'archive qui précèdent J, puis les applique, à l'aveugle, aux couples station trafic / stations de fond de J (10 km au plus) : C = fond + Δ<sub>p</sub> · g<sub>p</sub>(h) · facteurs du vent et de la pluie, avec le trafic et le confinement pour les stations documentées. Le fond est la moyenne mesurée aux stations de fond appariées, ce qui isole l'incrément routier. Trois erreurs quadratiques moyennes horaires à la station trafic sont comparées : fond seul, paramètres d'origine (incrément de référence du 16 novembre et son profil pour le NO₂, rapport 1,3 du bilan 2024 pour les particules, trafic proportionnel et confinement 1, dilution par le vent en racine carrée, pluie 0,25) et paramètres calés. Le gain, 1 − erreur / erreur du fond seul, est tracé jour par jour et sur 7 jours glissants, avec celui des paramètres d'origine ; quatre tuiles donnent le remplissage de la fenêtre, les stations documentées utilisées, le volume de couples-heures et le gain sur 7 jours. Cinq petits graphiques suivent les paramètres (incrément moyen, exposant du trafic, confinement, exposant du vent, effet de la pluie) avec leur intervalle à 90 %, obtenu en tirant avec remise les jours (incrément, vent, pluie) ou les stations documentées (trafic, confinement), et leur valeur d'origine. Comme sur la carte, le vent, la pluie, le trafic et le confinement calés ne s'appliquent qu'à partir de 7 jours d'historique. Lecture : pendant le remplissage de la fenêtre, les intervalles doivent se resserrer et le gain se stabiliser au-dessus de celui des paramètres d'origine ; une fois la fenêtre pleine, le modèle n'accumule plus rien et les variations traduisent surtout la saison. Les jours manquants (passage de la tâche échoué) sont recalculés, sept au plus par passage. NO₂, PM₁₀ et PM₂,₅ ; l'ozone et le SO₂, sans incrément calé, renvoient au NO₂.</li>
+<li><b>Correction apprise des résidus : gradient boosting et perceptron.</b> Le modèle calé reste la base ; deux candidats apprennent, sur les 30 jours de la fenêtre, l'écart résiduel r = mesure − (fond + incrément calé) aux stations trafic, polluant par polluant, et sont comparés dans les mêmes conditions. <i>Gradient boosting</i> (<code>HistGradientBoostingRegressor</code> de scikit-learn : 150 arbres de 15 feuilles au plus, 100 valeurs au moins par feuille, pas de 0,05), avec contraintes de monotonie : correction croissante avec le trafic, décroissante avec la distance à la bordure et, pour le NO₂, avec le vent. <i>Perceptron multicouche</i> (<code>MLPRegressor</code> : 32 puis 16 neurones, ReLU, régularisation L2 de 10<sup>−3</sup>, arrêt anticipé sur 10 % des données, 80 passes au plus) : variables normalisées, valeurs absentes remplacées par la moyenne avec un indicateur « absente », cible normalisée, moyenne de 3 graines (2 en validation croisée), 20 000 heures tirées au hasard pour tenir le temps de calcul. Variables, toutes connues aussi de la carte : heure (sinus et cosinus), week-end, vent et pluie AROME, niveau de fond, incrément du modèle calé et, pour les stations documentées, logarithme du trafic, rapport hauteur / largeur et distance à la bordure (absentes ailleurs, ce que l'algorithme sait traiter). Deux évaluations, pour les trois derniers jours à chaque passage : à l'aveugle sur le jour J, toutes stations ; pour le NO₂, validation croisée en cinq groupes de zones administratives de surveillance (ZAS), la correction étant apprise sans les stations d'un groupe puis appliquée à elles le jour J. La rubrique donne, pour chaque candidat, l'apport sur le modèle calé (1 − erreur corrigée / erreur du modèle calé) sur 7 jours glissants, un verdict provisoire fondé sur l'apport par agglomération écartée, la courbe des apports jour après jour et l'importance des variables (hausse de l'erreur quand la variable est mélangée, trois tirages). Seul l'apport par agglomération écartée dit ce que la correction apporterait sur la carte, faite surtout de lieux sans station : un apport à l'aveugle nettement supérieur signale une correction qui retient les particularités des stations connues. La carte n'applique aucune des deux corrections ; elle ne le ferait qu'avec un apport par agglomération écartée positif et stable. À apport égal, le perceptron conviendrait mieux à la carte (correction continue, modèle léger à évaluer dans le navigateur) ; sur des données tabulaires de cette taille, les comparaisons publiées donnent toutefois l'avantage aux arbres. Les variables d'occupation du sol, d'émissions ou de morphologie urbaine, qui pourraient l'améliorer, demanderaient de nouvelles sources, à la fois aux stations et sur la carte. Il faut au moins 7 jours d'archive avant le jour testé.</li>
 <li><b>Périodes de 7 et 30 jours.</b> Le même script calcule chaque jour, pour la veille, la validation croisée du krigeage sur toutes les heures bien renseignées (erreur, biais, bonne classe, MQI du 90<sup>e</sup> centile par polluant) et le bilan des copies du jour, publiés dans <code>suivi/performances.json</code> (90 jours). Krigeage ordinaire seulement : les prévisions Prev'air passées ne sont pas archivées, l'erreur historique est donc un peu plus forte que celle de la méthode de la carte. L'onglet affiche les moyennes sur la période et les courbes jour par jour.</li>
 <li><b>Délai de publication par AASQA.</b> Pour chaque heure du fichier et chaque organisme, délai entre la fin de l'heure mesurée (temps universel en métropole, heure locale dans les DROM, ramenée en temps universel) et sa première apparition dans la copie, à dix minutes près ; médiane et 90<sup>e</sup> centile par AASQA sur la période (30 jours gardés). Les heures déjà publiées au premier passage suivi d'une journée sont écartées.</li>
 <li><b>Chargement et calculs de la page.</b> Durée de lecture de chaque source depuis l'ouverture de la page, sur le poste de l'utilisateur, et durée des calculs (krigeage d'un polluant à une heure, carte Geod'air, descente d'échelle, lecture du bâti) : nombre, moyenne, maximum et total.</li>
@@ -3819,11 +3820,16 @@ function perfCalageG(){
   var dfr = function(j){ return j.slice(8,10)+"/"+j.slice(5,7); }, tj = function(j){ return Date.parse(j+"T12:00:00Z"); };
   // Gain jour par jour et sur 7 jours glissants (erreurs quadratiques regroupées, pondérées par le nombre de couples-heures)
   var G = J.map(function(e,i){
-    var q = e.test && e.test[K], r = {e:e, q:q, g:null, gr:null, g7:null, gr7:null, f7:null, c7:null};
-    if(q && q.fond>0){ r.g = 100*(1-q.cale/q.fond); r.gr = 100*(1-q.ref/q.fond); }
-    var sn = 0, sf = 0, sc = 0, sr = 0;
-    for(var k=i;k>=0 && tj(e.jour)-tj(J[k].jour)<7*864e5;k--){ var t = J[k].test && J[k].test[K]; if(t){ sn += t.n; sf += t.n*t.fond*t.fond; sc += t.n*t.cale*t.cale; sr += t.n*t.ref*t.ref; } }
+    var q = e.test && e.test[K], qh = e.ml && e.ml.test ? e.ml.test[K] : null, r = {e:e, q:q, qh:qh, g:null, gr:null, gh:null, g7:null, gr7:null, gh7:null, f7:null, c7:null, a7:null, h7:null, cv7:null};
+    if(q && q.fond>0){ r.g = 100*(1-q.cale/q.fond); r.gr = 100*(1-q.ref/q.fond); if(qh) r.gh = 100*(1-qh.hyb/q.fond); }
+    var sn = 0, sf = 0, sc = 0, sr = 0, hn = 0, hf = 0, hc = 0, hh = 0, vn = 0, vc = 0, vh = 0;
+    for(var k=i;k>=0 && tj(e.jour)-tj(J[k].jour)<7*864e5;k--){ var t = J[k].test && J[k].test[K], th = J[k].ml && J[k].ml.test ? J[k].ml.test[K] : null, tv = J[k].ml && J[k].ml.cv ? J[k].ml.cv.NO2 : null;
+      if(t){ sn += t.n; sf += t.n*t.fond*t.fond; sc += t.n*t.cale*t.cale; sr += t.n*t.ref*t.ref; }
+      if(t && th){ hn += t.n; hf += t.n*t.fond*t.fond; hc += t.n*t.cale*t.cale; hh += t.n*th.hyb*th.hyb; }
+      if(tv){ vn += tv.n; vc += tv.n*tv.cale*tv.cale; vh += tv.n*tv.hyb*tv.hyb; } }
     if(sn && sf>0){ r.f7 = Math.sqrt(sf/sn); r.c7 = Math.sqrt(sc/sn); r.g7 = 100*(1-Math.sqrt(sc/sf)); r.gr7 = 100*(1-Math.sqrt(sr/sf)); }
+    if(hn && hf>0 && hc>0){ r.gh7 = 100*(1-Math.sqrt(hh/hf)); r.a7 = 100*(1-Math.sqrt(hh/hc)); r.h7 = Math.sqrt(hh/hn); r.hc7 = Math.sqrt(hc/hn); }
+    if(vn && vc>0){ r.cv7 = 100*(1-Math.sqrt(vh/vc)); r.vh7 = Math.sqrt(vh/vn); r.vc7 = Math.sqrt(vc/vn); }
     return r; });
   var der = J[J.length-1], gd = null; for(var i=G.length-1;i>=0;i--) if(G[i].g7!=null){ gd = G[i]; break; }
   var g7av = null; if(gd){ for(var k2=G.length-1;k2>=0;k2--) if(G[k2].g7!=null && tj(gd.e.jour)-tj(G[k2].e.jour)>=7*864e5){ g7av = G[k2].g7; break; } }
@@ -3848,14 +3854,15 @@ function perfCalageG(){
   G.forEach(function(r,i){
     if(r.g7!=null) lc.push(X(i).toFixed(1)+","+Y(r.g7).toFixed(1));
     if(r.gr7!=null) lr.push(X(i).toFixed(1)+","+Y(r.gr7).toFixed(1));
-    if(r.g!=null){ var q = r.q, tx = r.e.jour.split("-").reverse().join("/")+" · "+nomK+", fenêtre de "+r.e.fen+" jour"+(r.e.fen>1?"s":"")+"\nerreur du fond seul "+pfr(q.fond)+" µg/m³\nparamètres d'origine "+pfr(q.ref)+" (gain "+Math.round(r.gr)+" %)\nparamètres calés la veille "+pfr(q.cale)+" (gain "+Math.round(r.g)+" %), biais "+pfr(q.biais)+"\n"+q.n.toLocaleString("fr-FR")+" couples-heures"+(r.e.arome ? "" : " · vent AROME absent");
+    if(r.g!=null){ var q = r.q, tx = r.e.jour.split("-").reverse().join("/")+" · "+nomK+", fenêtre de "+r.e.fen+" jour"+(r.e.fen>1?"s":"")+"\nerreur du fond seul "+pfr(q.fond)+" µg/m³\nparamètres d'origine "+pfr(q.ref)+" (gain "+Math.round(r.gr)+" %)\nparamètres calés la veille "+pfr(q.cale)+" (gain "+Math.round(r.g)+" %), biais "+pfr(q.biais)+"\n"+(r.qh ? "corrigé par gradient boosting "+pfr(r.qh.hyb)+" (gain "+Math.round(r.gh)+" %)\n" : "")+(r.e.ml && r.e.ml.mlp && r.e.ml.mlp.test && r.e.ml.mlp.test[K] ? "corrigé par perceptron "+pfr(r.e.ml.mlp.test[K].hyb)+" (gain "+Math.round(100*(1-r.e.ml.mlp.test[K].hyb/q.fond))+" %)\n" : "")+q.n.toLocaleString("fr-FR")+" couples-heures"+(r.e.arome ? "" : " · vent AROME absent");
       sv += '<circle class="pt" cx="'+X(i).toFixed(1)+'" cy="'+Y(r.g).toFixed(1)+'" r="3.5" fill="rgba(80,240,230,.55)"'+tipAttr(tx)+'/>'; }
     if(n<=10 || i%Math.ceil(n/8)===0 || i===n-1) sv += '<text x="'+X(i)+'" y="'+(y0+18)+'" class="ax" text-anchor="middle">'+dfr(r.e.jour)+'</text>';
   });
   if(lr.length>1) sv += '<polyline fill="none" stroke="rgba(255,255,255,.55)" stroke-width="1.6" stroke-dasharray="5 4" points="'+lr.join(" ")+'"/>';
   if(lc.length>1) sv += '<polyline fill="none" stroke="#50f0e6" stroke-width="2.4" points="'+lc.join(" ")+'"/>';
   sv += '<text x="'+x0+'" y="10" class="ax">erreur évitée par rapport au fond seul</text></svg>';
-  h += '<h3>Gain sur le fond seul, '+nomK+', test à l\'aveugle</h3><div class="leg"><span><i style="background:#50f0e6"></i>paramètres calés la veille, 7 jours glissants</span><span><i style="background:rgba(80,240,230,.55);width:8px;height:8px;border-radius:50%"></i>valeur du jour</span><span><i class="tir"></i>paramètres d\'origine, 7 jours glissants</span></div>'+sv;
+  h += '<h3>Gain sur le fond seul, '+nomK+', test à l\'aveugle</h3><div class="leg"><span><i style="background:#50f0e6"></i>paramètres calés la veille, 7 jours glissants</span><span><i style="background:rgba(80,240,230,.55);width:8px;height:8px;border-radius:50%"></i>valeur du jour</span><span><i class="tir"></i>paramètres d\'origine, 7 jours glissants</span>'+'</div>'+sv;
+  h += perfCorrectionG(J,G,K,nomK,n,X,dfr,pleine);
   // 2. Stabilité des paramètres : valeur, intervalle à 90 %, valeur d'origine
   var par = [
     {t:"Incrément moyen "+nomK+" (µg/m³)", v:function(e){ return e.p && e.p.D ? e.p.D[K] : null; }, ic:function(e){ return e.ic && e.ic.D ? e.ic.D[K] : null; }, ref:K==="NO2" ? 8.8 : null, d:1},
@@ -3888,6 +3895,71 @@ function perfCalageG(){
     'Comme sur la carte, le vent, la pluie, le trafic et le confinement calés ne s\'appliquent qu\'à partir de 7 jours d\'historique. Intervalles à 90 % : jours tirés avec remise pour l\'incrément, le vent et la pluie, stations documentées tirées avec remise pour le trafic et le confinement. '+
     'Le modèle n\'apprend pas au-delà de sa fenêtre : une fois celle-ci pleine (30 jours), les variations traduisent surtout la saison ; il progresse ensuite avec de nouveaux dossiers de stations ou de meilleures données de trafic.</p>';
   el.innerHTML = h;
+}
+/* Correction apprise des résidus (tâche GitHub) : deux candidats, gradient boosting et perceptron multicouche, comparés au
+   modèle calé, à l'aveugle (toutes stations) et par agglomération écartée (NO₂, stations jamais vues) */
+function perfCorrectionG(J,G,K,nomK,n,X,dfr,pleine){
+  var CAND = [{k:"gbm", nom:"Gradient boosting", c:"#F0E641", src:function(e){ return e.ml || null; }},
+              {k:"mlp", nom:"Perceptron multicouche", c:"#c9a5ff", src:function(e){ return e.ml && e.ml.mlp ? e.ml.mlp : null; }}];
+  var tj = function(j){ return Date.parse(j+"T12:00:00Z"); }, h = '<h3>Correction apprise des résidus : gradient boosting et perceptron</h3>';
+  if(!J.some(function(e){ return e.ml; })) return h+'<p class="muted">Pas encore évaluée : la correction demande au moins 7 jours d\'archive avant le jour testé, et la bibliothèque scikit-learn dans la tâche GitHub.</p>';
+  var pool = function(i,cd){
+    var hn = 0, hc = 0, hh = 0, vn = 0, vc = 0, vh = 0;
+    for(var k=i;k>=0 && tj(J[i].jour)-tj(J[k].jour)<7*864e5;k--){ var t = J[k].test && J[k].test[K], m = cd.src(J[k]), th = m && m.test ? m.test[K] : null, tv = m && m.cv ? m.cv.NO2 : null;
+      if(t && th){ hn += t.n; hc += t.n*t.cale*t.cale; hh += t.n*th.hyb*th.hyb; }
+      if(tv){ vn += tv.n; vc += tv.n*tv.cale*tv.cale; vh += tv.n*tv.hyb*tv.hyb; } }
+    return {a: hn && hc>0 ? 100*(1-Math.sqrt(hh/hc)) : null, h: hn ? Math.sqrt(hh/hn) : null, hc: hn ? Math.sqrt(hc/hn) : null,
+            v: vn && vc>0 ? 100*(1-Math.sqrt(vh/vc)) : null, vh: vn ? Math.sqrt(vh/vn) : null, vc: vn ? Math.sqrt(vc/vn) : null};
+  };
+  var P = CAND.map(function(cd){ return J.map(function(e,i){ return pool(i,cd); }); });
+  var dern = function(ci,cle){ for(var i=J.length-1;i>=0;i--) if(P[ci][i][cle]!=null) return P[ci][i]; return null; };
+  var sg = function(v){ return (v>=0?"+":"−")+Math.abs(Math.round(v))+" %"; }, cls = function(v){ return v==null ? "" : v>0 ? "bon" : "mauvais"; };
+  var tu = CAND.map(function(cd,ci){ var dv = dern(ci,"v"), da = dern(ci,"a");
+    return [cd.nom, dv ? sg(dv.v) : "—", (dv ? "par agglomération écartée, NO₂, 7 jours : erreur "+pfr(dv.vh)+" µg/m³ contre "+pfr(dv.vc)+" pour le modèle calé" : "validation par agglomération pas encore calculée")+
+      (da ? " · à l'aveugle, "+nomK+" : "+sg(da.a) : ""), cls(dv && dv.v), cd.c]; });
+  var v0 = dern(0,"v"), v1 = dern(1,"v"), verdict = "À départager", vs = "il faut les deux validations par agglomération", vc = "";
+  if(v0 && v1){ var b = v0.v>=v1.v ? 0 : 1, vb = b ? v1.v : v0.v;
+    if(vb<=0){ verdict = "Aucun des deux"; vs = "ni l'un ni l'autre ne fait mieux que le modèle calé sur des stations jamais vues"; vc = "mauvais"; }
+    else { verdict = CAND[b].nom; vs = "meilleur apport par agglomération écartée ("+sg(vb)+" contre "+sg(b ? v0.v : v1.v)+"), à confirmer sur plusieurs semaines"; vc = "bon"; } }
+  var avec = J.filter(function(e){ return e.ml; }), der = avec[avec.length-1].ml;
+  tu.push(["Verdict provisoire", verdict, vs+" · apprentissage sur "+der.jours+" jours", vc, null]);
+  h += '<div class="kpis">'+tu.map(function(t){ return '<div class="kpi"'+(t[4] ? ' style="border-left:3px solid '+t[4]+'"' : '')+'><div class="kl">'+t[0]+'</div><div class="kv '+t[3]+'" style="font-size:22px">'+t[1]+'</div><div class="ks">'+t[2]+'</div></div>'; }).join("")+'</div>';
+  // Apport jour par jour (7 jours glissants) : trait plein à l'aveugle, tirets par agglomération écartée
+  var W = 640, Ht = 210, x0 = 46, y0 = 170, lo = -10, hi = 10;
+  P.forEach(function(L){ L.forEach(function(r){ [r.a,r.v].forEach(function(v){ if(v!=null){ lo = Math.min(lo,v); hi = Math.max(hi,v); } }); }); });
+  lo = Math.floor(lo/10)*10; hi = Math.ceil(hi/10)*10; var Y = function(v){ return y0-(y0-16)*(v-lo)/(hi-lo); };
+  var sv = '<svg viewBox="0 0 '+W+' '+Ht+'" width="100%" role="img" aria-label="Apport des deux corrections apprises sur le modèle calé">';
+  for(var g=lo;g<=hi;g+=10) sv += '<line x1="'+x0+'" x2="'+(W-16)+'" y1="'+Y(g)+'" y2="'+Y(g)+'" stroke="rgba(255,255,255,'+(g===0?0.35:0.08)+')"/><text x="'+(x0-6)+'" y="'+(Y(g)+4)+'" class="ax" text-anchor="end">'+(g>0?"+":"")+g+' %</text>';
+  if(pleine!=null && pleine>0) sv += '<line x1="'+X(pleine)+'" x2="'+X(pleine)+'" y1="16" y2="'+y0+'" stroke="rgba(255,255,255,.35)" stroke-dasharray="3 3"/>';
+  CAND.forEach(function(cd,ci){
+    var la = [], lv = [];
+    P[ci].forEach(function(r,i){
+      if(r.a!=null) la.push(X(i).toFixed(1)+","+Y(r.a).toFixed(1));
+      if(r.v!=null){ lv.push(X(i).toFixed(1)+","+Y(r.v).toFixed(1)); sv += '<circle class="pt" cx="'+X(i).toFixed(1)+'" cy="'+Y(r.v).toFixed(1)+'" r="3" fill="'+cd.c+'"'+tipAttr(J[i].jour.split("-").reverse().join("/")+" · "+cd.nom+", 7 jours glissants\npar agglomération écartée (NO₂) "+sg(r.v)+" : erreur "+pfr(r.vh)+" contre "+pfr(r.vc)+" µg/m³"+(r.a!=null ? "\nà l'aveugle ("+nomK+") "+sg(r.a)+" : erreur "+pfr(r.h)+" contre "+pfr(r.hc) : ""))+'/>'; }
+    });
+    if(la.length>1) sv += '<polyline fill="none" stroke="'+cd.c+'" stroke-width="1.6" stroke-opacity=".75" points="'+la.join(" ")+'"/>';
+    if(lv.length>1) sv += '<polyline fill="none" stroke="'+cd.c+'" stroke-width="2.4" stroke-dasharray="7 4" points="'+lv.join(" ")+'"/>';
+  });
+  J.forEach(function(e,i){ if(n<=10 || i%Math.ceil(n/8)===0 || i===n-1) sv += '<text x="'+X(i)+'" y="'+(y0+18)+'" class="ax" text-anchor="middle">'+dfr(e.jour)+'</text>'; });
+  sv += '<text x="'+x0+'" y="10" class="ax">erreur évitée par rapport au modèle calé</text></svg>';
+  h += '<div class="leg">'+CAND.map(function(cd){ return '<span><i style="background:'+cd.c+'"></i>'+cd.nom+'</span>'; }).join("")+'<span><i style="background:rgba(255,255,255,.6)"></i>trait plein : à l\'aveugle, '+nomK+'</span><span><i class="tir"></i>tirets : par agglomération écartée, NO₂</span></div>'+sv;
+  // Importance des variables (NO₂, dernier jour évalué), barres groupées par variable
+  var im = CAND.map(function(cd){ for(var k=avec.length-1;k>=0;k--){ var m = cd.src(avec[k]); if(m && m.imp && m.imp.NO2) return {v:m.imp.NO2, j:avec[k].jour}; } return null; });
+  if(im[0] || im[1]){
+    var noms = Object.keys((im[0]||im[1]).v), val = function(ci,c){ return im[ci] && im[ci].v[c]!=null ? im[ci].v[c] : null; };
+    noms.sort(function(a,b){ return Math.max(val(0,b)||0,val(1,b)||0)-Math.max(val(0,a)||0,val(1,a)||0); });
+    var mx = 0.1; noms.forEach(function(c){ mx = Math.max(mx,val(0,c)||0,val(1,c)||0); });
+    var Wb = 560, x1 = 170, Hb = noms.length*30+8, sb = '<svg viewBox="0 0 '+Wb+' '+Hb+'" width="100%" style="max-width:600px" role="img" aria-label="Importance des variables pour les deux corrections">';
+    noms.forEach(function(c,i){ var y = 6+i*30; sb += '<text x="'+(x1-8)+'" y="'+(y+15)+'" class="ax" text-anchor="end">'+esc(c)+'</text>';
+      CAND.forEach(function(cd,ci){ var v = val(ci,c); if(v==null) return; var w = (Wb-x1-60)*Math.max(0,v)/mx;
+        sb += '<rect x="'+x1+'" y="'+(y+ci*11)+'" width="'+w.toFixed(1)+'" height="10" rx="2" fill="'+cd.c+'"'+tipAttr(cd.nom+" · "+c+" : l'erreur augmente de "+pfr(v,2)+" µg/m³ quand cette variable est mélangée")+'/><text x="'+(x1+w+6).toFixed(1)+'" y="'+(y+ci*11+9)+'" class="ax">'+pfr(v,2)+'</text>'; }); });
+    h += '<h3>Variables utiles à la correction (NO₂, '+dfr((im[0]||im[1]).j)+')</h3><div class="leg">'+CAND.map(function(cd){ return '<span><i style="background:'+cd.c+'"></i>'+cd.nom+'</span>'; }).join("")+'</div>'+sb+'</svg>';
+  }
+  h += '<p class="muted">Le modèle calé reste la base. Deux candidats apprennent, sur les 30 jours de la fenêtre, l\'écart résiduel entre la mesure à la station trafic et « fond + incrément calé », à partir de variables que la carte connaît aussi : heure, week-end, vent et pluie AROME, niveau de fond, incrément du modèle et, pour les stations documentées, trafic, rapport hauteur / largeur et distance à la bordure. '+
+    'Gradient boosting (scikit-learn, arbres de régression additionnés) avec contraintes de monotonie : correction croissante avec le trafic, décroissante avec la distance à la bordure et, pour le NO₂, avec le vent. Perceptron multicouche (scikit-learn, 32 puis 16 neurones, ReLU) : variables normalisées, valeurs absentes remplacées par la moyenne avec un indicateur, arrêt anticipé, moyenne de 3 graines (2 en validation croisée), 20 000 heures tirées au hasard pour l\'apprentissage. '+
+    'Deux évaluations : à l\'aveugle sur le jour suivant, toutes stations, et, pour le NO₂, en écartant tour à tour un cinquième des zones de surveillance (ZAS) : la correction est apprise sans leurs stations, puis appliquée à elles. Seule la seconde dit ce que la correction apporterait sur la carte, faite surtout de lieux sans station ; un apport à l\'aveugle nettement supérieur signale une correction qui retient les particularités des stations connues. '+
+    'Importance : hausse de l\'erreur quand la variable est mélangée entre les heures. La carte n\'applique aucune des deux corrections ; elle n\'aurait d\'intérêt qu\'avec un apport par agglomération écartée positif et stable.</p>';
+  return h;
 }
 function perfCopies(){
   var el = document.getElementById("perfCopies"); if(!el) return;
