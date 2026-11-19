@@ -5,7 +5,11 @@
 #   calage/calage.json      : incrément trafic − fond, profil horaire (jours ouvrés, week-end), exposant du vent, effet de la pluie,
 #                             exposant du trafic et confinement calés sur les stations documentées, sur les 30 derniers jours complets ;
 #   suivi/performances.json : pour chaque jour complet, validation croisée du krigeage ordinaire (station retirée tour à tour) par
-#                             polluant, taux de bonne classe, MQI de FAIRMODE, et bilan des copies (90 jours).
+#                             polluant, taux de bonne classe, MQI de FAIRMODE sur 7 et 30 jours glissants, et bilan des copies (90 jours) ;
+#   suivi/mqi_jours.json    : sommes quotidiennes par station et par polluant pour le MQI (30 jours) ;
+#   suivi/mqi_fenetres.json : MQI par station et MQI du 90e centile sur les 7 et 30 derniers jours (diagramme cible de la page).
+# MQI : guide FAIRMODE version 4.0 (mai 2026, tableau 1, directive 2024/2881) ; NO₂ horaire, O₃ maximum journalier sur 8 h,
+#       PM₁₀ et PM₂,₅ moyenne journalière. Paramètres à revoir avec la mise à jour annoncée pour fin 2026.
 # Heures : celles des fichiers du LCSQA (temps universel en métropole, heure locale dans les DROM) sont converties en heure de Paris.
 import csv, gzip, glob, json, math, os, sys, time, unicodedata, datetime as dt
 from zoneinfo import ZoneInfo
@@ -17,7 +21,45 @@ PARIS = ZoneInfo("Europe/Paris"); UTC = dt.timezone.utc
 AUJ = dt.date.fromisoformat(os.environ["IATMO_JOUR"]) if os.environ.get("IATMO_JOUR") else dt.datetime.now(PARIS).date()   # IATMO_JOUR : essais
 POLS = ["NO2", "O3", "PM10", "PM25"]
 GRILLE_AEE = {"NO2": [10, 25, 60, 100, 150], "O3": [60, 100, 120, 160, 180], "PM10": [15, 45, 120, 195, 270], "PM25": [5, 15, 50, 90, 140]}
-FAIRMODE = {"NO2": (0.24, 200, 0.20), "O3": (0.18, 120, 0.79), "PM10": (0.28, 50, 0.25), "PM25": (0.36, 25, 0.50)}   # U_r, RV, α ; β = 2
+# FAIRMODE 4.0, tableau 1 : valeur limite LV (µg/m³), U_r,fix, β court terme, plancher U∅ (µg/m³), période d'évaluation
+FM4 = {"NO2": (200, 0.15, 3.2, 3, "h"), "O3": (120, 0.15, 2.2, 10, "8h"), "PM10": (45, 0.25, 2.2, 4, "j"), "PM25": (25, 0.25, 2.5, 3, "j")}
+def u_obs(p, O):
+    """Incertitude de mesure : U∅ à concentration nulle, croissance linéaire jusqu'à U_r·LV à la valeur limite, puis proportionnelle."""
+    lv, ur, _, u0, _ = FM4[p]; O = np.asarray(O, float)
+    return np.where(O <= lv, u0 + (ur * lv - u0) * O / lv, ur * O)
+def sommes(p, serie):
+    """Paires (mesure, estimation) de la période d'évaluation d'un jour → sommes n, ΣO, ΣM, ΣO², ΣM², ΣOM, ΣU² (ou None)."""
+    per = FM4[p][4]
+    if per == "h": paires = [(o, m) for _, o, m in serie]
+    elif per == "j":
+        if len(serie) < 18: return None                                     # 75 % des heures
+        paires = [(float(np.mean([o for _, o, _ in serie])), float(np.mean([m for _, _, m in serie])))]
+    else:                                                                   # O₃ : maximum des moyennes glissantes sur 8 h (6 heures au moins)
+        par_h = {h: (o, m) for h, o, m in serie}; mo, mm = [], []
+        for d in range(0, 17):
+            v = [par_h[h] for h in range(d, d + 8) if h in par_h]
+            if len(v) >= 6: mo.append(np.mean([a for a, _ in v])); mm.append(np.mean([b for _, b in v]))
+        if len(mo) < 13: return None                                        # 75 % des 17 moyennes du jour
+        paires = [(float(max(mo)), float(max(mm)))]
+    if not paires: return None
+    O = np.array([a for a, _ in paires]); M = np.array([b for _, b in paires]); U = u_obs(p, O)
+    return [len(paires), float(O.sum()), float(M.sum()), float((O * O).sum()), float((M * M).sum()), float((O * M).sum()), float((U * U).sum())]
+def mqi_station(p, S):
+    n, so, sm, soo, smm, som, su2 = S
+    mse = max(0.0, (smm - 2 * som + soo) / n); den = math.sqrt(1 + FM4[p][2] ** 2) * math.sqrt(su2 / n)
+    if not den > 0: return None
+    mo, mm = so / n, sm / n; sdo = math.sqrt(max(0.0, soo / n - mo * mo)); sdm = math.sqrt(max(0.0, smm / n - mm * mm))
+    r = (som / n - mo * mm) / (sdo * sdm) if sdo > 0 and sdm > 0 else 0.0
+    biais = mm - mo; crmse = math.sqrt(max(0.0, mse - biais * biais)); dom_r = math.sqrt(max(0.0, 2 * sdo * sdm * (1 - r))) > abs(sdm - sdo)
+    return {"mqi": math.sqrt(mse) / den, "x": (-1 if dom_r else 1) * crmse / den, "y": biais / den, "n": n, "rmse": math.sqrt(mse), "biais": biais, "r": r}
+def mqi90(v):
+    """90e centile des MQI des stations (FAIRMODE : N90 = partie entière de 0,9·Ns, interpolation linéaire)."""
+    v = sorted(v); ns = len(v)
+    if not ns: return None
+    q = 0.9 * ns; k = int(q)
+    if k < 1: return v[0]
+    if k >= ns: return v[-1]
+    return v[k - 1] + (v[k] - v[k - 1]) * (q - k)
 
 def norm(s): return "".join(c for c in unicodedata.normalize("NFD", str(s or "").lower()) if unicodedata.category(c) != "Mn")
 def decalage(org):
@@ -108,7 +150,8 @@ def krige_loo(x, y, z):
 
 # ---------- Performances quotidiennes ----------
 fperf = os.path.join(OUT, "suivi/performances.json"); PERF = lire_json(fperf, [])
-faits = {d["jour"] for d in PERF}
+fmj = os.path.join(OUT, "suivi/mqi_jours.json"); MQJ = lire_json(fmj, {})
+faits = {d["jour"] for d in PERF if d.get("v") == 4 and d["jour"] in MQJ}               # jours à refaire : antérieurs à FAIRMODE 4.0
 journal = lire_json(os.path.join(OUT, "suivi/journal.json"), [])
 DOM0 = (2.5, 46.5); KX = 111.32 * math.cos(math.radians(DOM0[1]))
 FM = [c for c in FONDS if metro(coord(c))]
@@ -116,7 +159,7 @@ for jour in [j for j in complets if j not in faits][-5:]:
     t1 = time.time(); heures = ["%s %02d" % (jour, h) for h in range(24)]
     cnt = {hk: sum(1 for c in FM if V.get((c, hk))) for hk in heures}; mx = max(cnt.values()) if cnt else 0
     hs = [hk for hk in heures if cnt[hk] >= max(20, 0.4 * mx)]
-    res = {"jour": jour, "heures": len(hs), "pol": {}}
+    res = {"jour": jour, "heures": len(hs), "pol": {}, "v": 4}; MQJ[jour] = {}
     for p in POLS:
         series = {}; se = sb = n = ok = 0
         for hk in hs:
@@ -128,22 +171,51 @@ for jour in [j for j in complets if j not in faits][-5:]:
             for c, o, ei in zip(cs, z, e):
                 est = max(0.0, o - ei); se += (est - o) ** 2; sb += est - o; n += 1
                 if classe(p, o) == classe(p, est): ok += 1
-                series.setdefault(c, []).append((o, est))
-        ur, rv, al = FAIRMODE[p]; mq = []
-        for c, s in series.items():
-            if len(s) < 6: continue
-            O = np.array([a for a, _ in s]); M = np.array([b for _, b in s])
-            u = ur * np.sqrt((1 - al * al) * O * O + al * al * rv * rv); den = 2 * np.sqrt(np.mean(u * u))
-            if den > 0: mq.append(float(np.sqrt(np.mean((M - O) ** 2)) / den))
+                series.setdefault(c, []).append((int(hk[-2:]), float(o), float(est)))
+        MQJ[jour][p] = {}
+        for c, serie in series.items():
+            S = sommes(p, serie)
+            if S: MQJ[jour][p][c] = [round(x, 3) for x in S]
         res["pol"][p] = {"rmse": round(math.sqrt(se / n), 2) if n else None, "biais": round(sb / n, 2) if n else None, "n": n,
-                         "nst": len(series), "classe": round(ok / n, 3) if n else None,
-                         "mqi90": round(float(np.percentile(mq, 90)), 3) if mq else None, "nmqi": len(mq)}
+                         "nst": len(series), "classe": round(ok / n, 3) if n else None}
     jj = [x for x in journal if str(x.get("t", "")).startswith(jour)]
     res["copies"] = {"n": len(jj), "complets": sum(1 for x in jj if x.get("lcsqa") == x.get("trafic") == x.get("arome") == "success"),
                      "lcsqa": sum(1 for x in jj if x.get("lcsqa") == "success")} if jj else None
     PERF.append(res); print("performances", jour, ":", len(hs), "heures,", round(time.time() - t1, 1), "s")
+# MQI sur fenêtres glissantes de 7 et 30 jours, recalculé pour chaque jour à partir des sommes quotidiennes par station
+MQJ = {j: MQJ[j] for j in sorted(MQJ)[-30:]}
+def fenetre(fin, w, p, details=False):
+    js = [j for j in sorted(MQJ) if j <= fin][-w:]
+    js = [j for j in js if (dt.date.fromisoformat(fin) - dt.date.fromisoformat(j)).days < w]
+    tot = {}
+    for j in js:
+        for c, S in MQJ[j].get(p, {}).items():
+            t = tot.setdefault(c, [0.0] * 7)
+            for k in range(7): t[k] += S[k]
+    if not tot: return None
+    nmax = max(t[0] for t in tot.values()); seuil = max(1, 0.75 * nmax)                  # couverture : 75 % de la station la mieux suivie
+    st = {c: mqi_station(p, t) for c, t in tot.items() if t[0] >= seuil}
+    st = {c: v for c, v in st.items() if v}
+    if not st: return None
+    out = {"mqi90": round(mqi90([v["mqi"] for v in st.values()]), 3), "ns": len(st), "nd": len(js)}
+    if details: out["pts"] = [[c, round(v["x"], 3), round(v["y"], 3), round(v["mqi"], 3), v["n"], round(v["rmse"], 2), round(v["biais"], 2), round(v["r"], 3)] for c, v in sorted(st.items())]
+    return out
+for d in PERF:
+    if d.get("v") != 4 or d["jour"] not in MQJ: continue
+    for p in POLS:
+        q = d["pol"].get(p)
+        if q is None: continue
+        f7, f30 = fenetre(d["jour"], 7, p), fenetre(d["jour"], 30, p)
+        q["mqi90"] = f7["mqi90"] if f7 else None; q["nmqi"] = f7["ns"] if f7 else 0; q["mqi90_30"] = f30["mqi90"] if f30 else None
 PERF = sorted(PERF, key=lambda d: d["jour"])[-90:]
-ecrire_json(fperf, PERF)
+ecrire_json(fperf, PERF); ecrire_json(fmj, MQJ)
+if MQJ:
+    fin = max(MQJ)
+    ecrire_json(os.path.join(OUT, "suivi/mqi_fenetres.json"), {"version": "FAIRMODE 4.0 (mai 2026, tableau 1)", "jour": fin,
+        "periodes": {"NO2": "horaire", "O3": "maximum journalier sur 8 h", "PM10": "moyenne journalière", "PM25": "moyenne journalière"},
+        "parametres": {p: {"LV": FM4[p][0], "Ur": FM4[p][1], "beta": FM4[p][2], "U0": FM4[p][3]} for p in POLS},
+        "7": {p: fenetre(fin, 7, p, True) for p in POLS}, "30": {p: fenetre(fin, 30, p, True) for p in POLS},
+        "pts": "code, x (CRMSE normé, signé), y (biais normé), MQI, nombre de valeurs, erreur, biais, corrélation"})
 
 # ---------- Calage sur l'historique (30 derniers jours complets) ----------
 jours = complets[-30:]
