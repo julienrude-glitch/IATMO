@@ -673,6 +673,7 @@ e_i = z_i − ẑ₋ᵢ(x_i) = w_i / Q_ii                 erreur de prévision, 
 <li><b>Bâti livré par le Plan IGN selon le zoom.</b> Le bouton « Mesurer ici » parcourt les zooms 16 à 12 au centre de la carte (la carte se déplace puis revient) et compte, pour chacun, les bâtiments des tuiles dans un carré central de taille fixe (au plus 1,2 km de côté, contenu dans la vue du zoom 16) et dans toute la vue. La part du maximum dans le carré central dit à partir de quel zoom la livraison est complète ; la densité de la vue est celle que teste le seuil de 20 bâtiments par km² ; la dernière colonne dit si le bâti entre dans le calcul. À lancer en ville dense et en zone rurale pour confirmer ou ajuster le seuil.</li>
 <li><b>Temps de calcul.</b> Les indicateurs du jour demandent 52 krigeages avec validation croisée pour 13 heures (environ 7 factorisations de matrices de 200 à 400 stations chacun). Trois mesures les rendent quasi immédiats : la factorisation de Cholesky (§ 7.6), qui ramène le calcul de 8,6 s à 2,2 s sur le poste d'essai ; le calcul d'avance, lancé cinq secondes après la lecture des mesures, par tranches de 25 ms quand le navigateur est inoccupé, si bien que l'onglet s'ouvre en moins de 0,2 s ; enfin, si l'onglet est ouvert avant la fin, le polluant affiché est calculé et montré en premier. Les modèles des heures qui ne sont pas à l'écran ne gardent pas leur factorisation (plusieurs Mo chacun), refaite à la demande pour la carte d'incertitude. Les krigeages profitent aussi à l'onglet Geod'air, dont les heures déjà calculées s'affichent sans délai.</li>
 <li><b>Export en PDF.</b> Le bouton « Exporter en PDF », en bas de l'onglet, ouvre la fenêtre d'impression du navigateur sur l'onglet seul, tel qu'il est affiché (polluant et période choisis, couleurs de l'écran), avec en tête le polluant, la période et l'heure d'édition ; choisir « Enregistrer au format PDF » comme imprimante (Edge, Firefox, Chrome). Le nom proposé pour le fichier est IATMO_Evaluation_AAAA-MM-JJ_polluant. Ce choix évite d'embarquer une bibliothèque de génération de PDF (plusieurs centaines de kilo-octets) et garde les graphiques en vectoriel.</li>
+<li><b>Export Excel.</b> Le bouton « Télécharger les données (Excel) », sous celui du PDF, enregistre un classeur .xlsx pour le polluant et la période choisis en haut de l'onglet (aujourd'hui, 7 ou 30 jours ; NO₂, O₃, PM₁₀ ou PM₂,₅). Feuilles, selon les données disponibles : Résumé (choix, date d'édition, toutes les tuiles affichées, liste des feuilles) ; Heures, Stations (MQI) et Cohérence AASQA pour le jour même ; Jours et Stations (MQI) pour 7 ou 30 jours ; Effet routier NO2, Calage, Correction apprise et Délais AASQA dans tous les cas. Chaque feuille porte ses données, en-têtes figés, et ses graphiques natifs d'Excel (courbes, barres, nuages de points comme le diagramme cible), modifiables dans le tableur. Le fichier est écrit dans le navigateur, sans bibliothèque ni serveur ; son nom reprend la date, le polluant et la période (IATMO_Evaluation_AAAA-MM-JJ_polluant_7j.xlsx). L'ozone n'ayant pas d'incrément routier calé, ses feuilles Calage et Correction apprise portent sur le NO₂.</li>
 <li><b>Interactions.</b> Choix du polluant ; survol d'un point ou d'une barre pour son détail ; clic sur une station (diagramme cible, tableau des écarts) pour centrer la carte dessus dans l'onglet Geod'air, sur une heure pour l'afficher.</li>
 <li><b>Pistes.</b> Archivage des prévisions Prev'air pour évaluer la méthode de la carte sur l'historique ; évaluation de l'effet routier sur plusieurs semaines aux stations documentées.</li>
 </ul>
@@ -714,6 +715,7 @@ e_i = z_i − ẑ₋ᵢ(x_i) = w_i / Q_ii                 erreur de prévision, 
 <div id="perfBati"></div>
 </details>
 <p class="perfExport"><button type="button" id="perfPdf">Exporter en PDF</button> <span class="muted">La fenêtre d'impression du navigateur s'ouvre sur la page telle qu'affichée (polluant et période choisis) : choisir « Enregistrer au format PDF » comme imprimante.</span></p>
+<p class="perfExport" style="margin-top:10px;border-top:0;padding-top:0"><button type="button" id="perfXlsx">Télécharger les données (Excel)</button> <span class="muted">Classeur .xlsx pour le polluant et la période choisis en haut de l'onglet (<b id="perfXlsxChoix">NO₂, aujourd'hui</b>) : une feuille par rubrique, avec ses données et ses graphiques, et une feuille de résumé.</span></p>
 </article><div id="perfTip"></div></div>
 <div id="sources" class="sheet" role="dialog" aria-modal="true" aria-label="Sources"><article><button type="button" class="sheetClose">Fermer ✕</button>
 <h1>Sources</h1>
@@ -3705,6 +3707,7 @@ function perfAfficher(){
   document.querySelectorAll("#perfPol button").forEach(function(b){ b.classList.toggle("on",+b.getAttribute("data-p")===p); });
   document.querySelectorAll("#perfPer button").forEach(function(b){ b.classList.toggle("on",+b.getAttribute("data-per")===per); });
   document.querySelectorAll("#perf [data-per]").forEach(function(sec){ if(sec.tagName==="BUTTON") return; var v = sec.getAttribute("data-per"); sec.style.display = (v==="jour" ? per===0 : v==="histo" ? per>0 : true) ? "" : "none"; });
+  var bx = document.getElementById("perfXlsxChoix"); if(bx) bx.textContent = ["NO₂","O₃","PM₁₀","PM₂,₅"][p]+", "+(per ? per+" derniers jours" : "aujourd'hui");
   perfRetards(); perfTemps(); perfBatiG();
   if(per>0){ perfHisto(nom); perfRouteG(); perfCalageG(); perfCopies(); return; }
   // Indicateurs de synthèse
@@ -3961,6 +3964,279 @@ function perfCorrectionG(J,G,K,nomK,n,X,dfr,pleine){
     'Importance : hausse de l\'erreur quand la variable est mélangée entre les heures. La carte n\'applique aucune des deux corrections ; elle n\'aurait d\'intérêt qu\'avec un apport par agglomération écartée positif et stable.</p>';
   return h;
 }
+/* ---------- Export Excel de l'onglet Évaluation : classeur .xlsx écrit dans la page (aucune bibliothèque), pour le polluant et la
+   période choisis ; une feuille par rubrique, données et graphiques natifs d'Excel (DrawingML) ; archive ZIP sans compression ---------- */
+var XLSX_ECR = (function(){
+  var CRC = null, enc = new TextEncoder();
+  function crc32(b){
+    if(!CRC){ CRC = new Uint32Array(256); for(var n=0;n<256;n++){ var c = n; for(var k=0;k<8;k++) c = c&1 ? 0xEDB88320^(c>>>1) : c>>>1; CRC[n] = c>>>0; } }
+    var c = 0xFFFFFFFF; for(var i=0;i<b.length;i++) c = CRC[(c^b[i])&255]^(c>>>8); return (c^0xFFFFFFFF)>>>0;
+  }
+  function zip(files){
+    var parts = [], cd = [], off = 0, d = new Date();
+    var tm = (d.getHours()<<11)|(d.getMinutes()<<5)|(d.getSeconds()>>1), dt = ((d.getFullYear()-1980)<<9)|((d.getMonth()+1)<<5)|d.getDate();
+    files.forEach(function(f){
+      var nom = enc.encode(f.n), data = enc.encode(f.d), crc = crc32(data), h = new DataView(new ArrayBuffer(30)), c = new DataView(new ArrayBuffer(46));
+      h.setUint32(0,0x04034b50,true); h.setUint16(4,20,true); h.setUint16(6,0x0800,true); h.setUint16(8,0,true); h.setUint16(10,tm,true); h.setUint16(12,dt,true);
+      h.setUint32(14,crc,true); h.setUint32(18,data.length,true); h.setUint32(22,data.length,true); h.setUint16(26,nom.length,true); h.setUint16(28,0,true);
+      c.setUint32(0,0x02014b50,true); c.setUint16(4,20,true); c.setUint16(6,20,true); c.setUint16(8,0x0800,true); c.setUint16(10,0,true); c.setUint16(12,tm,true); c.setUint16(14,dt,true);
+      c.setUint32(16,crc,true); c.setUint32(20,data.length,true); c.setUint32(24,data.length,true); c.setUint16(28,nom.length,true);
+      c.setUint16(30,0,true); c.setUint16(32,0,true); c.setUint16(34,0,true); c.setUint16(36,0,true); c.setUint32(38,0,true); c.setUint32(42,off,true);
+      parts.push(new Uint8Array(h.buffer),nom,data); cd.push(new Uint8Array(c.buffer),nom); off += 30+nom.length+data.length;
+    });
+    var lcd = 0; cd.forEach(function(x){ lcd += x.length; });
+    var e = new DataView(new ArrayBuffer(22)); e.setUint32(0,0x06054b50,true); e.setUint16(8,files.length,true); e.setUint16(10,files.length,true); e.setUint32(12,lcd,true); e.setUint32(16,off,true);
+    return new Blob(parts.concat(cd,[new Uint8Array(e.buffer)]),{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
+  }
+  function x(s){ return String(s).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g,"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+  function col(i){ var s = ""; i++; while(i>0){ var m = (i-1)%26; s = String.fromCharCode(65+m)+s; i = Math.floor((i-1)/26); } return s; }
+  function plage(f,c,r1,r2){ return "'"+f.replace(/'/g,"''")+"'!$"+col(c)+"$"+(r1+1)+(r2!=null && r2!==r1 ? ":$"+col(c)+"$"+(r2+1) : ""); }
+  // Styles : 0 normal, 1 en-tête gras sur fond gris, 2 nombre 0,0, 3 nombre 0,00, 4 entier, 5 titre, 6 note (italique, renvoi à la ligne), 7 gras
+  var STYLES = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'+
+    '<numFmts count="1"><numFmt numFmtId="164" formatCode="0.0"/></numFmts>'+
+    '<fonts count="4"><font><sz val="10"/><name val="Arial"/><family val="2"/></font><font><b/><sz val="10"/><name val="Arial"/><family val="2"/></font>'+
+    '<font><b/><sz val="14"/><name val="Arial"/><family val="2"/></font><font><i/><sz val="9"/><color rgb="FF595959"/><name val="Arial"/><family val="2"/></font></fonts>'+
+    '<fills count="3"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FFE7EEF0"/><bgColor indexed="64"/></patternFill></fill></fills>'+
+    '<borders count="2"><border><left/><right/><top/><bottom/><diagonal/></border><border><left/><right/><top/><bottom style="thin"><color rgb="FF8EA3AB"/></bottom><diagonal/></border></borders>'+
+    '<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>'+
+    '<cellXfs count="8"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>'+
+    '<xf numFmtId="0" fontId="1" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment wrapText="1" vertical="center"/></xf>'+
+    '<xf numFmtId="164" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/><xf numFmtId="2" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/>'+
+    '<xf numFmtId="1" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/><xf numFmtId="0" fontId="2" fillId="0" borderId="0" xfId="0" applyFont="1"/>'+
+    '<xf numFmtId="0" fontId="3" fillId="0" borderId="0" xfId="0" applyFont="1" applyAlignment="1"><alignment wrapText="1" vertical="top"/></xf>'+
+    '<xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/></cellXfs>'+
+    '<cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>';
+  function cellule(v,r,c){
+    if(v==null || v==="") return "";
+    var s = 0, val = v;
+    if(typeof v==="object"){ s = v.s||0; val = v.v; if(val==null || val==="" || (typeof val==="number" && !isFinite(val))) return ""; }
+    var a = col(c)+(r+1);
+    if(typeof val==="number"){ if(!isFinite(val)) return ""; return '<c r="'+a+'"'+(s ? ' s="'+s+'"' : '')+'><v>'+val+'</v></c>'; }
+    return '<c r="'+a+'"'+(s ? ' s="'+s+'"' : '')+' t="inlineStr"><is><t>'+x(val).trim()+'</t></is></c>';
+  }
+  function feuilleXml(F,aDessin){
+    var h = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">';
+    h += '<sheetViews><sheetView workbookViewId="0"'+(F.premiere ? ' tabSelected="1"' : '')+'>'+(F.fige!=null ? '<pane ySplit="'+(F.fige+1)+'" topLeftCell="A'+(F.fige+2)+'" activePane="bottomLeft" state="frozen"/>' : '')+'</sheetView></sheetViews>';
+    h += '<sheetFormatPr defaultRowHeight="13"/>';
+    if(F.larg && F.larg.length) h += '<cols>'+F.larg.map(function(w,i){ return '<col min="'+(i+1)+'" max="'+(i+1)+'" width="'+w+'" customWidth="1"/>'; }).join("")+'</cols>';
+    h += '<sheetData>'+F.lignes.map(function(L,r){ var cs = (L||[]).map(function(v,c){ return cellule(v,r,c); }).join(""), entete = (L||[]).some(function(v){ return v && typeof v==="object" && v.s===1; });
+      return cs ? '<row r="'+(r+1)+'"'+(entete ? ' ht="40" customHeight="1"' : '')+'>'+cs+'</row>' : ''; }).join("")+'</sheetData>';      // en-têtes sur trois lignes au plus
+    if(F.fusions && F.fusions.length) h += '<mergeCells count="'+F.fusions.length+'">'+F.fusions.map(function(m){ return '<mergeCell ref="'+m+'"/>'; }).join("")+'</mergeCells>';
+    h += '<pageMargins left="0.6" right="0.6" top="0.7" bottom="0.7" header="0.3" footer="0.3"/>';
+    if(aDessin) h += '<drawing r:id="rId1"/>';
+    return h+'</worksheet>';
+  }
+  function valeur(F,c,r){ var v = (F.lignes[r]||[])[c]; if(v!=null && typeof v==="object") v = v.v; return v; }
+  function texteRiche(t,taille,gras,rot){
+    return '<c:tx><c:rich><a:bodyPr'+(rot ? ' rot="-5400000" vert="horz"' : '')+'/><a:lstStyle/><a:p><a:pPr><a:defRPr sz="'+taille+'" b="'+(gras?1:0)+'"/></a:pPr><a:r><a:rPr lang="fr-FR" sz="'+taille+'" b="'+(gras?1:0)+'"/><a:t>'+x(t)+'</a:t></a:r></a:p></c:rich></c:tx>';
+  }
+  function cacheNum(F,c,r1,r2){ var h = '<c:numCache><c:formatCode>General</c:formatCode><c:ptCount val="'+(r2-r1+1)+'"/>';
+    for(var r=r1;r<=r2;r++){ var v = valeur(F,c,r); if(typeof v==="number" && isFinite(v)) h += '<c:pt idx="'+(r-r1)+'"><c:v>'+v+'</c:v></c:pt>'; } return h+'</c:numCache>'; }
+  function cacheTxt(F,c,r1,r2){ var h = '<c:strCache><c:ptCount val="'+(r2-r1+1)+'"/>';
+    for(var r=r1;r<=r2;r++){ var v = valeur(F,c,r); if(v!=null && v!=="") h += '<c:pt idx="'+(r-r1)+'"><c:v>'+x(v)+'</c:v></c:pt>'; } return h+'</c:strCache>'; }
+  function axe(type,id,croise,pos,titre,opt){
+    opt = opt||{};
+    var h = '<c:'+type+'><c:axId val="'+id+'"/><c:scaling><c:orientation val="'+(opt.inverse ? "maxMin" : "minMax")+'"/>'+(opt.min!=null ? '<c:min val="'+opt.min+'"/>' : '')+'</c:scaling><c:delete val="0"/><c:axPos val="'+pos+'"/>';
+    if(type==="valAx" && !opt.sansGrille) h += '<c:majorGridlines><c:spPr><a:ln w="6350"><a:solidFill><a:srgbClr val="D9D9D9"/></a:solidFill></a:ln></c:spPr></c:majorGridlines>';
+    if(titre) h += '<c:title>'+texteRiche(titre,900,false,pos==="l" || pos==="r")+'<c:overlay val="0"/></c:title>';
+    h += '<c:numFmt formatCode="General" sourceLinked="1"/><c:majorTickMark val="out"/><c:minorTickMark val="none"/><c:tickLblPos val="low"/>';
+    h += '<c:txPr><a:bodyPr/><a:lstStyle/><a:p><a:pPr><a:defRPr sz="800"/></a:pPr><a:endParaRPr lang="fr-FR"/></a:p></c:txPr>';
+    h += '<c:crossAx val="'+croise+'"/>'+(opt.croiseMax ? '<c:crosses val="max"/>' : '<c:crosses val="autoZero"/>');
+    if(type==="catAx") h += '<c:auto val="1"/><c:lblAlgn val="ctr"/><c:lblOffset val="100"/><c:noMultiLvlLbl val="0"/>';
+    else h += '<c:crossBetween val="'+(opt.entre ? "between" : "midCat")+'"/>';
+    return h+'</c:'+type+'>';
+  }
+  var COUL = ["1F9E89","E0A800","7F7F7F","8E6CC9","E8743B","4E79A7"];
+  function graphiqueXml(G,F){
+    var f = F.nom, h = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<c:chartSpace xmlns:c="http://schemas.openxmlformats.org/drawingml/2006/chart" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">';
+    h += '<c:roundedCorners val="0"/><c:chart><c:title>'+texteRiche(G.titre,1100,true)+'<c:overlay val="0"/></c:title><c:autoTitleDeleted val="0"/><c:plotArea><c:layout/>';
+    var ser = G.series.map(function(S,i){
+      var cl = S.couleur || COUL[i%COUL.length], s = '<c:ser><c:idx val="'+i+'"/><c:order val="'+i+'"/><c:tx><c:strRef><c:f>'+plage(f,S.col,G.r0)+'</c:f>'+cacheTxt(F,S.col,G.r0,G.r0)+'</c:strRef></c:tx>';
+      if(G.type==="line") s += '<c:spPr><a:ln w="22225" cap="rnd"><a:solidFill><a:srgbClr val="'+cl+'"/></a:solidFill>'+(S.tirets ? '<a:prstDash val="dash"/>' : '')+'<a:round/></a:ln></c:spPr>'+
+        '<c:marker>'+(S.marqueur===false ? '<c:symbol val="none"/>' : '<c:symbol val="circle"/><c:size val="4"/><c:spPr><a:solidFill><a:srgbClr val="'+cl+'"/></a:solidFill><a:ln><a:solidFill><a:srgbClr val="'+cl+'"/></a:solidFill></a:ln></c:spPr>')+'</c:marker>';
+      else if(G.type==="scatter") s += '<c:spPr><a:ln w="19050"><a:noFill/></a:ln></c:spPr><c:marker><c:symbol val="circle"/><c:size val="6"/><c:spPr><a:solidFill><a:srgbClr val="'+cl+'"><a:alpha val="80000"/></a:srgbClr></a:solidFill><a:ln><a:noFill/></a:ln></c:spPr></c:marker>';
+      else s += '<c:spPr><a:solidFill><a:srgbClr val="'+cl+'"/></a:solidFill></c:spPr><c:invertIfNegative val="0"/>';
+      if(G.type==="scatter") s += '<c:xVal><c:numRef><c:f>'+plage(f,S.xcol,G.r1,G.r2)+'</c:f>'+cacheNum(F,S.xcol,G.r1,G.r2)+'</c:numRef></c:xVal><c:yVal><c:numRef><c:f>'+plage(f,S.col,G.r1,G.r2)+'</c:f>'+cacheNum(F,S.col,G.r1,G.r2)+'</c:numRef></c:yVal><c:smooth val="0"/>';
+      else { s += '<c:cat><c:strRef><c:f>'+plage(f,G.cat,G.r1,G.r2)+'</c:f>'+cacheTxt(F,G.cat,G.r1,G.r2)+'</c:strRef></c:cat><c:val><c:numRef><c:f>'+plage(f,S.col,G.r1,G.r2)+'</c:f>'+cacheNum(F,S.col,G.r1,G.r2)+'</c:numRef></c:val>';
+        if(G.type==="line") s += '<c:smooth val="0"/>'; }
+      return s+'</c:ser>';
+    }).join("");
+    if(G.type==="line") h += '<c:lineChart><c:grouping val="standard"/><c:varyColors val="0"/>'+ser+'<c:marker val="1"/><c:axId val="5001"/><c:axId val="5002"/></c:lineChart>'+
+      axe("catAx",5001,5002,"b",G.tx)+axe("valAx",5002,5001,"l",G.ty,{entre:true});
+    else if(G.type==="scatter") h += '<c:scatterChart><c:scatterStyle val="lineMarker"/><c:varyColors val="0"/>'+ser+'<c:axId val="5001"/><c:axId val="5002"/></c:scatterChart>'+
+      axe("valAx",5001,5002,"b",G.tx,{sansGrille:true})+axe("valAx",5002,5001,"l",G.ty);
+    else { var hz = G.type==="barH";
+      h += '<c:barChart><c:barDir val="'+(hz ? "bar" : "col")+'"/><c:grouping val="clustered"/><c:varyColors val="0"/>'+ser+'<c:gapWidth val="60"/>'+(G.series.length>1 ? '<c:overlap val="-10"/>' : '')+'<c:axId val="5001"/><c:axId val="5002"/></c:barChart>'+
+        axe("catAx",5001,5002,hz ? "l" : "b",G.tx,{inverse:hz})+axe("valAx",5002,5001,hz ? "b" : "l",G.ty,{entre:true,croiseMax:hz}); }
+    h += '<c:spPr><a:noFill/><a:ln><a:noFill/></a:ln></c:spPr></c:plotArea>';
+    if(G.series.length>1) h += '<c:legend><c:legendPos val="b"/><c:overlay val="0"/><c:txPr><a:bodyPr/><a:lstStyle/><a:p><a:pPr><a:defRPr sz="800"/></a:pPr><a:endParaRPr lang="fr-FR"/></a:p></c:txPr></c:legend>';
+    h += '<c:plotVisOnly val="1"/><c:dispBlanksAs val="gap"/></c:chart><c:spPr><a:solidFill><a:srgbClr val="FFFFFF"/></a:solidFill><a:ln w="6350"><a:solidFill><a:srgbClr val="BFBFBF"/></a:solidFill></a:ln></c:spPr></c:chartSpace>';
+    return h;
+  }
+  function dessinXml(gs,premier){
+    var h = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<xdr:wsDr xmlns:xdr="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">';
+    gs.forEach(function(G,i){ var P = G.pos;
+      h += '<xdr:twoCellAnchor editAs="oneCell"><xdr:from><xdr:col>'+P[0]+'</xdr:col><xdr:colOff>0</xdr:colOff><xdr:row>'+P[1]+'</xdr:row><xdr:rowOff>0</xdr:rowOff></xdr:from><xdr:to><xdr:col>'+P[2]+'</xdr:col><xdr:colOff>0</xdr:colOff><xdr:row>'+P[3]+'</xdr:row><xdr:rowOff>0</xdr:rowOff></xdr:to>'+
+        '<xdr:graphicFrame macro=""><xdr:nvGraphicFramePr><xdr:cNvPr id="'+(i+2)+'" name="Graphique '+(premier+i)+'"/><xdr:cNvGraphicFramePr/></xdr:nvGraphicFramePr><xdr:xfrm><a:off x="0" y="0"/><a:ext cx="0" cy="0"/></xdr:xfrm>'+
+        '<a:graphic><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/chart"><c:chart xmlns:c="http://schemas.openxmlformats.org/drawingml/2006/chart" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" r:id="rId'+(i+1)+'"/></a:graphicData></a:graphic></xdr:graphicFrame><xdr:clientData/></xdr:twoCellAnchor>';
+    });
+    return h+'</xdr:wsDr>';
+  }
+  // feuilles : [{nom, lignes, larg, fige, graphiques:[{type, titre, r0 (ligne des en-têtes), r1, r2, cat, series:[{col, xcol, couleur, tirets, marqueur}], tx, ty, pos:[c1,r1,c2,r2]}]}]
+  function classeur(feuilles,titre){
+    var files = [], ct = [], wbRels = [], sheets = [], ng = 0, nd = 0;
+    feuilles.forEach(function(F,i){
+      var n = i+1, gs = F.graphiques||[];
+      if(gs.length){ nd++;
+        files.push({n:"xl/worksheets/_rels/sheet"+n+".xml.rels", d:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing" Target="../drawings/drawing'+nd+'.xml"/></Relationships>'});
+        var rels = gs.map(function(G,k){ ng++; files.push({n:"xl/charts/chart"+ng+".xml", d:graphiqueXml(G,F)}); ct.push('<Override PartName="/xl/charts/chart'+ng+'.xml" ContentType="application/vnd.openxmlformats-officedocument.drawingml.chart+xml"/>');
+          return '<Relationship Id="rId'+(k+1)+'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/chart" Target="../charts/chart'+ng+'.xml"/>'; });
+        files.push({n:"xl/drawings/drawing"+nd+".xml", d:dessinXml(gs,ng-gs.length+1)});
+        files.push({n:"xl/drawings/_rels/drawing"+nd+".xml.rels", d:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+rels.join("")+'</Relationships>'});
+        ct.push('<Override PartName="/xl/drawings/drawing'+nd+'.xml" ContentType="application/vnd.openxmlformats-officedocument.drawing+xml"/>');
+      }
+      files.push({n:"xl/worksheets/sheet"+n+".xml", d:feuilleXml(F,gs.length>0)});
+      ct.push('<Override PartName="/xl/worksheets/sheet'+n+'.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>');
+      wbRels.push('<Relationship Id="rId'+n+'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet'+n+'.xml"/>');
+      sheets.push('<sheet name="'+x(F.nom)+'" sheetId="'+n+'" r:id="rId'+n+'"/>');
+    });
+    var ns = feuilles.length;
+    wbRels.push('<Relationship Id="rId'+(ns+1)+'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>');
+    files.unshift({n:"[Content_Types].xml", d:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/>'+
+      '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>'+
+      '<Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/>'+ct.join("")+'</Types>'},
+      {n:"_rels/.rels", d:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/></Relationships>'},
+      {n:"docProps/core.xml", d:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><dc:title>'+x(titre)+'</dc:title><dc:creator>IATMO</dc:creator><dcterms:created xsi:type="dcterms:W3CDTF">'+new Date().toISOString().slice(0,19)+'Z</dcterms:created></cp:coreProperties>'},
+      {n:"xl/workbook.xml", d:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><bookViews><workbookView activeTab="0"/></bookViews><sheets>'+sheets.join("")+'</sheets></workbook>'},
+      {n:"xl/_rels/workbook.xml.rels", d:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+wbRels.join("")+'</Relationships>'},
+      {n:"xl/styles.xml", d:STYLES});
+    return zip(files);
+  }
+  return {classeur:classeur};
+})();
+// Contenu du classeur : rubriques de l'onglet Évaluation pour le polluant et la période choisis
+function xlsxEvaluation(){
+  var p = PERF.pol, per = +PERF.per||0, K = POLK[p], polsT = ["NO₂","O₃","PM₁₀","PM₂,₅"], nom = polsT[p], F = [];
+  var n1 = function(v){ return v==null || !isFinite(v) ? null : {v:Math.round(v*10)/10, s:2}; }, n2 = function(v){ return v==null || !isFinite(v) ? null : {v:Math.round(v*100)/100, s:3}; };
+  var ent = function(v){ return v==null || !isFinite(v) ? null : {v:Math.round(v), s:4}; }, H = function(t){ return {v:t, s:1}; }, dfr = function(j){ return j.split("-").reverse().join("/"); };
+  var stNom = {}; (GEO.stations||[]).forEach(function(s){ stNom[s.code] = s.nom; }); var nomSt = function(c){ return stNom[c] || c; };
+  var place = function(nc,k){ return [nc+1,1+k*19,nc+10,18+k*19]; };
+  // Résumé : tuiles affichées dans l'onglet, rubrique par rubrique
+  var R = [[{v:"IATMO – Évaluation", s:5}],[],[{v:"Polluant",s:7}, nom],[{v:"Période",s:7}, per ? per+" derniers jours archivés" : "aujourd'hui, heures déjà mesurées"],
+    [{v:"Édité le",s:7}, new Date().toLocaleString("fr-FR",{timeZone:"Europe/Paris",day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"}).replace(" "," à ")],
+    [{v:"Sources",s:7}, "Mesures temps réel du LCSQA (Geod'air, non validées), calculs de la page et de la tâche GitHub d'IATMO ; méthode : onglet Méthodologie."],[],
+    [H("Rubrique"),H("Indicateur"),H("Valeur"),H("Détail")]];
+  var art = document.querySelector("#perf article"), rub = "Synthèse";
+  if(art) art.querySelectorAll("h2, h3, .kpi").forEach(function(el){
+    if(el.offsetParent===null) return;
+    if(el.tagName==="H2" || el.tagName==="H3"){ if(!el.closest(".kpi")) rub = el.textContent.trim(); return; }
+    var q = function(s){ var e = el.querySelector(s); return e ? e.textContent.trim() : ""; };
+    R.push([rub, q(".kl"), q(".kv"), q(".ks")]);
+  });
+  F.push({nom:"Résumé", lignes:R, larg:[44,30,18,100], premiere:true});
+  if(!per){
+    var P = PERF.res ? PERF.res.pol[p] : null;
+    if(P && P.parH && P.parH.length){
+      var L = [[H("Heure"),H("Stations"),H("Erreur, méthode de la carte (µg/m³)"),H("Erreur, krigeage seul (µg/m³)"),H("Dérive Prev'air"),H("R² de la dérive")]];
+      P.parH.forEach(function(q){ L.push([hk2h(q.hk)+" h", ent(q.n), n2(q.carte), n2(q.seul), q.carte==null ? null : q.derive ? "oui" : "non", n2(q.r2)]); });
+      F.push({nom:"Heures", lignes:L, larg:[10,10,22,22,14,14], fige:0, graphiques:[{type:"line", titre:"Erreur de krigeage heure par heure, "+nom+" (validation croisée)", r0:0, r1:1, r2:L.length-1, cat:0,
+        series:[{col:2},{col:3, couleur:"7F7F7F", tirets:true}], ty:"µg/m³", pos:place(6,0)}]});
+    }
+    if(P && P.pts && P.pts.length){
+      var L2 = [[H("Code"),H("Station"),H("Heures"),H("MQI"),H("Erreur (µg/m³)"),H("Biais (µg/m³)"),H("Corrélation"),H("Écart-type normé (x)"),H("Biais normé (y)")]];
+      P.pts.slice().sort(function(a,b){ return b.mqi-a.mqi; }).forEach(function(q){ L2.push([q.code, q.nom, ent(q.n), n2(q.mqi), n2(q.rmse), n2(q.biais), n2(q.r), n2(q.x), n2(q.y)]); });
+      F.push({nom:"Stations (MQI)", lignes:L2, larg:[10,28,8,8,12,12,11,14,12], fige:0, graphiques:[{type:"scatter", titre:"Diagramme cible FAIRMODE 4.0, "+nom+" (MQI ≤ 1 dans le cercle de rayon 1)", r0:0, r1:1, r2:L2.length-1,
+        series:[{col:8, xcol:7}], tx:"écart-type normé (corrélation < 0 à gauche)", ty:"biais normé", pos:place(9,0)}]});
+    }
+    var C = PERF.coh && PERF.coh.pol ? PERF.coh.pol[p] : null;
+    if(C && C.n){
+      var lab = ["−2 classes ou plus","−1 classe","même classe","+1 classe","+2 classes ou plus"], L3 = [[H("Écart carte − indice publié"),H("Stations")]];
+      C.ecarts.forEach(function(v,i){ L3.push([lab[i], ent(v)]); });
+      L3.push([]); L3.push([H("Station"),H("Code"),H("AASQA"),H("Indice publié"),H("Carte IATMO"),H("Valeur retenue (µg/m³)"),H("Heures")]);
+      C.lignes.forEach(function(l){ L3.push([l.nom, l.code, l.org||"", CLASSES[l.cA].lib, CLASSES[l.cI].lib, n1(l.v), ent(l.nh)]); });
+      F.push({nom:"Cohérence AASQA", lignes:L3, larg:[26,10,22,14,14,14,8], graphiques:[{type:"bar", titre:"Écart de classe avec l'indice publié par l'AASQA, "+nom+" ("+C.n+" stations)", r0:0, r1:1, r2:5, cat:0, series:[{col:1}], ty:"stations", pos:place(7,0)}]});
+    }
+  } else {
+    var jj = perfJours();
+    if(jj.length){
+      var L4 = [[H("Date"),H("Erreur de krigeage (µg/m³)"),H("Biais (µg/m³)"),H("Bonne classe (%)"),H("MQI90, 7 jours"),H("MQI90, 30 jours"),H("Stations"),H("Heures"),H("Copies complètes")]];
+      jj.forEach(function(d){ var q = d.pol[["NO2","O3","PM10","PM25"][p]] || {}; L4.push([dfr(d.jour), n2(q.rmse), n2(q.biais), n1(q.classe!=null ? 100*q.classe : null), n2(q.mqi90), n2(q.mqi90_30), ent(q.nst), ent(d.heures), d.copies ? ent(d.copies.complets) : null]); });
+      F.push({nom:"Jours", lignes:L4, larg:[12,16,12,12,12,12,9,9,12], fige:0, graphiques:[
+        {type:"line", titre:"Erreur de krigeage jour par jour, "+nom, r0:0, r1:1, r2:L4.length-1, cat:0, series:[{col:1},{col:2, couleur:"7F7F7F", tirets:true}], ty:"µg/m³", pos:place(9,0)},
+        {type:"line", titre:"MQI du 90e centile (objectif ≤ 1), "+nom, r0:0, r1:1, r2:L4.length-1, cat:0, series:[{col:4, couleur:"E0A800"},{col:5, couleur:"8E6CC9", tirets:true}], ty:"MQI", pos:place(9,1)}]});
+    }
+    var Fw = PERF.fen && PERF.fen[String(per)] ? PERF.fen[String(per)][["NO2","O3","PM10","PM25"][p]] : null;
+    if(Fw && Fw.pts && Fw.pts.length){
+      var L5 = [[H("Code"),H("Station"),H("Valeurs"),H("MQI"),H("Erreur (µg/m³)"),H("Biais (µg/m³)"),H("Corrélation"),H("Écart-type normé (x)"),H("Biais normé (y)")]];
+      Fw.pts.slice().sort(function(a,b){ return b[3]-a[3]; }).forEach(function(a){ L5.push([a[0], nomSt(a[0]), ent(a[4]), n2(a[3]), n2(a[5]), n2(a[6]), n2(a[7]), n2(a[1]), n2(a[2])]); });
+      F.push({nom:"Stations (MQI)", lignes:L5, larg:[10,28,8,8,12,12,11,14,12], fige:0, graphiques:[{type:"scatter", titre:"Diagramme cible FAIRMODE 4.0, "+nom+", "+Fw.nd+" jours (MQI90 "+pfr(Fw.mqi90,2)+")", r0:0, r1:1, r2:L5.length-1,
+        series:[{col:8, xcol:7}], tx:"écart-type normé (corrélation < 0 à gauche)", ty:"biais normé", pos:place(9,0)}]});
+    }
+  }
+  // Effet routier aux stations documentées (NO₂, mesures du jour)
+  if(CALF.pts && CALF.pts.length){
+    var L6 = [[H("Station"),H("Code"),H("TMJA (véh/j)"),H("Rapport H/L"),H("Bordure (m)"),H("Incrément observé (µg/m³)"),H("Modèle calé (µg/m³)"),H("Ancien modèle (µg/m³)")]];
+    CALF.pts.forEach(function(q){ L6.push([q.nom, q.code, ent(q.q), q.Aconnu ? n2(q.A) : null, q.f && q.f.dbord!=null ? n1(q.f.dbord) : null, n1(q.d), n1(q.m), n1(q.ma)]); });
+    F.push({nom:"Effet routier NO2", lignes:L6, larg:[28,10,12,10,10,16,16,16], fige:0, graphiques:[{type:"scatter", titre:"Incrément du NO₂ observé contre modélisé, stations trafic documentées", r0:0, r1:1, r2:L6.length-1,
+      series:[{col:5, xcol:6},{col:5, xcol:7, couleur:"7F7F7F"}], tx:"incrément modélisé (µg/m³) : calé, puis ancien modèle", ty:"incrément observé (µg/m³)", pos:place(8,0)}]});
+  }
+  // Progression du calage et correction apprise (historique quotidien de la tâche GitHub)
+  var J = PERF.cj || [], Kc = K || "NO2", nomK = {NO2:"NO₂",PM10:"PM₁₀",PM25:"PM₂,₅"}[Kc];
+  var Jt = J.filter(function(e){ return e.test && e.test[Kc]; });
+  if(Jt.length){
+    var L7 = [[H("Date"),H("Fenêtre (jours)"),H("Erreur, fond seul (µg/m³)"),H("Erreur, paramètres d'origine (µg/m³)"),H("Erreur, paramètres calés (µg/m³)"),H("Gain, paramètres d'origine (%)"),H("Gain, paramètres calés (%)"),H("Biais calé (µg/m³)"),H("Couples-heures"),
+      H("Incrément moyen (µg/m³)"),H("Exposant du trafic"),H("Confinement"),H("Exposant du vent"),H("Effet de la pluie")]];
+    Jt.forEach(function(e){ var q = e.test[Kc], pp = e.p||{}; L7.push([dfr(e.jour), ent(e.fen), n2(q.fond), n2(q.ref), n2(q.cale), n1(100*(1-q.ref/q.fond)), n1(100*(1-q.cale/q.fond)), n2(q.biais), ent(q.n),
+      n2(pp.D ? pp.D[Kc] : null), n2(pp.a), n2(pp.c), n2(pp.vent), n2(pp.pluie)]); });
+    F.push({nom:"Calage", lignes:L7, larg:[12,10,14,16,15,15,15,12,12,13,11,11,11,11], fige:0, graphiques:[
+      {type:"line", titre:"Gain de la descente d'échelle sur le fond seul, "+nomK+", test à l'aveugle", r0:0, r1:1, r2:L7.length-1, cat:0, series:[{col:6},{col:5, couleur:"7F7F7F", tirets:true}], ty:"%", pos:place(14,0)},
+      {type:"line", titre:"Exposant du trafic, confinement et exposant du vent calés", r0:0, r1:1, r2:L7.length-1, cat:0, series:[{col:10, couleur:"4E79A7"},{col:11, couleur:"E8743B"},{col:12, couleur:"1F9E89"}], ty:"sans unité", pos:place(14,1)}]});
+  }
+  var Jm = J.filter(function(e){ return e.ml && e.ml.test; });
+  if(Jm.length){
+    var g = function(h,c){ return h!=null && c ? 100*(1-h/c) : null; };
+    var L8 = [[H("Date"),H("Erreur, modèle calé ("+nomK+", µg/m³)"),H("Gradient boosting, à l'aveugle (µg/m³)"),H("Perceptron, à l'aveugle (µg/m³)"),H("Modèle calé, agglomérations écartées (NO₂, µg/m³)"),H("Gradient boosting, agglomérations écartées (µg/m³)"),H("Perceptron, agglomérations écartées (µg/m³)"),
+      H("Apport du gradient boosting, à l'aveugle (%)"),H("Apport du perceptron, à l'aveugle (%)"),H("Apport du gradient boosting, agglomérations écartées (%)"),H("Apport du perceptron, agglomérations écartées (%)")]];
+    Jm.forEach(function(e){ var t = e.test && e.test[Kc], gb = e.ml.test[Kc], mp = e.ml.mlp && e.ml.mlp.test ? e.ml.mlp.test[Kc] : null, cv = e.ml.cv ? e.ml.cv.NO2 : null, cm = e.ml.mlp && e.ml.mlp.cv ? e.ml.mlp.cv.NO2 : null;
+      L8.push([dfr(e.jour), t ? n2(t.cale) : null, gb ? n2(gb.hyb) : null, mp ? n2(mp.hyb) : null, cv ? n2(cv.cale) : null, cv ? n2(cv.hyb) : null, cm ? n2(cm.hyb) : null,
+        n1(g(gb && gb.hyb, t && t.cale)), n1(g(mp && mp.hyb, t && t.cale)), n1(g(cv && cv.hyb, cv && cv.cale)), n1(g(cm && cm.hyb, cm && cm.cale))]); });
+    var r2 = L8.length-1, gr = [{type:"line", titre:"Apport des corrections apprises sur le modèle calé (jour par jour)", r0:0, r1:1, r2:r2, cat:0,
+      series:[{col:7, couleur:"E0A800"},{col:8, couleur:"8E6CC9"},{col:9, couleur:"E0A800", tirets:true},{col:10, couleur:"8E6CC9", tirets:true}], ty:"% d'erreur évitée", pos:place(11,0)}];
+    var im = [null,null]; for(var k=Jm.length-1;k>=0;k--){ if(!im[0] && Jm[k].ml.imp && Jm[k].ml.imp.NO2) im[0] = Jm[k].ml.imp.NO2; if(!im[1] && Jm[k].ml.mlp && Jm[k].ml.mlp.imp && Jm[k].ml.mlp.imp.NO2) im[1] = Jm[k].ml.mlp.imp.NO2; }
+    if(im[0] || im[1]){
+      var noms = Object.keys(im[0]||im[1]).sort(function(a,b){ return Math.max((im[0]||{})[b]||0,(im[1]||{})[b]||0)-Math.max((im[0]||{})[a]||0,(im[1]||{})[a]||0); });
+      L8.push([]); var r0 = L8.length; L8.push([H("Variable (NO₂, dernier jour évalué)"),H("Gradient boosting : hausse de l'erreur (µg/m³)"),H("Perceptron : hausse de l'erreur (µg/m³)")]);
+      noms.forEach(function(c){ L8.push([c, n2(im[0] ? im[0][c] : null), n2(im[1] ? im[1][c] : null)]); });
+      gr.push({type:"barH", titre:"Importance des variables (NO₂) : hausse de l'erreur quand la variable est mélangée", r0:r0, r1:r0+1, r2:L8.length-1, cat:0, series:[{col:1, couleur:"E0A800"},{col:2, couleur:"8E6CC9"}], ty:"µg/m³", pos:place(11,1)});
+    }
+    F.push({nom:"Correction apprise", lignes:L8, larg:[24,14,15,15,17,17,17,14,14,16,16], fige:0, graphiques:gr});
+  }
+  // Délai de publication par AASQA (même calcul que la rubrique)
+  var D = retardsCalc();
+  if(D && D.orgs.length){
+    var L9 = [[H("AASQA"),H("Délai médian (h)"),H("90e centile (h)"),H("Heures suivies")]];
+    D.orgs.forEach(function(a){ L9.push([a.o, n2(a.med), n2(a.p90), ent(a.n)]); });
+    F.push({nom:"Délais AASQA", lignes:L9, larg:[30,14,14,12], fige:0, graphiques:[{type:"barH", titre:"Délai de publication des mesures par AASQA, "+(per ? per+" derniers jours" : "aujourd'hui"), r0:0, r1:1, r2:L9.length-1, cat:0,
+      series:[{col:1, couleur:"1F9E89"},{col:2, couleur:"E0A800"}], ty:"heures", pos:place(4,0)}]});
+  }
+  // Liste des feuilles dans le résumé
+  R.push([]); R.push([{v:"Feuilles",s:7}]);
+  var desc = {"Heures":"erreur de krigeage heure par heure (validation croisée), avec et sans la dérive Prev'air", "Stations (MQI)":"MQI de FAIRMODE 4.0 par station et diagramme cible", "Cohérence AASQA":"écart entre la carte Geod'air d'IATMO et l'indice publié, au droit des stations de fond",
+    "Jours":"série quotidienne de la validation croisée (tâche GitHub)", "Effet routier NO2":"incrément du NO₂ aux stations trafic documentées, observé et modélisé (mesures du jour)", "Calage":"progression du calage de la descente d'échelle, test à l'aveugle jour après jour",
+    "Correction apprise":"gradient boosting et perceptron : apport sur le modèle calé, importance des variables", "Délais AASQA":"délai entre la fin de l'heure mesurée et sa publication par le LCSQA"};
+  F.slice(1).forEach(function(f){ R.push([f.nom, desc[f.nom]||""]); });
+  if(!K && F.some(function(f){ return f.nom==="Calage" || f.nom==="Correction apprise"; })) R.push([{v:"L'ozone n'a pas d'incrément routier calé : les feuilles Calage et Correction apprise portent sur le NO₂.", s:6}]);
+  return F;
+}
+function xlsxTelecharger(){
+  var b = document.getElementById("perfXlsx"), t0 = b ? b.textContent : "";
+  try{
+    var pols = ["NO2","O3","PM10","PM2.5"], per = +PERF.per||0, nomF = "IATMO_Evaluation_"+parisDate(0)+"_"+pols[PERF.pol]+(per ? "_"+per+"j" : "")+".xlsx";
+    var blob = XLSX_ECR.classeur(xlsxEvaluation(), "IATMO – Évaluation"), a = document.createElement("a"), u = URL.createObjectURL(blob);
+    a.href = u; a.download = nomF; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function(){ URL.revokeObjectURL(u); },4000);
+    if(b){ b.textContent = "Fichier enregistré"; setTimeout(function(){ b.textContent = t0; },2500); }
+  }catch(e){ if(b){ b.textContent = "Échec de l'export"; setTimeout(function(){ b.textContent = t0; },3000); } if(window.console) console.error(e); }
+}
 function perfCopies(){
   var el = document.getElementById("perfCopies"); if(!el) return;
   var j = PERF.journal;
@@ -4032,9 +4308,8 @@ function perfHisto(nom){
     '<p class="muted">Calculé chaque jour après 4 h par la tâche GitHub sur l\'archive des mesures du LCSQA (heures de Paris), pour la veille. Krigeage ordinaire, sans la dérive Prev\'air, dont les prévisions passées ne sont pas archivées : l\'erreur est donc un peu plus forte que celle de la méthode de la carte.</p>';
 }
 // ---------- Délai de publication par AASQA (suivi/lcsqa_arrivees.json) ----------
-function perfRetards(){
-  var el = document.getElementById("perfRetards"); if(!el) return;
-  var A = PERF.arrivees; if(!A){ el.innerHTML = '<p class="muted">Suivi des arrivées non lu.</p>'; return; }
+function retardsCalc(){
+  var A = PERF.arrivees; if(!A) return null;
   var jours = Object.keys(A).sort(), per = PERF.per||0; jours = per ? jours.slice(-per) : jours.filter(function(j){ return j===parisDate(0); });
   var R = {}, ecart = 0;
   jours.forEach(function(j){
@@ -4050,6 +4325,12 @@ function perfRetards(){
     });
   });
   var orgs = Object.keys(R).filter(function(o){ return R[o].length>=2; }).map(function(o){ return {o:o,med:centile(R[o],0.5),p90:centile(R[o],0.9),n:R[o].length}; }).sort(function(a,b){ return a.med-b.med; });
+  return {orgs:orgs, jours:jours, ecart:ecart};
+}
+function perfRetards(){
+  var el = document.getElementById("perfRetards"); if(!el) return;
+  var D = retardsCalc(); if(!D){ el.innerHTML = '<p class="muted">Suivi des arrivées non lu.</p>'; return; }
+  var orgs = D.orgs, jours = D.jours, ecart = D.ecart, per = PERF.per||0;
   if(!orgs.length){ el.innerHTML = '<p class="muted">Pas encore assez d\'heures suivies sur la période (le suivi a commencé le 18 novembre après-midi).</p>'; return; }
   var W = 640, lh = 22, x0 = 230, Ht = orgs.length*lh+30, mx = Math.max(4,Math.ceil(Math.max.apply(null,orgs.map(function(a){ return a.p90; }))));
   var X = function(v){ return x0+(W-x0-16)*v/mx; }, h = '<svg viewBox="0 0 '+W+' '+Ht+'" width="100%" role="img" aria-label="Délai de publication par AASQA">';
@@ -4131,6 +4412,7 @@ function perfTemps(){
     setTimeout(function(){ window.print(); setTimeout(fin,500); },50);
   });
   document.getElementById("perfPer").addEventListener("click",function(e){ var b = e.target.closest("button"); if(!b) return; PERF.per = +b.getAttribute("data-per"); perfAfficher(); });
+  document.getElementById("perfXlsx").addEventListener("click",xlsxTelecharger);
   var tip = document.getElementById("perfTip");
   box.addEventListener("mousemove",function(e){
     var t = e.target.closest && e.target.closest("[data-tip]");
