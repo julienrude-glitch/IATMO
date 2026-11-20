@@ -317,7 +317,7 @@
 <div id="insets" class="off"></div>
 <div id="methodo" class="sheet" role="dialog" aria-modal="true" aria-label="Méthodologie"><article><button type="button" class="sheetClose">Fermer ✕</button>
 <h1><span class="ia">IA</span>TMO – Méthodologie</h1>
-<p class="by">Mise à jour : <span id="methMaj">19 novembre 2026</span></p>
+<p class="by">Mise à jour : <span id="methMaj">20 novembre 2026</span></p>
 <div class="enbref"><b>En bref.</b> IATMO affiche l'indice ATMO publié chaque jour par les AASQA, tel quel, à la commune. En dessous, il simule ce que donnerait une descente d'échelle jusqu'au quartier, par des règles explicites dont les paramètres sont appris chaque jour des mesures aux stations trafic, de l'IA au sens large : ce n'est pas l'indice officiel. Deux modèles d'apprentissage automatique (gradient boosting et perceptron) sont mis à l'épreuve pour corriger cette descente d'échelle, sans être encore appliqués. L'Aperçu 2027 préfigure le futur indice horaire sur la grille européenne, à partir de concentrations simulées. L'onglet Geod'air cartographie les mesures horaires des stations de fond, et l'onglet Évaluation mesure la justesse de ces calculs. Toutes les sources sont ouvertes (onglet Sources) ; IATMO sert à montrer l'interface, pas à informer.</div>
 <nav class="sommaire"><a href="#" data-cible="partieCdc">I. Cahier des charges</a><a href="#" data-cible="partieNote">II. Note méthodologique</a></nav>
 <h2 class="partie" id="partieCdc">I. Cahier des charges</h2>
@@ -694,7 +694,7 @@ e_i = z_i − ẑ₋ᵢ(x_i) = w_i / Q_ii                 erreur de prévision, 
 <ul>
 <li><b>Validation croisée.</b> Chaque station de fond est retirée tour à tour (formule de Dubrule, § 7.6) : l'erreur e<sub>i</sub> = z<sub>i</sub> − ẑ<sub>−i</sub> est celle d'une estimation faite sans la station. Deux méthodes sont comparées : celle de la carte (krigeage des résidus de la dérive Prev'air quand elle existe, krigeage ordinaire sinon) et le krigeage ordinaire seul. Les coefficients de la dérive ne sont pas réajustés à chaque retrait, ce qui rend son score un peu optimiste. Indicateurs : erreur quadratique moyenne, biais, gain relatif de Prev'air.</li>
 <li><b>Bonne classe.</b> Part des couples station-heure où l'estimation sans la station tombe dans la même classe de la grille européenne que la mesure.</li>
-<li><b>Indicateur MQI de FAIRMODE.</b> Guide FAIRMODE sur les objectifs de qualité des modèles, version 4.0 (mai 2026, JRC146736, aligné sur la directive 2024/2881), tableau 1. Pour chaque station, MQI = RMSE / (√(1 + β²) · RMS<sub>U</sub>), l'incertitude de mesure U(O) valant U<sub>∅</sub> à concentration nulle, croissant linéairement jusqu'à U<sub>r</sub> · LV à la valeur limite, puis restant proportionnelle à la concentration. Paramètres (LV, U<sub>r</sub>, β, U<sub>∅</sub>) : NO₂ horaire 200 µg/m³, 15 %, 3,2, 3 ; O₃ (maximum journalier sur 8 h) 120, 15 %, 2,2, 10 ; PM₁₀ journalier 45, 25 %, 2,2, 4 ; PM₂,₅ journalier 25, 25 %, 2,5, 3. L'objectif est atteint si 90 % des stations ont un MQI ≤ 1 : l'onglet donne le MQI du 90<sup>e</sup> centile (au moins 10 stations). Le jour même, seul le NO₂ est évalué ; l'O₃ et les particules, à une valeur par jour, le sont sur 7 et 30 jours par la tâche GitHub (couverture d'au moins 75 %). Diagramme cible : biais en ordonnée et erreur centrée en abscisse, sur la même échelle ; la distance au centre est le MQI. Le guide annonce une mise à jour des paramètres d'ici fin 2026 ; une révision datée de septembre 2026 est signalée, non consultée. FAIRMODE évalue des séries annuelles : sur quelques jours et pour une interpolation, le MQI est un repère, pas une évaluation réglementaire.</li>
+<li><b>Indicateur MQI de FAIRMODE.</b> Guide FAIRMODE sur les objectifs de qualité des modèles, version 4.1 (septembre 2026, JRC146736, alignée sur la directive 2024/2881), tableau 1, inchangé depuis la version 4.0 de mai 2026. Pour chaque station, MQI = RMSE / (√(1 + β²) · RMS<sub>U</sub>), l'incertitude de mesure U(O) valant U<sub>∅</sub> à concentration nulle, croissant linéairement jusqu'à U<sub>r</sub> · LV à la valeur limite, puis restant proportionnelle à la concentration. Paramètres (LV, U<sub>r</sub>, β, U<sub>∅</sub>) : NO₂ horaire 200 µg/m³, 15 %, 3,2, 3 ; O₃ (maximum journalier sur 8 h) 120, 15 %, 2,2, 10 ; PM₁₀ journalier 45, 25 %, 2,2, 4 ; PM₂,₅ journalier 25, 25 %, 2,5, 3. L'objectif est atteint si 90 % des stations ont un MQI ≤ 1 : l'onglet donne le MQI du 90<sup>e</sup> centile (au moins 10 stations). Le jour même, seul le NO₂ est évalué ; l'O₃ et les particules, à une valeur par jour, le sont sur 7 et 30 jours par la tâche GitHub (couverture d'au moins 75 %). Diagramme cible : biais en ordonnée et erreur centrée en abscisse, sur la même échelle ; la distance au centre est le MQI. La version 4.1 ne modifie que le tableau 6 de l'annexe (paramètres du CEN, alignés sur ceux du comité technique), qu'IATMO n'utilise pas ; ces paramètres, encore en validation, doivent être mis à jour fin 2026. Une analyse de VITO (2024), citée par le guide, suggère que le MQI du 90<sup>e</sup> centile n'est stable qu'au-delà de 20 stations. FAIRMODE évalue des séries annuelles : sur quelques jours et pour une interpolation, le MQI est un repère, pas une évaluation réglementaire.</li>
 <li><b>Cohérence avec l'indice des AASQA.</b> Le sous-indice publié pour la commune de chaque station (géocodage inverse de la Géoplateforme ; arrondissements rapportés à la commune) est comparé à la classe, sur la grille de 2020, de la carte Geod'air au droit de la station : maximum horaire pour le NO₂ et l'O₃, moyenne pour les particules, sur les heures déjà mesurées. La journée n'étant pas finie et l'indice publié étant une prévision, un écart n'est pas une erreur de l'un ou de l'autre. Les communes couvertes par un indice d'intercommunalité sont écartées.</li>
 <li><b>Effet routier aux stations documentées.</b> Incrément du NO₂ observé contre celui du modèle calé (§ 5.9) et de l'ancien modèle, avec a, c et les erreurs en validation croisée.</li>
 <li><b>Progression du calage.</b> Test à l'aveugle du calage du § 5.10 : pour chaque jour J, historique.py cale les paramètres sur les 30 jours d'archive qui précèdent J et les applique aux couples station trafic / stations de fond de J (10 km au plus), C = fond + Δ<sub>p</sub> · g<sub>p</sub>(h) · facteurs du vent et de la pluie, avec le trafic et le confinement pour les stations documentées. Le fond est la moyenne mesurée aux stations de fond appariées. Trois erreurs quadratiques moyennes horaires sont comparées : fond seul, paramètres d'origine (incrément de référence du 16 novembre pour le NO₂, rapport 1,3 du bilan 2024 pour les particules, trafic proportionnel, confinement 1, vent en racine carrée, pluie 0,25) et paramètres calés. Gain = 1 − erreur / erreur du fond seul. Les intervalles à 90 % des paramètres viennent d'un tirage avec remise des jours (incrément, vent, pluie) ou des stations documentées (trafic, confinement). Pendant le remplissage de la fenêtre, les intervalles doivent se resserrer et le gain se stabiliser au-dessus de celui des paramètres d'origine ; fenêtre pleine, les variations traduisent surtout la saison.</li>
@@ -3481,10 +3481,10 @@ function srcAfficher(){
    validation croisée « station retirée tour à tour » du krigeage, avec et sans la dérive Prev'air ; taux de bonne classe (grille
    européenne) ; indicateur de qualité de modélisation MQI de FAIRMODE et diagramme cible ; cohérence avec les sous-indices publiés
    par les AASQA au droit des stations de fond ; journal des copies de la tâche GitHub et arrivée des heures du LCSQA. */
-/* MQI du guide FAIRMODE, version 4.0 (mai 2026, tableau 1, directive 2024/2881), pour NO₂, O₃, PM₁₀, PM₂,₅ : valeur limite LV, U_r,fix,
+/* MQI du guide FAIRMODE, version 4.1 (septembre 2026, tableau 1 inchangé depuis la 4.0 de mai 2026, directive 2024/2881), pour NO₂, O₃, PM₁₀, PM₂,₅ : valeur limite LV, U_r,fix,
    β court terme, plancher U∅ et période d'évaluation (NO₂ horaire, O₃ maximum journalier sur 8 h, particules moyenne journalière).
    MQI = RMSE / √(RMS_U² + RMS_UM²), avec U_M = β·U, soit RMSE / (√(1+β²)·RMS_U). Mise à jour des paramètres annoncée pour fin 2026. */
-var FAIRMODE = {lv:[200,120,45,25], ur:[0.15,0.15,0.25,0.25], beta:[3.2,2.2,2.2,2.5], u0:[3,10,4,3], per:["valeurs horaires","maximum journalier sur 8 h","moyenne journalière","moyenne journalière"], version:"4.0 (mai 2026)"};
+var FAIRMODE = {lv:[200,120,45,25], ur:[0.15,0.15,0.25,0.25], beta:[3.2,2.2,2.2,2.5], u0:[3,10,4,3], per:["valeurs horaires","maximum journalier sur 8 h","moyenne journalière","moyenne journalière"], version:"4.1 (septembre 2026)"};
 function uObs(p,o){ var F = FAIRMODE; return o<=F.lv[p] ? F.u0[p]+(F.ur[p]*F.lv[p]-F.u0[p])*o/F.lv[p] : F.ur[p]*o; }   // U∅ à 0, linéaire jusqu'à U_r·LV, puis proportionnelle
 function mqi90(v){ v = v.slice().sort(function(a,b){ return a-b; }); var ns = v.length; if(!ns) return null; var q = 0.9*ns, k = Math.floor(q); return k<1 ? v[0] : k>=ns ? v[ns-1] : v[k-1]+(v[k]-v[k-1])*(q-k); }
 var PERF = {key:"", res:null, busy:false, pol:0, tache:0, journal:null, journalErr:null, arrivees:null, insee:null, coh:{}, cohBusy:false, msg:""};
@@ -3565,7 +3565,7 @@ function perfAgreger(H,pols){
       sm += a; cm += paires.length; s1 += a1; c1 += n1;
       parH.push({hk:hk, carte:paires.length ? Math.sqrt(a/paires.length) : null, seul:n1 ? Math.sqrt(a1/n1) : null, n:paires.length, derive:!!gm.drift, r2:gm.drift ? gm.drift.r2 : null});
     });
-    // MQI de FAIRMODE (version 4.0) par station, sur ses heures du jour (au moins 6), puis 90e centile des stations. Seul le NO₂ s'évalue
+    // MQI de FAIRMODE (version 4.1) par station, sur ses heures du jour (au moins 6), puis 90e centile des stations. Seul le NO₂ s'évalue
     // heure par heure ; l'O₃ (maximum sur 8 h) et les particules (moyenne journalière) n'ont qu'une valeur par jour : périodes de 7 et 30 jours.
     var F = FAIRMODE, pts = [];
     if(p===0) Object.keys(series).forEach(function(code){
@@ -3675,7 +3675,7 @@ function perfAfficher(){
   var tuiles = [
     ["Erreur de krigeage", P && P.rmse!=null ? pfr(P.rmse)+" µg/m³" : "—", P ? "validation croisée · "+P.nst+" stations · "+R.n+" h · biais "+pfr(P.biais) : "", ""],
     ["Bonne classe", P && P.classe!=null ? Math.round(100*P.classe)+" %" : "—", "grille européenne, valeurs horaires", ""],
-    ["Indicateur MQI (90 %)", P && P.mqi90!=null ? pfr(P.mqi90,2) : "—", PERF.pol!==0 ? FAIRMODE.per[PERF.pol]+" : voir 7 et 30 jours" : P && P.mqi90!=null ? "objectif ≤ 1 (FAIRMODE 4.0) · "+P.pts.length+" stations" : "au moins 6 heures par station", P && P.mqi90!=null ? (P.mqi90<=1 ? "bon" : "mauvais") : ""],
+    ["Indicateur MQI (90 %)", P && P.mqi90!=null ? pfr(P.mqi90,2) : "—", PERF.pol!==0 ? FAIRMODE.per[PERF.pol]+" : voir 7 et 30 jours" : P && P.mqi90!=null ? "objectif ≤ 1 (FAIRMODE 4.1) · "+P.pts.length+" stations" : "au moins 6 heures par station", P && P.mqi90!=null ? (P.mqi90<=1 ? "bon" : "mauvais") : ""],
     ["Fraîcheur des mesures", dern!=null ? dern+" h" : "—", (copie ? "copie de "+hm(copie) : "copie non lue")+(ok24!=null ? " · "+ok24+" copies sur 24 h"+(debutJ && Date.now()-debutJ<864e5 ? " (suivi depuis "+hm(debutJ)+")" : "") : ""), ""]];
   document.getElementById("perfKpi").innerHTML = tuiles.map(function(t){ return '<div class="kpi"><div class="kl">'+t[0]+'</div><div class="kv '+t[3]+'">'+t[1]+'</div><div class="ks">'+t[2]+'</div></div>'; }).join("");
   var vide = !GEO.stations || GEO.sim ? "Mesures du jour non lues : les indicateurs portent sur les mesures réelles de l'onglet Geod'air." : !P ? (PERF.busy ? "Calcul en cours…" : "") : null;
@@ -4102,7 +4102,7 @@ function xlsxEvaluation(){
     if(P && P.pts && P.pts.length){
       var L2 = [[H("Code"),H("Station"),H("Heures"),H("MQI"),H("Erreur (µg/m³)"),H("Biais (µg/m³)"),H("Corrélation"),H("Écart-type normé (x)"),H("Biais normé (y)")]];
       P.pts.slice().sort(function(a,b){ return b.mqi-a.mqi; }).forEach(function(q){ L2.push([q.code, q.nom, ent(q.n), n2(q.mqi), n2(q.rmse), n2(q.biais), n2(q.r), n2(q.x), n2(q.y)]); });
-      F.push({nom:"Stations (MQI)", lignes:L2, larg:[10,28,8,8,12,12,11,14,12], fige:0, graphiques:[{type:"scatter", titre:"Diagramme cible FAIRMODE 4.0, "+nom+" (MQI ≤ 1 dans le cercle de rayon 1)", r0:0, r1:1, r2:L2.length-1,
+      F.push({nom:"Stations (MQI)", lignes:L2, larg:[10,28,8,8,12,12,11,14,12], fige:0, graphiques:[{type:"scatter", titre:"Diagramme cible FAIRMODE 4.1, "+nom+" (MQI ≤ 1 dans le cercle de rayon 1)", r0:0, r1:1, r2:L2.length-1,
         series:[{col:8, xcol:7}], tx:"écart-type normé (corrélation < 0 à gauche)", ty:"biais normé", pos:place(9,0)}]});
     }
     var C = PERF.coh && PERF.coh.pol ? PERF.coh.pol[p] : null;
@@ -4126,7 +4126,7 @@ function xlsxEvaluation(){
     if(Fw && Fw.pts && Fw.pts.length){
       var L5 = [[H("Code"),H("Station"),H("Valeurs"),H("MQI"),H("Erreur (µg/m³)"),H("Biais (µg/m³)"),H("Corrélation"),H("Écart-type normé (x)"),H("Biais normé (y)")]];
       Fw.pts.slice().sort(function(a,b){ return b[3]-a[3]; }).forEach(function(a){ L5.push([a[0], nomSt(a[0]), ent(a[4]), n2(a[3]), n2(a[5]), n2(a[6]), n2(a[7]), n2(a[1]), n2(a[2])]); });
-      F.push({nom:"Stations (MQI)", lignes:L5, larg:[10,28,8,8,12,12,11,14,12], fige:0, graphiques:[{type:"scatter", titre:"Diagramme cible FAIRMODE 4.0, "+nom+", "+Fw.nd+" jours (MQI90 "+pfr(Fw.mqi90,2)+")", r0:0, r1:1, r2:L5.length-1,
+      F.push({nom:"Stations (MQI)", lignes:L5, larg:[10,28,8,8,12,12,11,14,12], fige:0, graphiques:[{type:"scatter", titre:"Diagramme cible FAIRMODE 4.1, "+nom+", "+Fw.nd+" jours (MQI90 "+pfr(Fw.mqi90,2)+")", r0:0, r1:1, r2:L5.length-1,
         series:[{col:8, xcol:7}], tx:"écart-type normé (corrélation < 0 à gauche)", ty:"biais normé", pos:place(9,0)}]});
     }
   }
@@ -4178,7 +4178,7 @@ function xlsxEvaluation(){
   }
   // Liste des feuilles dans le résumé
   R.push([]); R.push([{v:"Feuilles",s:7}]);
-  var desc = {"Heures":"erreur de krigeage heure par heure (validation croisée), avec et sans la dérive Prev'air", "Stations (MQI)":"MQI de FAIRMODE 4.0 par station et diagramme cible", "Cohérence AASQA":"écart entre la carte Geod'air d'IATMO et l'indice publié, au droit des stations de fond",
+  var desc = {"Heures":"erreur de krigeage heure par heure (validation croisée), avec et sans la dérive Prev'air", "Stations (MQI)":"MQI de FAIRMODE 4.1 par station et diagramme cible", "Cohérence AASQA":"écart entre la carte Geod'air d'IATMO et l'indice publié, au droit des stations de fond",
     "Jours":"série quotidienne de la validation croisée (tâche GitHub)", "Effet routier NO2":"incrément du NO₂ aux stations trafic documentées, observé et modélisé (mesures du jour)", "Calage":"progression du calage de la descente d'échelle, test à l'aveugle jour après jour",
     "Correction apprise":"gradient boosting et perceptron : apport sur le modèle calé, importance des variables", "Délais AASQA":"délai entre la fin de l'heure mesurée et sa publication par le LCSQA"};
   F.slice(1).forEach(function(f){ R.push([f.nom, desc[f.nom]||""]); });
@@ -4241,7 +4241,7 @@ function perfHisto(nom){
   var tuiles = [
     ["Erreur de krigeage", sn ? pfr(Math.sqrt(se/sn))+" µg/m³" : "—", "krigeage ordinaire, station retirée · "+j.length+" jour"+(j.length>1?"s":""), ""],
     ["Bonne classe", sn ? Math.round(100*sc/sn)+" %" : "—", "grille européenne, valeurs horaires", ""],
-    ["MQI du 90e centile", m90!=null ? pfr(m90,2) : "—", Fw ? FAIRMODE.per[PERF.pol]+" · "+Fw.ns+" stations · "+Fw.nd+" jour"+(Fw.nd>1?"s":"")+" · objectif ≤ 1" : "FAIRMODE 4.0 · pas encore calculé", m90!=null ? (m90<=1 ? "bon" : "mauvais") : ""],
+    ["MQI du 90e centile", m90!=null ? pfr(m90,2) : "—", Fw ? FAIRMODE.per[PERF.pol]+" · "+Fw.ns+" stations · "+Fw.nd+" jour"+(Fw.nd>1?"s":"")+" · objectif ≤ 1" : "FAIRMODE 4.1 · pas encore calculé", m90!=null ? (m90<=1 ? "bon" : "mauvais") : ""],
     ["Copies complètes", cn ? Math.round(100*cp/cn)+" %" : "—", cn ? cp+" sur "+cn+" attendues (144 par jour)" : "journal antérieur au suivi", ""]];
   hm.innerHTML = tuiles.map(function(t){ return '<div class="kpi"><div class="kl">'+t[0]+'</div><div class="kv '+t[3]+'">'+t[1]+'</div><div class="ks">'+t[2]+'</div></div>'; }).join("");
   perfCible(Pw,nom,"perfCibleH");
