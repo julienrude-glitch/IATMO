@@ -12,7 +12,7 @@
 #                             chaque jour, intervalles à 90 % et test à l'aveugle sur ce jour (fond seul, paramètres d'origine, calés).
 #                             Correction apprise (gradient boosting et perceptron, scikit-learn) des résidus aux stations trafic : test à l'aveugle
 #                             et validation croisée par agglomération écartée (clé « ml »), pour les derniers jours.
-# MQI : guide FAIRMODE version 4.0 (mai 2026, tableau 1, directive 2024/2881) ; NO₂ horaire, O₃ maximum journalier sur 8 h,
+# MQI : guide FAIRMODE version 4.1 (septembre 2026 ; tableau 1 inchangé depuis la 4.0 de mai 2026 ; directive 2024/2881) ; NO₂ horaire, O₃ maximum journalier sur 8 h,
 #       PM₁₀ et PM₂,₅ moyenne journalière. Paramètres à revoir avec la mise à jour annoncée pour fin 2026.
 # Heures : celles des fichiers du LCSQA (temps universel en métropole, heure locale dans les DROM) sont converties en heure de Paris.
 import csv, gzip, glob, hashlib, json, math, os, sys, time, unicodedata, warnings, datetime as dt
@@ -25,7 +25,7 @@ PARIS = ZoneInfo("Europe/Paris"); UTC = dt.timezone.utc
 AUJ = dt.date.fromisoformat(os.environ["IATMO_JOUR"]) if os.environ.get("IATMO_JOUR") else dt.datetime.now(PARIS).date()   # IATMO_JOUR : essais
 POLS = ["NO2", "O3", "PM10", "PM25"]
 GRILLE_AEE = {"NO2": [10, 25, 60, 100, 150], "O3": [60, 100, 120, 160, 180], "PM10": [15, 45, 120, 195, 270], "PM25": [5, 15, 50, 90, 140]}
-# FAIRMODE 4.0, tableau 1 : valeur limite LV (µg/m³), U_r,fix, β court terme, plancher U∅ (µg/m³), période d'évaluation
+# FAIRMODE 4.1, tableau 1 : valeur limite LV (µg/m³), U_r,fix, β court terme, plancher U∅ (µg/m³), période d'évaluation
 FM4 = {"NO2": (200, 0.15, 3.2, 3, "h"), "O3": (120, 0.15, 2.2, 10, "8h"), "PM10": (45, 0.25, 2.2, 4, "j"), "PM25": (25, 0.25, 2.5, 3, "j")}
 def u_obs(p, O):
     """Incertitude de mesure : U∅ à concentration nulle, croissance linéaire jusqu'à U_r·LV à la valeur limite, puis proportionnelle."""
@@ -156,7 +156,7 @@ def krige_loo(x, y, z):
 # ---------- Performances quotidiennes ----------
 fperf = os.path.join(OUT, "suivi/performances.json"); PERF = lire_json(fperf, [])
 fmj = os.path.join(OUT, "suivi/mqi_jours.json"); MQJ = lire_json(fmj, {})
-faits = {d["jour"] for d in PERF if d.get("v") == 4 and d["jour"] in MQJ}               # jours à refaire : antérieurs à FAIRMODE 4.0
+faits = {d["jour"] for d in PERF if d.get("v") == 4 and d["jour"] in MQJ}               # jours à refaire : antérieurs au format FAIRMODE 4 (v = 4)
 journal = lire_json(os.path.join(OUT, "suivi/journal.json"), [])
 DOM0 = (2.5, 46.5); KX = 111.32 * math.cos(math.radians(DOM0[1]))
 FM = [c for c in FONDS if metro(coord(c))]
@@ -216,7 +216,7 @@ PERF = sorted(PERF, key=lambda d: d["jour"])[-90:]
 ecrire_json(fperf, PERF); ecrire_json(fmj, MQJ)
 if MQJ:
     fin = max(MQJ)
-    ecrire_json(os.path.join(OUT, "suivi/mqi_fenetres.json"), {"version": "FAIRMODE 4.0 (mai 2026, tableau 1)", "jour": fin,
+    ecrire_json(os.path.join(OUT, "suivi/mqi_fenetres.json"), {"version": "FAIRMODE 4.1 (septembre 2026, tableau 1)", "jour": fin,
         "periodes": {"NO2": "horaire", "O3": "maximum journalier sur 8 h", "PM10": "moyenne journalière", "PM25": "moyenne journalière"},
         "parametres": {p: {"LV": FM4[p][0], "Ur": FM4[p][1], "beta": FM4[p][2], "U0": FM4[p][3]} for p in POLS},
         "7": {p: fenetre(fin, 7, p, True) for p in POLS}, "30": {p: fenetre(fin, 30, p, True) for p in POLS},
