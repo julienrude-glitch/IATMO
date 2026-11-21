@@ -1,0 +1,144 @@
+{
+ "maj": "2026-11-21T22:20:54+01:00",
+ "calculs": [
+  "2026-11-20T18:00:00Z",
+  "2026-11-20T21:00:00Z",
+  "2026-11-21T00:00:00Z",
+  "2026-11-21T03:00:00Z",
+  "2026-11-21T06:00:00Z",
+  "2026-11-21T09:00:00Z",
+  "2026-11-21T12:00:00Z",
+  "2026-11-21T15:00:00Z"
+ ],
+ "heures_remplies": 24,
+ "heures_remplies_par_boite": {
+  "2026-11-21|GUADELOUPE": 24,
+  "2026-11-21|GUYANE": 24,
+  "2026-11-21|MARTINIQUE": 24,
+  "2026-11-21|MAYOTTE": 24,
+  "2026-11-21|METRO": 24,
+  "2026-11-21|REUNION": 24,
+  "2026-11-22|GUADELOUPE": 24,
+  "2026-11-22|GUYANE": 24,
+  "2026-11-22|MARTINIQUE": 24,
+  "2026-11-22|MAYOTTE": 24,
+  "2026-11-22|METRO": 24,
+  "2026-11-22|REUNION": 24
+ },
+ "extraits_ce_passage": [],
+ "echecs": [
+  [
+   "METRO",
+   "2026-11-21",
+   21,
+   "2026-11-21T15:00:00Z",
+   5,
+   "absent"
+  ],
+  [
+   "METRO",
+   "2026-11-21",
+   22,
+   "2026-11-21T15:00:00Z",
+   6,
+   "absent"
+  ],
+  [
+   "METRO",
+   "2026-11-21",
+   23,
+   "2026-11-21T15:00:00Z",
+   7,
+   "absent"
+  ],
+  [
+   "METRO",
+   "2026-11-22",
+   20,
+   "2026-11-21T15:00:00Z",
+   28,
+   "absent"
+  ],
+  [
+   "METRO",
+   "2026-11-22",
+   21,
+   "2026-11-21T15:00:00Z",
+   29,
+   "absent"
+  ],
+  [
+   "METRO",
+   "2026-11-22",
+   22,
+   "2026-11-21T15:00:00Z",
+   30,
+   "absent"
+  ]
+ ],
+ "rangs": {
+  "METRO": {
+   "SP1": {
+    "10u": 2,
+    "10v": 3
+   },
+   "SP2": {
+    "tirf": 7,
+    "tsnowp": 8
+   }
+  },
+  "ANTIL": {
+   "SP1": {
+    "10u": 4,
+    "10v": 5
+   },
+   "SP2": {
+    "tirf": 9
+   }
+  },
+  "GUYANE": {
+   "SP1": {
+    "10u": 4,
+    "10v": 5
+   },
+   "SP2": {
+    "tirf": 9
+   }
+  },
+  "INDIEN": {
+   "SP1": {
+    "10u": 4,
+    "10v": 5
+   },
+   "SP2": {
+    "tirf": 9
+   }
+  }
+ },
+ "noms_vus_si_champ_absent": {},
+ "Paris_heure_courante": {
+  "vitesse": 2.93,
+  "direction": 110,
+  "pluie": 0.0
+ },
+ "Lyon_heure_courante": {
+  "vitesse": 1.12,
+  "direction": 117,
+  "pluie": 0.0
+ },
+ "Fort-de-France_12h_locale": {
+  "vitesse": 3.5,
+  "direction": 90,
+  "pluie": 0.0
+ },
+ "Saint-Denis_12h_locale": {
+  "vitesse": 4.7,
+  "direction": 65,
+  "pluie": 0.0
+ },
+ "Cayenne_12h_locale": {
+  "vitesse": 5.48,
+  "direction": 66,
+  "pluie": 0.0
+ }
+}
