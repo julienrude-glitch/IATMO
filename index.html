@@ -174,7 +174,7 @@
   #perf .kpi{background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:8px;padding:12px 14px}
   #perf .kl{font-size:12.5px;color:var(--muted)} #perf .kv{font-size:26px;font-weight:650;margin:2px 0} #perf .kv.bon{color:#50CCAA} #perf .kv.mauvais{color:#FF7A7A}
   #perf .ks{font-size:12px;color:var(--muted);line-height:1.35} #perf .muted{color:var(--muted);font-size:13.5px}
-  #perf svg .ax{font-size:11px;fill:var(--muted)} #perf svg .pt{cursor:pointer} #perf svg [data-tip]{cursor:pointer}
+  #perf svg .ax{font-size:11px;fill:var(--muted)} #perf .axleg{margin:0 0 12px;text-align:center;font-size:11.5px;color:var(--muted)} #perf svg .pt{cursor:pointer} #perf svg [data-tip]{cursor:pointer}
   #perf .leg{display:flex;flex-wrap:wrap;gap:14px;font-size:12.5px;color:var(--muted);margin:0 0 6px} #perf .leg i{display:inline-block;width:14px;height:4px;border-radius:2px;margin-right:6px;vertical-align:middle}
   #perf .leg i.tir{background:repeating-linear-gradient(90deg,rgba(255,255,255,.55) 0 5px,transparent 5px 9px)}
   #perf tr.lien{cursor:pointer} #perf tr.lien:hover td{background:rgba(80,240,230,.08)}
@@ -233,7 +233,7 @@
   body.m.mh #mheure{display:block} body.m #mheure #hourRow{margin:0;gap:8px;font-size:14px;align-items:center;line-height:1} body.m #mheure input[type=range]{flex:1;min-width:0}
   body.m #mheure #hourLbl{min-width:40px;text-align:right;font-weight:600} body.m #mheure .mini{padding:6px 10px;font-size:14px}
   body.m.mh .maplibregl-ctrl-bottom-right{bottom:calc(104px + env(safe-area-inset-bottom))}
-  body.m #perf svg .ax{font-size:16px} body.m #perf .leg{font-size:12px;gap:8px 12px} body.m #perf .kpis{grid-template-columns:1fr 1fr;gap:8px} body.m #perf .kv{font-size:21px}
+  body.m #perf svg .ax{font-size:16px} body.m #perf .axleg{font-size:12px} body.m #perf .leg{font-size:12px;gap:8px 12px} body.m #perf .kpis{grid-template-columns:1fr 1fr;gap:8px} body.m #perf .kv{font-size:21px}
   body.m #perf .kpi{padding:9px 10px} body.m #perf .ks{font-size:11.5px} body.m .perfExport button{display:block;margin:0 0 6px}
   body.m #topBtns button{font-size:14px;padding:8px 12px}
   #vueLien{display:none} body.m #vueLien{display:block;margin:16px 0 4px;font-size:13px;color:var(--muted)} #vueLien a{color:var(--accent)}
@@ -317,7 +317,7 @@
 <div id="insets" class="off"></div>
 <div id="methodo" class="sheet" role="dialog" aria-modal="true" aria-label="Méthodologie"><article><button type="button" class="sheetClose">Fermer ✕</button>
 <h1><span class="ia">IA</span>TMO – Méthodologie</h1>
-<p class="by">Mise à jour : <span id="methMaj">20 novembre 2026</span></p>
+<p class="by">Mise à jour : <span id="methMaj">22 novembre 2026</span></p>
 <div class="enbref"><b>En bref.</b> IATMO affiche l'indice ATMO publié chaque jour par les AASQA, tel quel, à la commune. En dessous, il simule ce que donnerait une descente d'échelle jusqu'au quartier, par des règles explicites dont les paramètres sont appris chaque jour des mesures aux stations trafic, de l'IA au sens large : ce n'est pas l'indice officiel. Deux modèles d'apprentissage automatique (gradient boosting et perceptron) sont mis à l'épreuve pour corriger cette descente d'échelle, sans être encore appliqués. L'Aperçu 2027 préfigure le futur indice horaire sur la grille européenne, à partir de concentrations simulées. L'onglet Geod'air cartographie les mesures horaires des stations de fond, et l'onglet Évaluation mesure la justesse de ces calculs. Toutes les sources sont ouvertes (onglet Sources) ; IATMO sert à montrer l'interface, pas à informer.</div>
 <nav class="sommaire"><a href="#" data-cible="partieCdc">I. Cahier des charges</a><a href="#" data-cible="partieNote">II. Note méthodologique</a></nav>
 <h2 class="partie" id="partieCdc">I. Cahier des charges</h2>
@@ -391,7 +391,7 @@
 <li><b>Quota.</b> 15 appels par heure : une lecture des cinq polluants en consomme au moins dix. Les mesures lues sont gardées dans le navigateur pour la journée ; aucune lecture n'est lancée sans action de l'utilisateur.</li>
 <li><b>Contenu du fichier.</b> Une ligne par station et par heure : organisme, station, implantation, influence, valeur, validité, latitude et longitude. Les coordonnées étant dans le fichier, l'export des stations n'est pas nécessaire ; il ne contient d'ailleurs pas l'influence, qui est attachée au point de prélèvement.</li>
 <li><b>Statut.</b> Mesures horaires brutes, non validées ; les lignes de validité négative sont écartées.</li>
-<li><b>Heures.</b> Temps universel en métropole, heure locale dans les DROM, sans heure d'été : confirmé par le LCSQA le 18 novembre, après deux relevés concordants (les copies du 17 à 15 h 17 et du 18 à 11 h 15 plaçaient tous les territoires au même instant en temps universel, et le pic du NO₂ du matin tombait à 7 h – 8 h). La carte convertit toutes les heures en heure de Paris à la lecture, ce qui aligne les territoires et rapproche à la bonne heure le profil horaire de l'incrément routier, le vent AROME et le trafic. Outre-mer, la fiche au clic donne aussi l'heure locale (« 13 h à Paris, 8 h heure locale »).</li>
+<li><b>Heures.</b> Temps universel en métropole, heure locale dans les DROM, sans heure d'été : confirmé par le LCSQA le 18 novembre, après deux relevés concordants (les copies du 17 à 15 h 17 et du 18 à 11 h 15 plaçaient tous les territoires au même instant en temps universel, et le pic du NO₂ du matin tombait à 7 h – 8 h). La carte convertit toutes les heures en heure de Paris à la lecture, ce qui aligne les territoires ; les heures de tête du fichier, de 21 h à 0 h de Paris, ne viennent que de La Réunion et de Mayotte (minuit à 3 h locales), et ne sont pas proposées : le curseur et l'animation de l'onglet Geod'air commencent à la première heure de la métropole, 1 h, et la carte de la métropole n'a ainsi plus d'heure vide. Cela aligne aussi les territoires et rapproche à la bonne heure le profil horaire de l'incrément routier, le vent AROME et le trafic. Outre-mer, la fiche au clic donne aussi l'heure locale (« 13 h à Paris, 8 h heure locale »).</li>
 
 
 <li><b>Archive des mesures du LCSQA (depuis le 18 novembre).</b> À chaque passage, la tâche extrait des fichiers du jour et de la veille une ligne par station et par heure (NO, NO₂, NOₓ, O₃, PM₁₀, PM₂,₅, SO₂ ; validités positives seulement, valeurs brutes) dans un fichier compressé par jour (environ 110 Ko pour une journée complète), gardé 180 jours, avec la table des stations (nom, organisme, implantation, influence, zone). Le fichier de la veille est réécrit tant qu'il change, de sorte que chaque jour converge vers sa version complète. Cette archive, croisée avec celle du trafic, permettra de caler l'incrément, son profil horaire, l'effet du vent et la titration sur des semaines de mesures au lieu d'une journée.</li>
@@ -695,7 +695,7 @@ e_i = z_i − ẑ₋ᵢ(x_i) = w_i / Q_ii                 erreur de prévision, 
 <li><b>Validation croisée.</b> Chaque station de fond est retirée tour à tour (formule de Dubrule, § 7.6) : l'erreur e<sub>i</sub> = z<sub>i</sub> − ẑ<sub>−i</sub> est celle d'une estimation faite sans la station. Deux méthodes sont comparées : celle de la carte (krigeage des résidus de la dérive Prev'air quand elle existe, krigeage ordinaire sinon) et le krigeage ordinaire seul. Les coefficients de la dérive ne sont pas réajustés à chaque retrait, ce qui rend son score un peu optimiste. Indicateurs : erreur quadratique moyenne, biais, gain relatif de Prev'air.</li>
 <li><b>Bonne classe.</b> Part des couples station-heure où l'estimation sans la station tombe dans la même classe de la grille européenne que la mesure.</li>
 <li><b>Indicateur MQI de FAIRMODE.</b> Guide FAIRMODE sur les objectifs de qualité des modèles, version 4.1 (septembre 2026, JRC146736, alignée sur la directive 2024/2881), tableau 1, inchangé depuis la version 4.0 de mai 2026. Pour chaque station, MQI = RMSE / (√(1 + β²) · RMS<sub>U</sub>), l'incertitude de mesure U(O) valant U<sub>∅</sub> à concentration nulle, croissant linéairement jusqu'à U<sub>r</sub> · LV à la valeur limite, puis restant proportionnelle à la concentration. Paramètres (LV, U<sub>r</sub>, β, U<sub>∅</sub>) : NO₂ horaire 200 µg/m³, 15 %, 3,2, 3 ; O₃ (maximum journalier sur 8 h) 120, 15 %, 2,2, 10 ; PM₁₀ journalier 45, 25 %, 2,2, 4 ; PM₂,₅ journalier 25, 25 %, 2,5, 3. L'objectif est atteint si 90 % des stations ont un MQI ≤ 1 : l'onglet donne le MQI du 90<sup>e</sup> centile (au moins 10 stations). Le jour même, seul le NO₂ est évalué ; l'O₃ et les particules, à une valeur par jour, le sont sur 7 et 30 jours par la tâche GitHub (couverture d'au moins 75 %). Diagramme cible : biais en ordonnée et erreur centrée en abscisse, sur la même échelle ; la distance au centre est le MQI. La version 4.1 ne modifie que le tableau 6 de l'annexe (paramètres du CEN, alignés sur ceux du comité technique), qu'IATMO n'utilise pas ; ces paramètres, encore en validation, doivent être mis à jour fin 2026. Une analyse de VITO (2024), citée par le guide, suggère que le MQI du 90<sup>e</sup> centile n'est stable qu'au-delà de 20 stations. FAIRMODE évalue des séries annuelles : sur quelques jours et pour une interpolation, le MQI est un repère, pas une évaluation réglementaire.</li>
-<li><b>Cohérence avec l'indice des AASQA.</b> Le sous-indice publié pour la commune de chaque station (géocodage inverse de la Géoplateforme ; arrondissements rapportés à la commune) est comparé à la classe, sur la grille de 2020, de la carte Geod'air au droit de la station : maximum horaire pour le NO₂ et l'O₃, moyenne pour les particules, sur les heures déjà mesurées. La journée n'étant pas finie et l'indice publié étant une prévision, un écart n'est pas une erreur de l'un ou de l'autre. Les communes couvertes par un indice d'intercommunalité sont écartées.</li>
+<li><b>Cohérence avec l'indice ATMO publié par les AASQA.</b> Le sous-indice publié pour la commune de chaque station (géocodage inverse de la Géoplateforme ; arrondissements rapportés à la commune) est comparé à la classe, sur la grille de 2020, de la carte Geod'air au droit de la station : maximum horaire pour le NO₂ et l'O₃, moyenne pour les particules, sur les heures déjà mesurées. La journée n'étant pas finie et l'indice publié étant une prévision, un écart n'est pas une erreur de l'un ou de l'autre. Les communes couvertes par un indice d'intercommunalité sont écartées.</li>
 <li><b>Effet routier aux stations documentées.</b> Incrément du NO₂ observé contre celui du modèle calé (§ 5.9) et de l'ancien modèle, avec a, c et les erreurs en validation croisée.</li>
 <li><b>Progression du calage.</b> Test à l'aveugle du calage du § 5.10 : pour chaque jour J, historique.py cale les paramètres sur les 30 jours d'archive qui précèdent J et les applique aux couples station trafic / stations de fond de J (10 km au plus), C = fond + Δ<sub>p</sub> · g<sub>p</sub>(h) · facteurs du vent et de la pluie, avec le trafic et le confinement pour les stations documentées. Le fond est la moyenne mesurée aux stations de fond appariées. Trois erreurs quadratiques moyennes horaires sont comparées : fond seul, paramètres d'origine (incrément de référence du 16 novembre pour le NO₂, rapport 1,3 du bilan 2024 pour les particules, trafic proportionnel, confinement 1, vent en racine carrée, pluie 0,25) et paramètres calés. Gain = 1 − erreur / erreur du fond seul. Les intervalles à 90 % des paramètres viennent d'un tirage avec remise des jours (incrément, vent, pluie) ou des stations documentées (trafic, confinement). Pendant le remplissage de la fenêtre, les intervalles doivent se resserrer et le gain se stabiliser au-dessus de celui des paramètres d'origine ; fenêtre pleine, les variations traduisent surtout la saison.</li>
 <li><b>Correction apprise des résidus</b> (§ 5.11). Apport de chaque candidat = 1 − erreur corrigée / erreur du modèle calé, à l'aveugle et, pour le NO₂, par agglomération écartée, sur 7 jours glissants. Le verdict provisoire retient le meilleur candidat, ou aucun s'ils ne font pas mieux que le modèle calé sur des stations jamais vues.</li>
@@ -713,7 +713,7 @@ e_i = z_i − ẑ₋ᵢ(x_i) = w_i / Q_ii                 erreur de prévision, 
 <div id="perf" class="sheet" role="dialog" aria-modal="true" aria-label="Évaluation"><article><button type="button" class="sheetClose">Fermer ✕</button>
 <h1>Évaluation</h1>
 <p id="perfImpr" class="imprSeul"></p>
-<p class="by">Justesse des estimations de l'onglet Geod'air, cohérence avec l'indice des AASQA et fonctionnement de la chaîne de données, calculés dans le navigateur sur les mesures du jour en métropole. Méthode : onglet Méthodologie, note, § 8.</p>
+<p class="by">Justesse des estimations de l'onglet Geod'air, cohérence avec l'indice ATMO publié par les AASQA et fonctionnement de la chaîne de données, calculés dans le navigateur sur les mesures du jour en métropole. Méthode : onglet Méthodologie, note, § 8.</p>
 <div class="seg" id="perfPer"><button type="button" data-per="0">Aujourd'hui</button><button type="button" data-per="7">7 jours</button><button type="button" data-per="30">30 jours</button></div>
 <div class="seg" id="perfPol"><button type="button" data-p="0">NO₂</button><button type="button" data-p="1">O₃</button><button type="button" data-p="2">PM₁₀</button><button type="button" data-p="3">PM₂,₅</button></div>
 <p id="perfEtat" class="muted" style="display:none"></p>
@@ -722,7 +722,7 @@ e_i = z_i − ẑ₋ᵢ(x_i) = w_i / Q_ii                 erreur de prévision, 
 <div id="perfCible"></div>
 <h2>Erreur de validation croisée, heure par heure</h2>
 <div id="perfHeuresG"></div>
-<h2>Cohérence avec l'indice des AASQA</h2>
+<h2>Cohérence avec l'indice ATMO publié par les AASQA</h2>
 <div id="perfCoh"></div></section>
 <section data-per="histo"><h2>Diagramme cible (FAIRMODE)</h2>
 <div id="perfCibleH"></div>
@@ -1677,6 +1677,13 @@ function geoPrepare(){
   var src;
   if(GEO.meas && Object.keys(GEO.meas).some(coordDe)){ GEO.sim = false; src = {meas:GEO.meas,coords:null,hours:GEO.hours,counts:GEO.counts}; }
   else{ GEO.sim = true; src = GEO.demo || (GEO.demo = simFond()); }
+  // Heures de tête trop peu renseignées écartées : de 21 h à 0 h de Paris, le fichier du jour ne contient que La Réunion et Mayotte
+  // (minuit à 3 h locales), si bien que la carte de la métropole restait vide. Le curseur et l'animation commencent ainsi à 1 h.
+  if(!GEO.sim && src.hours.length>1){
+    var mxT = 0; src.hours.forEach(function(h){ if((src.counts[h]||0)>mxT) mxT = src.counts[h]; });
+    var i0 = 0; while(i0<src.hours.length-1 && (src.counts[src.hours[i0]]||0)<0.4*mxT) i0++;
+    if(i0) src = {meas:src.meas,coords:src.coords,hours:src.hours.slice(i0),counts:src.counts};
+  }
   var list = [], sans = 0, ecart = 0;
   Object.keys(src.meas).forEach(function(code){
     var st = src.meas[code];
@@ -3587,7 +3594,7 @@ function perfAgreger(H,pols){
   });
   return R;
 }
-/* Cohérence avec l'indice des AASQA : sous-indice publié pour la commune de chaque station de fond (Atmo Data, jour même), comparé à la
+/* Cohérence avec l'indice ATMO publié par les AASQA : sous-indice publié pour la commune de chaque station de fond (Atmo Data, jour même), comparé à la
    classe de la carte Geod'air d'IATMO au droit de la station, calculée sur les heures déjà mesurées (grille de 2020 : maximum horaire pour
    NO₂ et O₃, moyenne pour les particules). La commune d'une station vient du géocodage inverse de la Géoplateforme, gardé par le navigateur. */
 function perfInsee(liste){
@@ -3719,7 +3726,7 @@ function perfHeuresG(P,nom){
     if(q.carte!=null) h += '<circle class="pt" data-hk="'+q.hk+'" cx="'+X(t)+'" cy="'+Y(q.carte)+'" r="4.5" fill="'+COUL_POL[PERF.pol]+'"'+tipAttr(tx)+'/>';
     if(q.seul!=null) h += '<circle class="pt" data-hk="'+q.hk+'" cx="'+X(t)+'" cy="'+Y(q.seul)+'" r="3.5" fill="rgba(255,255,255,.55)"'+tipAttr(tx)+'/>';
   });
-  h += '<text x="'+x0+'" y="12" class="ax">µg/m³</text></svg>';
+  h += '<text transform="translate(14,'+((ym+y0)/2)+') rotate(-90)" class="ax" text-anchor="middle">µg/m³</text></svg>';     // unité le long de l'axe des ordonnées
   var gain = P.rmse!=null && P.rmseSeul ? 100*(1-P.rmse/P.rmseSeul) : null, avec = P.parH.some(function(q){ return q.derive; });
   el.innerHTML = '<div class="leg"><span><i style="background:'+COUL_POL[PERF.pol]+'"></i>méthode de la carte'+(avec ? " (krigeage avec dérive Prev'air)" : "")+'</span><span><i class="tir"></i>krigeage seul</span></div>'+h+
     '<p class="muted">'+(avec ? "Apport de Prev'air sur la journée : erreur "+(gain>=0 ? "réduite" : "augmentée")+" de "+pfr(Math.abs(gain),0)+" % ("+pfr(P.rmse)+" contre "+pfr(P.rmseSeul)+" µg/m³)." : "Pas de dérive Prev'air pour le "+nom+" aujourd'hui (prévision non lue, ou régression trop faible) : les deux courbes se confondent.")+'</p>';
@@ -3756,7 +3763,7 @@ function perfRouteG(){
   var sv = '<svg viewBox="0 0 '+W+' '+(y0+34)+'" width="100%" style="max-width:460px" role="img" aria-label="Incrément observé et modélisé">';
   for(var g=mn;g<=mx;g+=5){ sv += '<line x1="'+x0+'" x2="'+(W-14)+'" y1="'+Y(g)+'" y2="'+Y(g)+'" stroke="rgba(255,255,255,'+(g===0?0.3:0.08)+')"/><text x="'+(x0-6)+'" y="'+(Y(g)+4)+'" class="ax" text-anchor="end">'+g+'</text><text x="'+X(g)+'" y="'+(y0+16)+'" class="ax" text-anchor="middle">'+g+'</text>'; }
   sv += '<line x1="'+X(mn)+'" y1="'+Y(mn)+'" x2="'+X(mx)+'" y2="'+Y(mx)+'" stroke="rgba(255,255,255,.35)" stroke-dasharray="4 4"/>';
-  sv += '<text x="'+(W-14)+'" y="'+(y0+30)+'" class="ax" text-anchor="end">incrément modélisé (µg/m³)</text><text x="'+x0+'" y="10" class="ax">incrément observé</text>';
+  sv += '<text x="'+(W-14)+'" y="'+(y0+30)+'" class="ax" text-anchor="end">Incrément modélisé (µg/m³)</text><text transform="translate(14,'+((y0+14)/2)+') rotate(-90)" class="ax" text-anchor="middle">Incrément observé (µg/m³)</text>';
   C.pts.forEach(function(p){
     var tx = p.nom+" ("+p.code+")\nTMJA "+Math.round(p.q).toLocaleString("fr-FR")+" véh/j · H/L "+(p.Aconnu ? pfr(p.A,2) : "inconnu")+(p.f.dbord!=null ? " · à "+pfr(p.f.dbord)+" m de la bordure" : "")+"\nincrément observé "+pfr(p.d)+" µg/m³ ("+p.nh+" h) · modèle calé "+pfr(p.m)+" · ancien modèle "+pfr(p.ma)+"\nClic : centrer la carte";
     sv += '<circle class="pt" data-st="'+p.code+'" cx="'+X(p.ma).toFixed(1)+'" cy="'+Y(p.d).toFixed(1)+'" r="3" fill="rgba(255,255,255,.35)"'+tipAttr(tx)+'/>';
@@ -3820,7 +3827,7 @@ function perfCalageG(){
   });
   if(lr.length>1) sv += '<polyline fill="none" stroke="rgba(255,255,255,.55)" stroke-width="1.6" stroke-dasharray="5 4" points="'+lr.join(" ")+'"/>';
   if(lc.length>1) sv += '<polyline fill="none" stroke="#50f0e6" stroke-width="2.4" points="'+lc.join(" ")+'"/>';
-  sv += '<text x="'+x0+'" y="10" class="ax">erreur évitée par rapport au fond seul</text></svg>';
+  sv += '</svg><p class="axleg">Erreur évitée par rapport au fond seul</p>';
   h += '<h3>Gain sur le fond seul, '+nomK+', test à l\'aveugle</h3><div class="leg"><span><i style="background:#50f0e6"></i>paramètres calés la veille, 7 jours glissants</span><span><i style="background:rgba(80,240,230,.55);width:8px;height:8px;border-radius:50%"></i>valeur du jour</span><span><i class="tir"></i>paramètres d\'origine, 7 jours glissants</span>'+'</div>'+sv;
   h += perfCorrectionG(J,G,K,nomK,n,X,dfr,pleine);
   // 2. Stabilité des paramètres : valeur, intervalle à 90 %, valeur d'origine
@@ -3901,7 +3908,7 @@ function perfCorrectionG(J,G,K,nomK,n,X,dfr,pleine){
     if(lv.length>1) sv += '<polyline fill="none" stroke="'+cd.c+'" stroke-width="2.4" stroke-dasharray="7 4" points="'+lv.join(" ")+'"/>';
   });
   J.forEach(function(e,i){ if(n<=10 || i%Math.ceil(n/8)===0 || i===n-1) sv += '<text x="'+X(i)+'" y="'+(y0+18)+'" class="ax" text-anchor="middle">'+dfr(e.jour)+'</text>'; });
-  sv += '<text x="'+x0+'" y="10" class="ax">erreur évitée par rapport au modèle calé</text></svg>';
+  sv += '</svg><p class="axleg">Erreur évitée par rapport au modèle calé</p>';
   h += '<div class="leg">'+CAND.map(function(cd){ return '<span><i style="background:'+cd.c+'"></i>'+cd.nom+'</span>'; }).join("")+'<span><i style="background:rgba(255,255,255,.6)"></i>trait plein : à l\'aveugle, '+nomK+'</span><span><i class="tir"></i>tirets : par agglomération écartée, NO₂</span></div>'+sv;
   // Importance des variables (NO₂, dernier jour évalué), barres groupées par variable
   var im = CAND.map(function(cd){ for(var k=avec.length-1;k>=0;k--){ var m = cd.src(avec[k]); if(m && m.imp && m.imp.NO2) return {v:m.imp.NO2, j:avec[k].jour}; } return null; });
@@ -4111,7 +4118,7 @@ function xlsxEvaluation(){
       C.ecarts.forEach(function(v,i){ L3.push([lab[i], ent(v)]); });
       L3.push([]); L3.push([H("Station"),H("Code"),H("AASQA"),H("Indice publié"),H("Carte IATMO"),H("Valeur retenue (µg/m³)"),H("Heures")]);
       C.lignes.forEach(function(l){ L3.push([l.nom, l.code, l.org||"", CLASSES[l.cA].lib, CLASSES[l.cI].lib, n1(l.v), ent(l.nh)]); });
-      F.push({nom:"Cohérence AASQA", lignes:L3, larg:[26,10,22,14,14,14,8], graphiques:[{type:"bar", titre:"Écart de classe avec l'indice publié par l'AASQA, "+nom+" ("+C.n+" stations)", r0:0, r1:1, r2:5, cat:0, series:[{col:1}], ty:"stations", pos:place(7,0)}]});
+      F.push({nom:"Cohérence indice ATMO", lignes:L3, larg:[26,10,22,14,14,14,8], graphiques:[{type:"bar", titre:"Écart de classe avec l'indice publié par l'AASQA, "+nom+" ("+C.n+" stations)", r0:0, r1:1, r2:5, cat:0, series:[{col:1}], ty:"stations", pos:place(7,0)}]});
     }
   } else {
     var jj = perfJours();
@@ -4135,7 +4142,7 @@ function xlsxEvaluation(){
     var L6 = [[H("Station"),H("Code"),H("TMJA (véh/j)"),H("Rapport H/L"),H("Bordure (m)"),H("Incrément observé (µg/m³)"),H("Modèle calé (µg/m³)"),H("Ancien modèle (µg/m³)")]];
     CALF.pts.forEach(function(q){ L6.push([q.nom, q.code, ent(q.q), q.Aconnu ? n2(q.A) : null, q.f && q.f.dbord!=null ? n1(q.f.dbord) : null, n1(q.d), n1(q.m), n1(q.ma)]); });
     F.push({nom:"Effet routier NO2", lignes:L6, larg:[28,10,12,10,10,16,16,16], fige:0, graphiques:[{type:"scatter", titre:"Incrément du NO₂ observé contre modélisé, stations trafic documentées", r0:0, r1:1, r2:L6.length-1,
-      series:[{col:5, xcol:6},{col:5, xcol:7, couleur:"7F7F7F"}], tx:"incrément modélisé (µg/m³) : calé, puis ancien modèle", ty:"incrément observé (µg/m³)", pos:place(8,0)}]});
+      series:[{col:5, xcol:6},{col:5, xcol:7, couleur:"7F7F7F"}], tx:"Incrément modélisé (µg/m³) : calé, puis ancien modèle", ty:"Incrément observé (µg/m³)", pos:place(8,0)}]});
   }
   // Progression du calage et correction apprise (historique quotidien de la tâche GitHub)
   var J = PERF.cj || [], Kc = K || "NO2", nomK = {NO2:"NO₂",PM10:"PM₁₀",PM25:"PM₂,₅"}[Kc];
@@ -4178,7 +4185,7 @@ function xlsxEvaluation(){
   }
   // Liste des feuilles dans le résumé
   R.push([]); R.push([{v:"Feuilles",s:7}]);
-  var desc = {"Heures":"erreur de krigeage heure par heure (validation croisée), avec et sans la dérive Prev'air", "Stations (MQI)":"MQI de FAIRMODE 4.1 par station et diagramme cible", "Cohérence AASQA":"écart entre la carte Geod'air d'IATMO et l'indice publié, au droit des stations de fond",
+  var desc = {"Heures":"erreur de krigeage heure par heure (validation croisée), avec et sans la dérive Prev'air", "Stations (MQI)":"MQI de FAIRMODE 4.1 par station et diagramme cible", "Cohérence indice ATMO":"écart entre la carte Geod'air d'IATMO et l'indice publié, au droit des stations de fond",
     "Jours":"série quotidienne de la validation croisée (tâche GitHub)", "Effet routier NO2":"incrément du NO₂ aux stations trafic documentées, observé et modélisé (mesures du jour)", "Calage":"progression du calage de la descente d'échelle, test à l'aveugle jour après jour",
     "Correction apprise":"gradient boosting et perceptron : apport sur le modèle calé, importance des variables", "Délais AASQA":"délai entre la fin de l'heure mesurée et sa publication par le LCSQA"};
   F.slice(1).forEach(function(f){ R.push([f.nom, desc[f.nom]||""]); });
