@@ -374,28 +374,33 @@ jobs:
           if not sites: raise SystemExit("Aucun point de mesure lu dans les fichiers XML (voir etat.json et le dossier brut)")
           PY
 
-      - name: Trafic Ville de Paris (capteurs permanents, une fois par jour)
+      - name: Trafic Ville de Paris (capteurs permanents, archive et profil type, une fois par jour)
         id: paris
         continue-on-error: true
-        timeout-minutes: 6
+        timeout-minutes: 12
         shell: bash
         run: |
           set -euo pipefail
           python3 - <<'PY'
           # Débits horaires des capteurs permanents de la Ville de Paris (rues et boulevard périphérique), publiés une fois par jour en J-1
-          # sur opendata.paris.fr : sept derniers jours publiés (fenêtre calée sur la dernière heure publiée, pour résister aux retards
-          # de publication de la Ville), profil horaire moyen par arc et par type de jour (ouvré, samedi, dimanche),
-          # coordonnées tirées du référentiel géographique (jointure par iu_ac). Une fois par jour, après 6 h, jusqu'à obtenir la veille.
-          import json, os, gzip, time, urllib.request, urllib.parse, urllib.error, datetime as dt
+          # sur opendata.paris.fr. Archive quotidienne de 56 jours (paris_jours/AAAA-MM-JJ.json.gz : débit par arc et par heure de Paris,
+          # début de période), puis profil type par arc, jour de la semaine et heure : médiane des 4 derniers jours de ce type publiés,
+          # hors jours fériés et vacances scolaires de la zone C. Calé sur la dernière publication de la Ville, il traverse les interruptions.
+          # Coordonnées tirées du référentiel géographique (jointure par iu_ac). Une fois par jour, après 6 h, jusqu'à obtenir la veille.
+          import json, os, gzip, time, statistics, urllib.request, urllib.parse, urllib.error, datetime as dt
           from zoneinfo import ZoneInfo
           PARIS = ZoneInfo("Europe/Paris"); maintenant = dt.datetime.now(PARIS); auj = maintenant.date(); hier = (auj - dt.timedelta(days=1)).isoformat()
           force = os.environ.get("FORCE") == "true"; os.makedirs("out/trafic", exist_ok=True); os.chdir("out/trafic")
+          ARCH, GARDE, AMORCE, NTYPE, BUDGET = "paris_jours", 56, 42, 4, 420     # jours gardés, jours repris au premier passage, jours par type, secondes
+          os.makedirs(ARCH, exist_ok=True); t0 = time.time()
           def lire(f, defaut):
               try: return json.load(open(f, encoding="utf-8"))
               except Exception: return defaut
           anc, etat = lire("paris.json", {}), lire("paris_etat.json", {})
+          def ecrire_etat(): json.dump(etat, open("paris_etat.json", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+          def fin(msg): etat["erreur"] = msg; ecrire_etat(); raise SystemExit(msg)
           if not force:
-              if anc.get("dernier") == hier: print("Paris : déjà à jour (", hier, ")"); raise SystemExit(0)
+              if anc.get("format") == 2 and anc.get("dernier") == hier: print("Paris : déjà à jour (", hier, ")"); raise SystemExit(0)
               if maintenant.hour < 6: print("Paris : avant 6 h"); raise SystemExit(0)
               if etat.get("essai") and maintenant - dt.datetime.fromisoformat(etat["essai"]) < dt.timedelta(minutes=55): print("Paris : dernier essai il y a moins d'une heure"); raise SystemExit(0)
           etat["essai"] = maintenant.isoformat(timespec="seconds")
@@ -404,43 +409,90 @@ jobs:
               req = urllib.request.Request(url, headers={"User-Agent": "IATMO", "Accept-Encoding": "gzip"})
               with urllib.request.urlopen(req, timeout=delai) as r:
                   b = r.read(); return gzip.decompress(b) if r.headers.get("Content-Encoding") == "gzip" else b
-          def export(ds, select, where=None):
-              p = {"select": select, "timezone": "Europe/Paris"}
-              if where: p["where"] = where
-              return json.loads(get(API + ds + "/exports/json?" + urllib.parse.urlencode(p)))
+          def export_json(ds, select):
+              return json.loads(get(API + ds + "/exports/json?" + urllib.parse.urlencode({"select": select, "timezone": "Europe/Paris"})))
+          def export_csv(ds, select, where):
+              p = {"select": select, "where": where, "timezone": "Europe/Paris", "delimiter": ";"}
+              return get(API + ds + "/exports/csv?" + urllib.parse.urlencode(p)).decode("utf-8-sig")
           def champs(ds):
               try: return sorted(json.loads(get(API + ds + "/records?limit=1"))["results"][0].keys())
               except Exception as e: return "inconnus (" + str(e)[:80] + ")"
-          def fin(msg):
-              etat["erreur"] = msg; json.dump(etat, open("paris_etat.json", "w", encoding="utf-8"), ensure_ascii=False, indent=1); raise SystemExit(msg)
-          # dernière heure publiée par la Ville : la fenêtre de 7 jours se termine au dernier jour publié, même si la publication a du retard
+          def instant(t): return dt.datetime.fromisoformat(str(t).replace("Z", "+00:00")).astimezone(PARIS)
+          # Calendrier : jours fériés (calculés) et vacances scolaires de la zone C (Paris ; arrêté du 22 octobre 2025), à compléter chaque année
+          def paques(a):
+              g = a % 19; c = a // 100; h = (c - c // 4 - (8 * c + 13) // 25 + 19 * g + 15) % 30
+              i = h - (h // 28) * (1 - (h // 28) * (29 // (h + 1)) * ((21 - g) // 11)); j = (a + a // 4 + i + 2 - c + c // 4) % 7
+              l = i - j; m = 3 + (l + 40) // 44; return dt.date(a, m, l + 28 - 31 * (m // 4))
+          def feries(a):
+              p = paques(a)
+              return {dt.date(a, 1, 1), dt.date(a, 5, 1), dt.date(a, 5, 8), dt.date(a, 7, 14), dt.date(a, 8, 15), dt.date(a, 11, 1), dt.date(a, 11, 11),
+                      dt.date(a, 12, 25)} | {p + dt.timedelta(days=k) for k in (1, 39, 50)}       # lundi de Pâques, Ascension, lundi de Pentecôte
+          VACANCES_C = [("2026-07-04", "2026-08-31"), ("2026-10-17", "2026-11-01"), ("2026-12-19", "2027-01-03"), ("2027-02-06", "2027-02-21"),
+                        ("2027-04-03", "2027-04-18"), ("2027-05-07", "2027-05-09"), ("2027-07-03", "2027-08-31")]   # été 2027 : fin non officielle
+          def ferie(d): return d in feries(d.year)
+          def vacances(d): return any(a <= d.isoformat() <= b for a, b in VACANCES_C)
+          # Dernier jour complet publié par la Ville (l'horodate marque la fin de l'heure)
           dern = auj - dt.timedelta(days=1)
           try:
               m = json.loads(get(API + "comptages-routiers-permanents/records?" + urllib.parse.urlencode({"select": "max(t_1h) as m", "timezone": "Europe/Paris"}), 60))["results"][0]["m"]
-              dern = min(dern, (dt.datetime.fromisoformat(str(m).replace("Z", "+00:00")).astimezone(PARIS) - dt.timedelta(hours=1)).date())
-              etat["publie_jusqu_au"] = dern.isoformat()
-          except Exception as e: print("Paris : dernière heure publiée inconnue (", str(e)[:80], "), fenêtre calée sur la veille")
-          if not force and anc.get("dernier") == dern.isoformat() and len(anc.get("jours", [])) >= 7:
-              etat["erreur"] = None; json.dump(etat, open("paris_etat.json", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
-              print("Paris : rien de nouveau, la Ville a publié jusqu'au", dern.isoformat()); raise SystemExit(0)
-          debut = (dern - dt.timedelta(days=7)).isoformat(); t0 = time.time()        # « t_1h > date'J' » commence au jour J + 1 (constaté le 23/11)
-          try: rows = export("comptages-routiers-permanents", "iu_ac,t_1h,q", f"t_1h > date'{debut}'")
-          except urllib.error.HTTPError as e: etat["champs_trafic"] = champs("comptages-routiers-permanents"); fin(f"export du trafic refusé (HTTP {e.code})")
-          except (urllib.error.URLError, OSError) as e: fin(f"opendata.paris.fr injoignable ({str(e)[:80]})")
+              tm = instant(m) - dt.timedelta(hours=1); dern = min(dern, tm.date() if tm.hour == 23 else tm.date() - dt.timedelta(days=1))
+              etat["publie_jusqu_au"] = (instant(m) - dt.timedelta(hours=1)).isoformat(timespec="minutes")
+          except Exception as e: print("Paris : dernière heure publiée inconnue (", str(e)[:80], "), archive calée sur la veille")
+          # Jours à archiver : les AMORCE derniers jours publiés absents de l'archive (hors jours déjà demandés sans données)
+          presents = {f[:10] for f in os.listdir(ARCH) if f.endswith(".json.gz")}
+          absents = set(etat.get("absents", [])) if not force else set()
+          manquants = sorted(d for d in (dern - dt.timedelta(days=k) for k in range(AMORCE)) if d.isoformat() not in presents and d.isoformat() not in absents)
+          if not force and anc.get("format") == 2 and anc.get("dernier") == dern.isoformat() and not manquants:
+              etat["erreur"] = None; ecrire_etat(); print("Paris : rien de nouveau, la Ville a publié jusqu'au", dern.isoformat()); raise SystemExit(0)
+          # Export par paquets de 7 jours consécutifs au plus ; filtre en Python (superset des bornes, quelle que soit la sémantique des dates)
+          paquets, cur = [], []
+          for d in manquants:
+              if cur and ((d - cur[-1]).days != 1 or len(cur) == 7): paquets.append(cur); cur = []
+              cur.append(d)
+          if cur: paquets.append(cur)
+          paquets.reverse()                                                                     # les jours les plus récents d'abord
+          nref = len(lire("paris_ref.json", {}).get("arcs", {})) or 1000; lignes = 0; ajoutes = []
+          for pq in paquets:
+              if time.time() - t0 > BUDGET: print("Paris : budget de temps atteint, suite au prochain passage"); break
+              a, b = pq[0], pq[-1]
+              try: txt = export_csv("comptages-routiers-permanents", "iu_ac,t_1h,q", f"t_1h >= date'{a - dt.timedelta(days=1)}' and t_1h <= date'{b + dt.timedelta(days=1)}'")
+              except urllib.error.HTTPError as e: etat["champs_trafic"] = champs("comptages-routiers-permanents"); fin(f"export du trafic refusé (HTTP {e.code})")
+              except (urllib.error.URLError, OSError) as e: fin(f"opendata.paris.fr injoignable ({str(e)[:80]})")
+              voulus = {d.isoformat() for d in pq}; jours = {}
+              for ligne in txt.splitlines()[1:]:
+                  c = ligne.split(";")
+                  if len(c) < 3 or not c[0] or not c[1] or not c[2]: continue
+                  try: q = float(c[2])
+                  except ValueError: continue
+                  if q < 0: continue
+                  tp = instant(c[1]) - dt.timedelta(hours=1); d = tp.date().isoformat()
+                  if d in voulus: jours.setdefault(d, {}).setdefault(c[0], [None] * 24)[tp.hour] = round(q)
+                  lignes += 1
+              for d in sorted(voulus):
+                  v = jours.get(d, {}); pleins = sum(1 for x in v.values() if sum(1 for y in x if y is not None) >= 20)
+                  if pleins >= 0.5 * min(nref, max(len(v), 1)) and pleins >= 100:
+                      with gzip.open(os.path.join(ARCH, d + ".json.gz"), "wt", encoding="utf-8") as f: json.dump(v, f, separators=(",", ":"))
+                      ajoutes.append(d); absents.discard(d)
+                  else: absents.add(d)
+          etat.update({"lignes": lignes, "jours_ajoutes": sorted(ajoutes), "absents": sorted(x for x in absents if x >= (dern - dt.timedelta(days=AMORCE)).isoformat())})
+          for f in os.listdir(ARCH):                                                            # archive glissante : GARDE jours avant la dernière publication
+              if f.endswith(".json.gz") and f[:10] < (dern - dt.timedelta(days=GARDE - 1)).isoformat(): os.remove(os.path.join(ARCH, f))
+          archive = sorted((f[:10] for f in os.listdir(ARCH) if f.endswith(".json.gz")), reverse=True)
+          if not archive: fin("aucun jour complet dans l'archive")
           # référentiel géographique : renouvelé chaque semaine
           ref = lire("paris_ref.json", {})
           if force or not ref.get("arcs") or ref.get("maj", "")[:10] < (auj - dt.timedelta(days=7)).isoformat():
-              try: geo = export("referentiel-comptages-routiers", "iu_ac,libelle,geo_point_2d,geo_shape")
-              except urllib.error.HTTPError as e:
+              try: geo = export_json("referentiel-comptages-routiers", "iu_ac,libelle,geo_point_2d,geo_shape")
+              except (urllib.error.URLError, OSError) as e:
                   etat["champs_referentiel"] = champs("referentiel-comptages-routiers")
-                  if not ref.get("arcs"): fin(f"export du référentiel refusé (HTTP {e.code})")
+                  if not ref.get("arcs"): fin(f"export du référentiel impossible ({str(e)[:80]})")
                   geo = None
               if geo is not None:
                   arcs = {}
                   for g in geo:
                       iu = g.get("iu_ac"); sh = g.get("geo_shape") or {}; sh = sh.get("geometry", sh)
-                      lignes = [sh["coordinates"]] if sh.get("type") == "LineString" else sh.get("coordinates", []) if sh.get("type") == "MultiLineString" else []
-                      bouts = [p for l in lignes if l for p in (l[0], l[-1])]
+                      lignes_g = [sh["coordinates"]] if sh.get("type") == "LineString" else sh.get("coordinates", []) if sh.get("type") == "MultiLineString" else []
+                      bouts = [p for l in lignes_g if l for p in (l[0], l[-1])]
                       if iu is None or not bouts: continue
                       a = arcs.setdefault(str(iu), {"lib": g.get("libelle") or "", "bouts": [], "pt": g.get("geo_point_2d")}); a["bouts"] += bouts
                   sortie = {}
@@ -448,43 +500,47 @@ jobs:
                       b = a["bouts"]; best = (0, b[0], b[-1])
                       for i in range(len(b)):
                           for j in range(i + 1, len(b)):
-                              d = (b[i][0] - b[j][0]) ** 2 + (b[i][1] - b[j][1]) ** 2
-                              if d > best[0]: best = (d, b[i], b[j])
+                              d2 = (b[i][0] - b[j][0]) ** 2 + (b[i][1] - b[j][1]) ** 2
+                              if d2 > best[0]: best = (d2, b[i], b[j])
                       pt = a["pt"] or {}; lon = pt.get("lon", (best[1][0] + best[2][0]) / 2); lat = pt.get("lat", (best[1][1] + best[2][1]) / 2)
                       sortie[iu] = [round(lon, 6), round(lat, 6), a["lib"], [round(best[1][0], 6), round(best[1][1], 6), round(best[2][0], 6), round(best[2][1], 6)]]
                   ref = {"maj": maintenant.isoformat(timespec="seconds"), "arcs": sortie}
                   json.dump(ref, open("paris_ref.json", "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
-          # débits par jour, arc et heure (heure de Paris du début de la période : l'horodate marque la fin de l'heure)
-          jours = {}
-          for r in rows:
-              iu, t, q = r.get("iu_ac"), r.get("t_1h"), r.get("q")
-              if iu is None or t is None or q is None or q < 0: continue
-              tp = dt.datetime.fromisoformat(str(t).replace("Z", "+00:00")).astimezone(PARIS) - dt.timedelta(hours=1)
-              jours.setdefault(tp.date().isoformat(), {}).setdefault(str(iu), [None] * 24)[tp.hour] = q
-          narcs = max((len(v) for v in jours.values()), default=0)
-          complets = sorted(d for d, v in jours.items() if debut < d <= dern.isoformat() and sum(1 for x in v.values() if sum(1 for y in x if y is not None) >= 20) >= 0.5 * narcs)
-          etat.update({"lignes": len(rows), "jours_lus": sorted(jours), "jours_complets": complets, "duree_s": round(time.time() - t0)})
-          if not complets: fin("aucun jour complet dans les données")
-          def type_jour(d): w = dt.date.fromisoformat(d).weekday(); return "o" if w < 5 else "s" if w == 5 else "d"
+          # Profil type : pour chaque jour de la semaine (1 = lundi … 7 = dimanche), les NTYPE derniers jours publiés hors fériés et vacances
+          # scolaires ; à défaut d'au moins deux, vacances admises (jamais les fériés). Médiane heure par heure, arc par arc.
+          NOMS = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"]; types, cache = {}, {}
+          def jour(d):
+              if d not in cache:
+                  with gzip.open(os.path.join(ARCH, d + ".json.gz"), "rt", encoding="utf-8") as f: cache[d] = json.load(f)
+              return cache[d]
+          for w in range(1, 8):
+              du = [d for d in archive if dt.date.fromisoformat(d).isoweekday() == w and not ferie(dt.date.fromisoformat(d))]
+              pris = [d for d in du if not vacances(dt.date.fromisoformat(d))][:NTYPE]; vac = False
+              if len(pris) < 2: pris = du[:NTYPE]; vac = any(vacances(dt.date.fromisoformat(d)) for d in pris)
+              types[str(w)] = {"nom": NOMS[w - 1], "n": len(pris), "jours": sorted(pris), "vacances": vac}
           arcs = []
           for iu, (lon, lat, lib, sec) in ref["arcs"].items():
               prof = {}
-              for ty in "osd":
-                  ds = [jours[d][iu] for d in complets if type_jour(d) == ty and iu in jours[d]]
+              for w, T in types.items():
+                  ds = [jour(d)[iu] for d in T["jours"] if iu in jour(d)]
                   if not ds: continue
                   p = []
                   for h in range(24):
-                      v = [x[h] for x in ds if x[h] is not None]; p.append(round(sum(v) / len(v)) if v else None)
-                  if sum(1 for x in p if x is not None) >= 12: prof[ty] = p
+                      v = [x[h] for x in ds if x[h] is not None]; p.append(round(statistics.median(v)) if v else None)
+                  if sum(1 for x in p if x is not None) >= 12: prof[w] = p
               if prof: arcs.append({"id": iu, "lon": lon, "lat": lat, "lib": lib, "sec": sec, "p": prof})
-          paris = {"maj": maintenant.isoformat(timespec="seconds"), "dernier": complets[-1], "jours": complets, "publie_jusqu_au": etat.get("publie_jusqu_au"),
-                   "source": "Ville de Paris, comptages routiers permanents (opendata.paris.fr, Licence ODbL) : débit horaire moyen par type de jour (o ouvré, s samedi, d dimanche), heure de Paris du début de la période",
+          ans = sorted({a for a in (dern.year, dern.year + 1, auj.year, auj.year + 1)})
+          paris = {"format": 2, "maj": maintenant.isoformat(timespec="seconds"), "dernier": archive[0], "publie_jusqu_au": etat.get("publie_jusqu_au"),
+                   "jours": sorted({d for T in types.values() for d in T["jours"]}), "types": types,
+                   "calendrier": {"feries": sorted(d.isoformat() for a in ans for d in feries(a)), "vacances_zone_c": VACANCES_C},
+                   "source": "Ville de Paris, comptages routiers permanents (opendata.paris.fr, Licence ODbL) : profil type par arc, jour de la semaine (1 lundi … 7 dimanche) et heure de Paris du début de la période, médiane des 4 derniers jours de ce type publiés, hors jours fériés et vacances scolaires de la zone C",
                    "arcs": arcs}
           json.dump(paris, open("paris.json", "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
-          etat.update({"arcs": len(arcs), "dernier": complets[-1], "erreur": None})
-          json.dump(etat, open("paris_etat.json", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
-          print("Paris :", len(rows), "lignes,", len(arcs), "arcs localisés, jours", complets[0], "à", complets[-1])
-          if complets[-1] != hier: print("Paris : la veille n'est pas encore publiée, nouvel essai dans une heure")
+          etat.update({"arcs": len(arcs), "dernier": archive[0], "archive": len(archive), "erreur": None, "duree_s": round(time.time() - t0)})
+          ecrire_etat()
+          print("Paris :", lignes, "lignes,", len(ajoutes), "jours archivés,", len(archive), "dans l'archive,", len(arcs), "arcs localisés ; types :",
+                {T["nom"]: T["n"] for T in types.values()})
+          if archive[0] != hier: print("Paris : la Ville n'a publié que jusqu'au", archive[0], "; nouvel essai dans une heure")
           PY
 
       - name: AROME (vent à 10 m et pluie, aujourd'hui et demain, métropole et DROM)
@@ -733,7 +789,7 @@ jobs:
             "Licences : Licence Ouverte (Etalab), sauf trafic/paris.json, base dérivée du jeu « Comptage routier – Données trafic issues des capteurs permanents » de la Ville de Paris, diffusée sous ODbL (Open Database License) : toute réutilisation cite « Ville de Paris » et reste sous ODbL. Sources à citer : Météo-France (arome/), LCSQA – Geod'air (lcsqa/, archive/), Bison Futé (trafic/points.json)." \
             "Contenu :" \
             "- lcsqa/ : fichiers temps réel du LCSQA (data.gouv.fr), jour et veille ;" \
-            "- trafic/ : débits et vitesses Bison Futé sur le réseau national non concédé (data.gouv.fr) : fichiers bruts du moment, dernier état par point, points.json pour IATMO, archive horaire de 60 jours ; paris.json : débits horaires des capteurs permanents de la Ville de Paris (opendata.paris.fr, ODbL), moyenne par type de jour sur les 7 derniers jours ;" \
+            "- trafic/ : débits et vitesses Bison Futé sur le réseau national non concédé (data.gouv.fr) : fichiers bruts du moment, dernier état par point, points.json pour IATMO, archive horaire de 60 jours ; paris.json : débits horaires des capteurs permanents de la Ville de Paris (opendata.paris.fr, ODbL), profil type par jour de la semaine et par heure (médiane des 4 derniers jours de ce type publiés, hors jours fériés et vacances scolaires de la zone C), tiré de l'archive quotidienne paris_jours/ (56 jours) ;" \
             "- arome/ : vent à 10 m et pluie AROME (Météo-France) heure par heure, aujourd'hui et demain : métropole sur une grille de 0,1° (AAAA-MM-JJ.bin, 30 jours gardés), DROM en AROME Outre-Mer (om-AAAA-MM-JJ.bin) ;" \
             "- archive/lcsqa/ : mesures horaires du LCSQA par station (NO, NO2, NOx, O3, PM10, PM2,5, SO2), un fichier compressé par jour sur 180 jours, et table des stations ;" \
             "- suivi/ : journal des passages (3 jours), première apparition de chaque heure du LCSQA (30 jours) et performances quotidiennes du krigeage (90 jours), progression du calage (calage_jours.json, 400 jours), lus par l'onglet Évaluation ;" \
