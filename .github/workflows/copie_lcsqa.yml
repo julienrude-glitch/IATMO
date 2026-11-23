@@ -383,7 +383,8 @@ jobs:
           set -euo pipefail
           python3 - <<'PY'
           # Débits horaires des capteurs permanents de la Ville de Paris (rues et boulevard périphérique), publiés une fois par jour en J-1
-          # sur opendata.paris.fr : sept derniers jours, profil horaire moyen par arc et par type de jour (ouvré, samedi, dimanche),
+          # sur opendata.paris.fr : sept derniers jours publiés (fenêtre calée sur la dernière heure publiée, pour résister aux retards
+          # de publication de la Ville), profil horaire moyen par arc et par type de jour (ouvré, samedi, dimanche),
           # coordonnées tirées du référentiel géographique (jointure par iu_ac). Une fois par jour, après 6 h, jusqu'à obtenir la veille.
           import json, os, gzip, time, urllib.request, urllib.parse, urllib.error, datetime as dt
           from zoneinfo import ZoneInfo
@@ -412,9 +413,20 @@ jobs:
               except Exception as e: return "inconnus (" + str(e)[:80] + ")"
           def fin(msg):
               etat["erreur"] = msg; json.dump(etat, open("paris_etat.json", "w", encoding="utf-8"), ensure_ascii=False, indent=1); raise SystemExit(msg)
-          debut = (auj - dt.timedelta(days=7)).isoformat(); t0 = time.time()
+          # dernière heure publiée par la Ville : la fenêtre de 7 jours se termine au dernier jour publié, même si la publication a du retard
+          dern = auj - dt.timedelta(days=1)
+          try:
+              m = json.loads(get(API + "comptages-routiers-permanents/records?" + urllib.parse.urlencode({"select": "max(t_1h) as m", "timezone": "Europe/Paris"}), 60))["results"][0]["m"]
+              dern = min(dern, (dt.datetime.fromisoformat(str(m).replace("Z", "+00:00")).astimezone(PARIS) - dt.timedelta(hours=1)).date())
+              etat["publie_jusqu_au"] = dern.isoformat()
+          except Exception as e: print("Paris : dernière heure publiée inconnue (", str(e)[:80], "), fenêtre calée sur la veille")
+          if not force and anc.get("dernier") == dern.isoformat() and len(anc.get("jours", [])) >= 7:
+              etat["erreur"] = None; json.dump(etat, open("paris_etat.json", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+              print("Paris : rien de nouveau, la Ville a publié jusqu'au", dern.isoformat()); raise SystemExit(0)
+          debut = (dern - dt.timedelta(days=7)).isoformat(); t0 = time.time()        # « t_1h > date'J' » commence au jour J + 1 (constaté le 23/11)
           try: rows = export("comptages-routiers-permanents", "iu_ac,t_1h,q", f"t_1h > date'{debut}'")
           except urllib.error.HTTPError as e: etat["champs_trafic"] = champs("comptages-routiers-permanents"); fin(f"export du trafic refusé (HTTP {e.code})")
+          except (urllib.error.URLError, OSError) as e: fin(f"opendata.paris.fr injoignable ({str(e)[:80]})")
           # référentiel géographique : renouvelé chaque semaine
           ref = lire("paris_ref.json", {})
           if force or not ref.get("arcs") or ref.get("maj", "")[:10] < (auj - dt.timedelta(days=7)).isoformat():
@@ -450,7 +462,7 @@ jobs:
               tp = dt.datetime.fromisoformat(str(t).replace("Z", "+00:00")).astimezone(PARIS) - dt.timedelta(hours=1)
               jours.setdefault(tp.date().isoformat(), {}).setdefault(str(iu), [None] * 24)[tp.hour] = q
           narcs = max((len(v) for v in jours.values()), default=0)
-          complets = sorted(d for d, v in jours.items() if d < auj.isoformat() and sum(1 for x in v.values() if sum(1 for y in x if y is not None) >= 20) >= 0.5 * narcs)
+          complets = sorted(d for d, v in jours.items() if debut < d <= dern.isoformat() and sum(1 for x in v.values() if sum(1 for y in x if y is not None) >= 20) >= 0.5 * narcs)
           etat.update({"lignes": len(rows), "jours_lus": sorted(jours), "jours_complets": complets, "duree_s": round(time.time() - t0)})
           if not complets: fin("aucun jour complet dans les données")
           def type_jour(d): w = dt.date.fromisoformat(d).weekday(); return "o" if w < 5 else "s" if w == 5 else "d"
@@ -465,7 +477,7 @@ jobs:
                       v = [x[h] for x in ds if x[h] is not None]; p.append(round(sum(v) / len(v)) if v else None)
                   if sum(1 for x in p if x is not None) >= 12: prof[ty] = p
               if prof: arcs.append({"id": iu, "lon": lon, "lat": lat, "lib": lib, "sec": sec, "p": prof})
-          paris = {"maj": maintenant.isoformat(timespec="seconds"), "dernier": complets[-1], "jours": complets,
+          paris = {"maj": maintenant.isoformat(timespec="seconds"), "dernier": complets[-1], "jours": complets, "publie_jusqu_au": etat.get("publie_jusqu_au"),
                    "source": "Ville de Paris, comptages routiers permanents (opendata.paris.fr, Licence ODbL) : débit horaire moyen par type de jour (o ouvré, s samedi, d dimanche), heure de Paris du début de la période",
                    "arcs": arcs}
           json.dump(paris, open("paris.json", "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
