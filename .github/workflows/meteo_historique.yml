@@ -1,0 +1,217 @@
+# IATMO : météo horaire historique aux stations trafic, pour l'apprentissage et l'évaluation sur 2023-2025 (tâche ponctuelle).
+# Source : API « Historical Forecast » d'Open-Meteo (archive des prévisions, licence CC BY 4.0), modèle AROME France HD de
+# Météo-France (0,01°, archive depuis le 13/11/2022) en métropole ; meilleur modèle disponible (best_match) dans les DROM.
+# Un point par groupe de stations trafic distantes de moins de 2 km (89 points), heures en temps universel.
+# Résultat : branche « historique » du dépôt, dossier meteo/ (un fichier compressé par point, et points.json).
+# Quotas gratuits d'Open-Meteo (600 appels par minute, 5 000 par heure, 10 000 par jour ; une requête de plus de deux semaines
+# compte pour plusieurs appels, soit environ 100 par point pour 2023-2026) : la tâche espace les requêtes (une toutes les
+# 80 secondes, environ deux heures pour les 89 points), publie sa progression tous les 10 points et reprend là où elle s'est
+# arrêtée si on la relance. À lancer à la main : onglet Actions, « Météo historique (Open-Meteo) », « Run workflow ».
+# À enregistrer dans le dépôt sous le nom .github/workflows/meteo_historique.yml
+name: Météo historique (Open-Meteo)
+
+on:
+  workflow_dispatch:
+    inputs:
+      debut:
+        description: "Premier jour (AAAA-MM-JJ)"
+        default: "2023-01-01"
+      fin:
+        description: "Dernier jour (AAAA-MM-JJ ; vide = avant-hier)"
+        default: ""
+      refaire:
+        description: "Retélécharger les points déjà présents"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: meteo-historique
+  cancel-in-progress: false
+
+jobs:
+  meteo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 200
+    env:
+      REPO: ${{ github.repository }}
+      TOKEN: ${{ github.token }}
+      DEBUT: ${{ inputs.debut }}
+      FIN: ${{ inputs.fin }}
+      REFAIRE: ${{ inputs.refaire }}
+    steps:
+      - name: Reprendre la branche historique
+        shell: bash
+        run: |
+          set -euo pipefail
+          git init -q h && cd h
+          git remote add origin "https://x-access-token:${TOKEN}@github.com/${REPO}.git"
+          if git fetch -q --depth 1 origin historique 2>/dev/null; then git checkout -q -B historique FETCH_HEAD; echo "Branche historique reprise"
+          else git checkout -q --orphan historique; echo "Branche historique créée"; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Télécharger la météo horaire, point par point
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd h && mkdir -p meteo
+          python3 - <<'PY'
+          import json, os, gzip, time, subprocess, urllib.request, urllib.parse, urllib.error, datetime as dt
+          POINTS = [
+            {"id":"FR01064","lon":6.18122,"lat":49.12508,"drom":False,"stations":["FR01064"]},
+            {"id":"FR01065","lon":5.38746,"lat":49.16778,"drom":False,"stations":["FR01065"]},
+            {"id":"FR03006","lon":5.39736,"lat":43.27645,"drom":False,"stations":["FR03006"]},
+            {"id":"FR03021","lon":5.44816,"lat":43.52408,"drom":False,"stations":["FR03021"]},
+            {"id":"FR03044","lon":5.37996,"lat":43.31818,"drom":False,"stations":["FR03044"]},
+            {"id":"FR03068","lon":5.9216,"lat":43.12682,"drom":False,"stations":["FR03068"]},
+            {"id":"FR03091","lon":4.82688,"lat":43.9314,"drom":False,"stations":["FR03091"]},
+            {"id":"FR04012","lon":2.3275,"lat":48.82778,"drom":False,"stations":["FR04012"]},
+            {"id":"FR04031","lon":2.31123,"lat":48.86877,"drom":False,"stations":["FR04031","FR04118","FR04131"]},
+            {"id":"FR04058","lon":2.35667,"lat":48.92528,"drom":False,"stations":["FR04058"]},
+            {"id":"FR04071","lon":2.33528,"lat":48.85639,"drom":False,"stations":["FR04071","FR04141"]},
+            {"id":"FR04122","lon":2.65361,"lat":48.52806,"drom":False,"stations":["FR04122"]},
+            {"id":"FR04180","lon":2.26872,"lat":48.64093,"drom":False,"stations":["FR04180"]},
+            {"id":"FR04329","lon":2.41278,"lat":48.83861,"drom":False,"stations":["FR04329"]},
+            {"id":"FR05089","lon":0.1109,"lat":49.50019,"drom":False,"stations":["FR05089"]},
+            {"id":"FR06006","lon":3.52273,"lat":50.36425,"drom":False,"stations":["FR06006"]},
+            {"id":"FR07053","lon":3.11159,"lat":45.78043,"drom":False,"stations":["FR07053"]},
+            {"id":"FR09106","lon":0.16239,"lat":45.65146,"drom":False,"stations":["FR09106"]},
+            {"id":"FR09305","lon":-0.47188,"lat":46.33388,"drom":False,"stations":["FR09305"]},
+            {"id":"FR09403","lon":0.34039,"lat":46.59123,"drom":False,"stations":["FR09403"]},
+            {"id":"FR10030","lon":1.60591,"lat":50.71703,"drom":False,"stations":["FR10030"]},
+            {"id":"FR11034","lon":3.18066,"lat":50.70654,"drom":False,"stations":["FR11034"]},
+            {"id":"FR12054","lon":1.46824,"lat":43.64394,"drom":False,"stations":["FR12054"]},
+            {"id":"FR12085","lon":1.4152,"lat":43.61039,"drom":False,"stations":["FR12085"]},
+            {"id":"FR14011","lon":4.02306,"lat":49.25073,"drom":False,"stations":["FR14011"]},
+            {"id":"FR14028","lon":3.95591,"lat":49.0461,"drom":False,"stations":["FR14028"]},
+            {"id":"FR15046","lon":5.72063,"lat":45.18069,"drom":False,"stations":["FR15046"]},
+            {"id":"FR15053","lon":5.74523,"lat":45.15467,"drom":False,"stations":["FR15053"]},
+            {"id":"FR16034","lon":7.74498,"lat":48.59043,"drom":False,"stations":["FR16034","FR16215"]},
+            {"id":"FR16069","lon":7.32136,"lat":47.74768,"drom":False,"stations":["FR16069"]},
+            {"id":"FR18089","lon":2.08429,"lat":49.43593,"drom":False,"stations":["FR18089"]},
+            {"id":"FR19002","lon":-1.66586,"lat":48.10861,"drom":False,"stations":["FR19002","FR19007"]},
+            {"id":"FR19037","lon":-3.36938,"lat":47.75895,"drom":False,"stations":["FR19037"]},
+            {"id":"FR20013","lon":4.81816,"lat":45.72002,"drom":False,"stations":["FR20013"]},
+            {"id":"FR20069","lon":4.89857,"lat":45.77482,"drom":False,"stations":["FR20069"]},
+            {"id":"FR20070","lon":4.84439,"lat":45.74969,"drom":False,"stations":["FR20070"]},
+            {"id":"FR21039","lon":-1.62472,"lat":49.63389,"drom":False,"stations":["FR21039"]},
+            {"id":"FR21042","lon":-0.36962,"lat":49.15562,"drom":False,"stations":["FR21042"]},
+            {"id":"FR23242","lon":-0.55469,"lat":47.46699,"drom":False,"stations":["FR23242"]},
+            {"id":"FR23251","lon":-1.56481,"lat":47.23356,"drom":False,"stations":["FR23251"]},
+            {"id":"FR23252","lon":-0.76699,"lat":48.07104,"drom":False,"stations":["FR23252"]},
+            {"id":"FR24035","lon":7.24207,"lat":43.68929,"drom":False,"stations":["FR24035"]},
+            {"id":"FR24038","lon":6.06724,"lat":44.54865,"drom":False,"stations":["FR24038"]},
+            {"id":"FR25051","lon":1.07397,"lat":49.91801,"drom":False,"stations":["FR25051"]},
+            {"id":"FR25053","lon":1.09884,"lat":49.4367,"drom":False,"stations":["FR25053"]},
+            {"id":"FR26094","lon":5.07071,"lat":47.35137,"drom":False,"stations":["FR26094"]},
+            {"id":"FR27011","lon":4.80748,"lat":45.34408,"drom":False,"stations":["FR27011"]},
+            {"id":"FR29441","lon":4.38876,"lat":45.44798,"drom":False,"stations":["FR29441"]},
+            {"id":"FR30026","lon":6.4839,"lat":48.58482,"drom":False,"stations":["FR30026"]},
+            {"id":"FR30036","lon":6.15419,"lat":48.69708,"drom":False,"stations":["FR30036"]},
+            {"id":"FR31017","lon":-1.52875,"lat":43.49404,"drom":False,"stations":["FR31017"]},
+            {"id":"FR31039","lon":-0.35212,"lat":43.31109,"drom":False,"stations":["FR31039"]},
+            {"id":"FR31040","lon":0.14269,"lat":44.50878,"drom":False,"stations":["FR31040"]},
+            {"id":"FR31045","lon":-0.59852,"lat":44.83382,"drom":False,"stations":["FR31045"]},
+            {"id":"FR31057","lon":-0.50698,"lat":44.84341,"drom":False,"stations":["FR31057"]},
+            {"id":"FR31067","lon":-0.65918,"lat":44.85717,"drom":False,"stations":["FR31067"]},
+            {"id":"FR32001","lon":4.84732,"lat":46.78231,"drom":False,"stations":["FR32001"]},
+            {"id":"FR33105","lon":5.93299,"lat":45.56943,"drom":False,"stations":["FR33105"]},
+            {"id":"FR33113","lon":6.48033,"lat":45.20936,"drom":False,"stations":["FR33113"]},
+            {"id":"FR33203","lon":6.11825,"lat":45.9097,"drom":False,"stations":["FR33203"]},
+            {"id":"FR33232","lon":6.84583,"lat":45.90722,"drom":False,"stations":["FR33232"]},
+            {"id":"FR34013","lon":1.90114,"lat":47.90708,"drom":False,"stations":["FR34013"]},
+            {"id":"FR34028","lon":0.70486,"lat":47.39464,"drom":False,"stations":["FR34028"]},
+            {"id":"FR34030","lon":2.40718,"lat":47.07504,"drom":False,"stations":["FR34030"]},
+            {"id":"FR34047","lon":1.23364,"lat":48.76089,"drom":False,"stations":["FR34047"]},
+            {"id":"FR34048","lon":1.49247,"lat":48.44916,"drom":False,"stations":["FR34048"]},
+            {"id":"FR34063","lon":1.32653,"lat":47.58654,"drom":False,"stations":["FR34063"]},
+            {"id":"FR34064","lon":2.74011,"lat":48.00694,"drom":False,"stations":["FR34064"]},
+            {"id":"FR35010","lon":1.25477,"lat":45.82997,"drom":False,"stations":["FR35010"]},
+            {"id":"FR36032","lon":4.89013,"lat":44.9492,"drom":False,"stations":["FR36032"]},
+            {"id":"FR37040","lon":-61.53713,"lat":16.25408,"drom":True,"stations":["FR37040"]},
+            {"id":"FR38009","lon":55.61892,"lat":-20.91055,"drom":True,"stations":["FR38009"]},
+            {"id":"FR38018","lon":55.31383,"lat":-20.94981,"drom":True,"stations":["FR38018"]},
+            {"id":"FR38023","lon":55.47864,"lat":-21.33164,"drom":True,"stations":["FR38023"]},
+            {"id":"FR38024","lon":55.30251,"lat":-21.22305,"drom":True,"stations":["FR38024"]},
+            {"id":"FR38091","lon":55.33258,"lat":-20.92869,"drom":True,"stations":["FR38091"]},
+            {"id":"FR38098","lon":55.40306,"lat":-21.27707,"drom":True,"stations":["FR38098"]},
+            {"id":"FR39010","lon":-61.06349,"lat":14.61384,"drom":True,"stations":["FR39010","FR39011"]},
+            {"id":"FR40009","lon":-52.32194,"lat":4.92083,"drom":True,"stations":["FR40009"]},
+            {"id":"FR41060","lon":9.44639,"lat":42.70283,"drom":False,"stations":["FR41060"]},
+            {"id":"FR41073","lon":8.73936,"lat":41.92997,"drom":False,"stations":["FR41073"]},
+            {"id":"FR43001","lon":45.22321,"lat":-12.77294,"drom":True,"stations":["FR43001","FR43099"]},
+            {"id":"FR50224","lon":2.88848,"lat":42.69587,"drom":False,"stations":["FR50224"]},
+            {"id":"FR50225","lon":3.82787,"lat":43.61161,"drom":False,"stations":["FR50225"]},
+            {"id":"FR50227","lon":3.89572,"lat":43.60883,"drom":False,"stations":["FR50227"]},
+            {"id":"FR50232","lon":4.37792,"lat":43.8291,"drom":False,"stations":["FR50232"]},
+            {"id":"FR82001","lon":6.02361,"lat":47.23597,"drom":False,"stations":["FR82001"]},
+            {"id":"FR82020","lon":6.85928,"lat":47.64067,"drom":False,"stations":["FR82020"]},
+            {"id":"FR82070","lon":6.35972,"lat":47.35129,"drom":False,"stations":["FR82070"]}
+          ]
+          API = os.environ.get("METEO_API") or "https://historical-forecast-api.open-meteo.com/v1/forecast"
+          VARS = ["temperature_2m", "relative_humidity_2m", "precipitation", "wind_speed_10m", "wind_direction_10m",
+                  "shortwave_radiation", "cloud_cover", "boundary_layer_height"]
+          debut = os.environ.get("DEBUT") or "2023-01-01"
+          fin = os.environ.get("FIN") or (dt.datetime.now(dt.timezone.utc).date() - dt.timedelta(days=2)).isoformat()
+          refaire = os.environ.get("REFAIRE") == "true"; PAS = float(os.environ.get("PAS") or 80)
+          json.dump({"debut": debut, "fin": fin, "variables": VARS, "points": POINTS}, open("meteo/points.json", "w", encoding="utf-8"), ensure_ascii=False, indent=0)
+          def publier(msg):
+              subprocess.run(["git", "add", "-A"], check=True)
+              if subprocess.run(["git", "diff", "--cached", "--quiet"]).returncode == 0: return
+              subprocess.run(["git", "commit", "-qm", msg], check=True)
+              for k in range(3):
+                  if subprocess.run(["git", "push", "-q", "origin", "HEAD:refs/heads/historique"]).returncode == 0: print("publié :", msg); return
+                  time.sleep(10)
+              raise SystemExit("échec de la publication")
+          def obtenir(p, variables):
+              q = {"latitude": p["lat"], "longitude": p["lon"], "start_date": debut, "end_date": fin, "hourly": ",".join(variables),
+                   "timezone": "GMT", "wind_speed_unit": "ms"}
+              if not p["drom"]: q["models"] = "meteofrance_arome_france_hd"
+              req = urllib.request.Request(API + "?" + urllib.parse.urlencode(q), headers={"User-Agent": "IATMO"})
+              with urllib.request.urlopen(req, timeout=180) as r: return json.loads(r.read())
+          faits = 0; dernier = 0.0; arret = None; sans = {False: set(), True: set()}          # variables refusées, métropole / DROM
+          for i, p in enumerate(POINTS):
+              f = f"meteo/{p['id']}.json.gz"
+              if not refaire and os.path.exists(f):
+                  try:
+                      with gzip.open(f, "rt", encoding="utf-8") as g: o = json.load(g)
+                      if o.get("debut") == debut and o.get("fin", "") >= fin: continue
+                  except Exception: pass
+              variables = [v for v in VARS if v not in sans[p["drom"]]]; essais = 0
+              while True:
+                  attente = PAS - (time.time() - dernier)
+                  if attente > 0: time.sleep(attente)
+                  dernier = time.time()
+                  try: j = obtenir(p, variables); break
+                  except urllib.error.HTTPError as e:
+                      corps = e.read().decode("utf-8", "replace")[:300]
+                      if e.code == 400 and "boundary_layer_height" in variables:
+                          print(p["id"], ": couche limite indisponible pour ce modèle, abandonnée"); variables.remove("boundary_layer_height"); sans[p["drom"]].add("boundary_layer_height"); continue
+                      if e.code == 429 and essais < 3: essais += 1; print(p["id"], ": quota atteint, pause de 10 minutes (", corps, ")"); time.sleep(600); continue
+                      arret = f"{p['id']} : HTTP {e.code} {corps}"; break
+                  except Exception as e:
+                      if essais < 3: essais += 1; print(p["id"], ": erreur", str(e)[:120], ", nouvel essai"); time.sleep(30); continue
+                      arret = f"{p['id']} : {str(e)[:200]}"; break
+              if arret: break
+              h = j.get("hourly", {}); t = h.get("time", [])
+              val = {v: [None if x is None else round(x, 2) for x in h.get(v, [])] for v in variables if v in h}
+              val = {v: x for v, x in val.items() if any(y is not None for y in x)}       # variables entièrement vides écartées
+              sortie = {"id": p["id"], "lon": p["lon"], "lat": p["lat"], "stations": p["stations"], "drom": p["drom"],
+                        "modele": "meteofrance_arome_france_hd" if not p["drom"] else "best_match", "grille": [j.get("longitude"), j.get("latitude"), j.get("elevation")],
+                        "debut": debut, "fin": fin, "t0": (t[0] + "Z") if t else None, "heures": len(t), "unites": j.get("hourly_units", {}), "valeurs": val}
+              with gzip.open(f, "wt", encoding="utf-8") as g: json.dump(sortie, g, separators=(",", ":"))
+              faits += 1; print(f"{i + 1}/{len(POINTS)} {p['id']} ({', '.join(p['stations'])}) : {len(t)} heures, {len(val)} variables")
+              if faits % 10 == 0: publier(f"Météo historique : {faits} points de plus")
+          open("LISEZMOI.txt", "w", encoding="utf-8").write(
+              "Données historiques pour l'apprentissage et l'évaluation d'IATMO (tâche .github/workflows/meteo_historique.yml).\n"
+              "- meteo/ : météo horaire (temps universel) aux stations trafic, un fichier compressé par point (stations à moins de 2 km regroupées) ;\n"
+              "  source : Open-Meteo, API Historical Forecast (licence CC BY 4.0), modèle AROME France HD de Météo-France en métropole,\n"
+              "  meilleur modèle disponible dans les DROM ; points.json liste les points, les stations rattachées et la période.\n")
+          publier(f"Météo historique du {debut} au {fin}" + (f" (arrêt : {arret})" if arret else ""))
+          n = sum(1 for p in POINTS if os.path.exists(f"meteo/{p['id']}.json.gz"))
+          print(f"Points disponibles : {n}/{len(POINTS)}")
+          if arret: raise SystemExit("Arrêt : " + arret + " — relancer la tâche plus tard, elle reprendra au point suivant.")
+          PY
