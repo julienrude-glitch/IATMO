@@ -1,0 +1,4 @@
+Données historiques pour l'apprentissage et l'évaluation d'IATMO (tâche .github/workflows/meteo_historique.yml).
+- meteo/ : météo horaire (temps universel) aux stations trafic, un fichier compressé par point (stations à moins de 2 km regroupées) ;
+  source : Open-Meteo, API Historical Forecast (licence CC BY 4.0), modèle AROME France HD de Météo-France en métropole,
+  meilleur modèle disponible dans les DROM ; points.json liste les points, les stations rattachées et la période.
