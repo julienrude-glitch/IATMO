@@ -320,7 +320,7 @@
     <option value="p90">Percentile 90 des mailles</option><option value="max">Maximum des mailles</option></select></div>
   <label class="row"><input type="checkbox" id="smoothToggle" checked> Rendu lissé</label>
   <label class="row"><input type="checkbox" id="roadToggle" checked> Axes routiers</label>
-  <label class="row"><input type="checkbox" id="modToggle" checked> Effet routier modulé (bâti, trafic, vent, pluie)</label>
+  <label class="row"><input type="checkbox" id="modToggle" checked> Effet routier modulé (bâti, trafic, météo)</label>
   <label class="row"><input type="checkbox" id="trafToggle" checked> Trafic réel (Bison Futé, Ville de Paris)</label>
   <p class="hint" id="modInfo"></p>
   </details>
@@ -427,6 +427,7 @@
 <p>Tuiles vectorielles de la Géoplateforme : ADMIN EXPRESS (communes, départements) et Plan IGN, couche <code>routier_route</code>, dont l'attribut <code>symbo</code> sert de substitut au trafic, et couche <code>bati_surf</code> (à partir du zoom 12), dont l'attribut <code>hauteur</code> donne la hauteur des bâtiments. Le Plan IGN ne contient ni comptage ni émission : les débits viennent des stations de comptage Bison Futé et des capteurs permanents de la Ville de Paris (§ 5.8) ; aucun inventaire d'émissions n'est utilisé.</p>
 <h3>2.5 Météorologie</h3>
 <p>Vent à 10 m et précipitations horaires du modèle AROME de Météo-France (Licence Ouverte). Jusqu'au 18 novembre, ils étaient lus par l'API d'Open-Meteo (<code>api.open-meteo.com/v1/forecast</code>, modèle <code>meteofrance_seamless</code>), sans clé, pour le centre de la carte et pour les stations trafic du calage ; cette lecture reste le secours. Lecture vérifiée le 17 novembre sur un poste, à Paris : facteurs journaliers de 0,69 pour le NO₂ et 0,62 pour les particules. L'accès gratuit d'Open-Meteo est réservé aux usages non commerciaux. Les fichiers AROME sont publiés sur data.gouv.fr (jeu « Paquets AROME – résolution 0,01° », Météo-France, Licence Ouverte) : fichiers GRIB2 horaires sur la grille EURW1S100 (55,4° N à 37,5° N, 12° W à 16° E), d'environ 16 à 25 Mo par échéance pour le paquet de surface SP1 et 70 à 80 Mo pour le paquet HP1, hébergés sur un stockage OVH. Ce volume, plus de 500 Mo pour une journée de vent et de pluie, exclut une lecture par le navigateur : il faut une collecte côté serveur, qui donne en outre un champ de vent sur toute la carte et non plus au seul centre. Depuis le 18 novembre, la tâche GitHub de copie des données (§ 2.3) le fait. Une reconnaissance a d'abord établi le contenu des paquets : SP1 contient la température et l'humidité à 2 m, le vent à 10 m (composantes 10u et 10v) et les rafales ; SP2 l'énergie convective, la pression de surface, les nébulosités et les cumuls horaires de pluie (tirf), de neige (tsnowp) et de grésil ; tous sur la grille de 2 801 × 1 791 points, compressés en CCSDS. Pour chaque heure du jour, la tâche prend le calcul le plus récent qui la couvre (échéances de 1 à 48 h ; les calculs ont lieu toutes les 3 heures et sont publiés environ deux heures après), ne télécharge que les quatre messages utiles par requêtes partielles (environ 9 Mo par heure au lieu de 43), moyenne la grille à 0,01° sur des carrés de 0,1° (environ 10 km) de 51,5° N à 41° N et de 5,5° W à 10° E, et publie un fichier du jour de 1,2 Mo (24 heures × vent u et v au quart de m/s, pluie au dixième de mm/h), gardé 30 jours. Les heures passées gardent leur valeur ; les heures à venir sont remplacées à chaque nouveau calcul. La carte lit ce fichier à l'ouverture et s'en sert pour le vent et la pluie au centre de la carte, pour le vent aux stations trafic du calage et, à heure donnée, pour la direction locale du vent dans le modèle de rue. La ligne d'information des options indique la source retenue.</p>
+<p><b>Température et humidité à 2 m (depuis le 24 novembre).</b> Les mêmes requêtes partielles prennent aussi, dans le paquet SP1 de chaque heure, la température et l'humidité relative à 2 m (deux messages de plus, environ 4 à 5 Mo par heure), moyennées sur les mêmes carrés : fichier <code>ta-AAAA-MM-JJ.bin</code> de 0,8 Mo par jour en métropole (24 heures × température au demi-degré, humidité au pour cent) et <code>om-ta-AAAA-MM-JJ.bin</code> de 104 Ko pour les DROM, gardés 30 jours comme le vent. Les heures déjà copiées sans température sont complétées au passage suivant, sans relire le vent. En secours, la lecture d'Open-Meteo demande aussi <code>temperature_2m</code> et <code>relative_humidity_2m</code>. La température sert au calcul du NO₂ par les NOₓ (§ 5.5 bis) ; l'humidité est archivée pour les particules (croissance hygroscopique), sans usage dans la carte à ce stade.</p>
 <p><b>Lendemain et DROM (depuis le 18 novembre au soir).</b> La même extraction couvre désormais aussi le lendemain, dans un second fichier du jour (<code>AAAA-MM-JJ.bin</code> à la date de demain), et les DROM, avec les paquets AROME Outre-Mer à 0,025° de data.gouv.fr (domaines Antilles, Guyane et océan Indien ; échéances de 0 à 48 h, calculs à 0, 6, 12 et 18 h UTC ; adresse <code>pnt/{calcul}/arome-om/{ANTIL|GUYANE|INDIEN}/0025/SP1/…</code> sur le même stockage). Les DROM sont moyennés sur des carrés de 0,05° (0,1° en Guyane) dans cinq boîtes : Guadeloupe, Martinique, Guyane, La Réunion et Mayotte, en heures locales (comme Open-Meteo), dans un fichier <code>om-AAAA-MM-JJ.bin</code> de 156 Ko par jour. Le rang des messages de chaque paquet est appris au premier passage et gardé dans <code>arome/etat.json</code> ; si un champ manque, les noms des messages lus y sont notés. Ordre de priorité dans le budget de 7 minutes par passage : métropole aujourd'hui, DROM aujourd'hui, métropole demain, DROM demain ; les heures à venir du jour en métropole sont renouvelées à chaque nouveau calcul, celles du lendemain et des DROM quand un calcul plus récent d'au moins 6 heures paraît. Le premier remplissage complet demande cinq passages environ (50 minutes). Open-Meteo ne sert plus qu'au-delà du lendemain, hors des grilles et en secours ; la pluie AROME manquante est complétée par celle d'Open-Meteo. Testé sur des fichiers GRIB2 d'essai servis localement (le stockage de Météo-France n'est pas joignable depuis l'atelier) : grilles, rangs, cumuls de pluie convertis en intensités horaires et renouvellements conformes ; à confirmer sur le premier passage réel (<code>arome/etat.json</code>, valeurs à Fort-de-France, Saint-Denis et Cayenne).</p>
 
 <h2>3. Architecture d'IATMO</h2>
@@ -439,6 +440,7 @@
 <li><b>Déclenchement.</b> Toutes les 10 minutes par un appel de l'API GitHub depuis le service gratuit cron-job.org (<code>api.github.com/repos/julienrude-glitch/IATMO/actions/workflows/copie_lcsqa.yml/dispatches</code>), avec un jeton « fine-grained » limité au dépôt IATMO et à la seule permission Actions (lancer une tâche, sans accès au contenu), à durée limitée et révocable. La planification de GitHub, toutes les 30 minutes, reste en secours : elle sautait la plupart des passages (deux seulement entre le 17 novembre à 15 h 17 et le 18 à 9 h 45). Deux passages ne tournent jamais en même temps ; le bouton « Run workflow » propose une case « force » qui réextrait tout.</li>
 <li><b>Lecture par la page.</b> À l'adresse <code>raw.githubusercontent.com/…/donnees/</code>, qui autorise la lecture depuis toute page (<code>Access-Control-Allow-Origin: *</code>). Le bandeau de l'onglet Geod'air donne l'heure de la copie et la signale si elle a plus de trois heures. À défaut, la page tente data.gouv.fr directement (liste du dossier, puis nom <code>FR_E2_AAAA-MM-JJ.csv</code>) et donne la cause de chaque échec (copie absente, code d'erreur, lecture refusée par le navigateur).</li>
 <li><b>Suivi.</b> Journal des passages (<code>suivi/journal.json</code>) et heures d'arrivée des fichiers du LCSQA, présentés dans l'onglet Évaluation (§ 8).</li>
+<li><b>Incident du 23 novembre et restauration.</b> Vers 16 h 30, un passage n'a pas pu relire la branche de données et l'a recréée vide avant de la publier : l'archive des mesures (sauf les 22 et 23 novembre), l'archive AROME de 30 jours, l'archive horaire de Bison Futé et les fichiers de suivi ont été perdus ; l'archive de Paris s'est reconstituée seule. Depuis le 24 novembre, la tâche ne recrée la branche que si GitHub confirme qu'elle n'existe pas ; si elle existe mais reste illisible après trois essais, ou si GitHub ne répond pas, le passage s'arrête sans rien publier. Les jours perdus sont repris de dossiers déposés sur la branche principale : <code>restauration/lcsqa/</code> (mesures du 21 octobre au 21 novembre, tirées des exports Geod'air, lignes invalides écartées, au format de l'archive ; contrôlées sur le 22 novembre, identiques pour le NO₂, le NO et l'O₃) et <code>restauration/arome/</code> (vent, pluie, température et humidité des mêmes jours, tirés de l'archive des prévisions AROME HD d'Open-Meteo aux 79 points des stations trafic de métropole ; seules les quatre cases de la grille voisines de chaque point sont renseignées, à la valeur du point et non à la moyenne du carré de 0,1°). À chaque passage, les jours absents de l'archive y sont copiés ; les fichiers de suivi se reconstituent au fil des passages quotidiens (7 jours de test à l'aveugle par jour).</li>
 <li><b>Limites.</b> GitHub peut retarder les tâches aux heures chargées et suspend la planification d'un dépôt public resté soixante jours sans activité. En service, cette collecte serait faite côté serveur.</li>
 </ul>
 <h3>3.2 Temps de chargement</h3>
@@ -495,15 +497,17 @@ C_p(x) = B_p(x) + Δ_p · T̂(x) · F_p(x,h)               NO₂, PM₁₀, PM�
 classe_p(x) = grille( C_p(x) )        indice(x) = max sur p de classe_p(x)
 
 Δ_p (incrément trafic − fond au droit d'un grand axe) :
-   NO₂         calé sur les couples de stations du jour ; sans mesures : 8,8 µg/m³ (référence du 16/11/2026, § 5.6)
+   NO₂         par défaut, déduit de l'incrément de NOₓ et du fond d'ozone (P5, § 5.5 bis) ;
+               à défaut, calé sur les couples de stations du jour ; sans mesures : 8,8 µg/m³ (référence du 16/11/2026, § 5.6)
    PM₁₀, PM₂,₅ calé si au moins 60 valeurs, sinon calé sur l'archive ; à défaut, incrément de la première journée d'archive (18/11/2026, 87 couples) : PM₁₀ 4,7 µg/m³, PM₂,₅ 0,57 µg/m³
-O₃ :  ΔO₃ = − min( B_O₃ ; (1 − φ) · ΔNO₂ · 2,00 / 1,91 )     φ = 0,25          SO₂ : valeur communale</pre>
+O₃ :  ΔO₃ = − min( B_O₃ ; (ΔNO₂ − f₀ · ΔNOₓ) · 2,00 / 1,91 )   avec P5, f₀ = 0,10 (§ 5.5 bis)
+      ΔO₃ = − min( B_O₃ ; (1 − φ) · ΔNO₂ · 2,00 / 1,91 )         sans P5, φ = 0,25          SO₂ : valeur communale</pre>
 <ul>
 <li><b><i>C</i><sub>p</sub>(<i>c</i>)</b> est la concentration représentative du sous-indice de la commune : celle du § 4 (point 1) pour l'indice du jour, classée avec la grille de 2020 ; la concentration horaire simulée en aperçu 2027, classée avec la grille de l'AEE.</li>
 <li><b>Pourquoi un incrément plutôt qu'un rapport.</b> Sur les couples de stations du 16 novembre 2026 (NO₂, 0 h à 10 h, 819 valeurs horaires), l'écart entre trafic et fond varie beaucoup moins avec le niveau de fond que leur rapport. Les valeurs horaires étant réparties en trois tiers selon le fond (2,6, 7,5 et 22,3 µg/m³ en moyenne), les stations trafic mesurent 7,2, 16,5 et 35,1 µg/m³ ; un rapport constant (1,82) donne 4,7, 13,6 et 40,6, soit une sous-estimation par fond bas et une surestimation par fond haut ; un incrément constant (8,8 µg/m³) donne 11,4, 16,3 et 31,1. Écart quadratique moyen : 11,8 µg/m³ avec un rapport constant, 10,8 avec un incrément constant ; avec un profil horaire, 11,4 et 9,9 (− 13 %). Une forme affine (trafic = 5,9 + 1,27 × fond, 10,5 µg/m³ sans profil horaire) serait le compromis à évaluer sur un historique.</li>
 <li><b>Rapports du bilan 2024.</b> Le bilan de la qualité de l'air extérieur en France 2024 indique que les concentrations moyennes annuelles sont, sur l'ensemble des stations du territoire, 1,9 fois plus élevées à proximité du trafic routier qu'en fond urbain pour le NO₂, 1,3 fois pour les PM₁₀ et 1,3 fois pour les PM₂,₅. Ces rapports servent aux particules tant qu'elles ne sont pas calées, et à tous les polluants quand la case « Effet routier modulé » est décochée (forme multiplicative d'origine, conservée pour comparaison).</li>
 <li><b>Ce que cela suppose.</b> L'incrément d'un axe quelconque est assimilé à celui des stations trafic, implantées là où l'exposition est forte, et il ne dépend pas du niveau de fond. La concentration de la commune est assimilée à un niveau de fond, alors qu'elle résulte d'un maximum ou d'un percentile 90 de mailles.</li>
-<li><b>Ozone : titration.</b> Près des axes, le NO émis consomme l'ozone (NO + O₃ → NO₂ + O₂). L'oxydant total Oₓ = O₃ + NO₂ (Clapp et Jenkin, 2001), exprimé en ppb, n'est donc accru que par le NO₂ émis directement à l'échappement : ΔO₃ = − (1 − φ) · ΔNO₂ en ppb, où φ est la part du supplément de NO₂ émise directement. IATMO prend φ = 0,25, ordre de grandeur pour le parc actuel près de la voie (cette part croît quand on s'éloigne de l'axe, puisque le NO restant continue de réagir) ; conversions à 20 °C : 1,91 µg/m³ par ppb pour le NO₂, 2,00 pour l'O₃. Un incrément de 8,8 µg/m³ de NO₂ retire ainsi 6,9 µg/m³ d'ozone ; la baisse est plafonnée au fond d'ozone. φ n'est pas calé : les rares stations trafic qui mesurent l'ozone le permettraient. La titration ne fait que baisser le sous-indice O₃ près des axes, où le NO₂ détermine le plus souvent l'indice.</li>
+<li><b>Ozone : titration.</b> Près des axes, le NO émis consomme l'ozone (NO + O₃ → NO₂ + O₂). L'oxydant total Oₓ = O₃ + NO₂ (Clapp et Jenkin, 2001), exprimé en ppb, n'est donc accru que par le NO₂ émis directement à l'échappement : ΔO₃ = − (1 − φ) · ΔNO₂ en ppb, où φ est la part du supplément de NO₂ émise directement. IATMO prend φ = 0,25, ordre de grandeur pour le parc actuel près de la voie (cette part croît quand on s'éloigne de l'axe, puisque le NO restant continue de réagir) ; conversions à 20 °C : 1,91 µg/m³ par ppb pour le NO₂, 2,00 pour l'O₃. Un incrément de 8,8 µg/m³ de NO₂ retire ainsi 6,9 µg/m³ d'ozone ; la baisse est plafonnée au fond d'ozone. Avec P5 (§ 5.5 bis), la part émise directement est rapportée aux NOₓ et non plus au NO₂ : ΔO₃ = − (ΔNO₂ − f₀ · ΔNOₓ) en ppb, f₀ = 0,10 étant calé sur l'historique ; la titration varie alors avec l'ozone disponible, comme le NO₂. φ n'est pas calé : les rares stations trafic qui mesurent l'ozone le permettraient. La titration ne fait que baisser le sous-indice O₃ près des axes, où le NO₂ détermine le plus souvent l'indice.</li>
 <li><b>Incertitude.</b> L'incrément est ajouté sans modifier l'écart-type de krigeage du fond (onglet Geod'air) : la probabilité de classe de la fiche ne tient pas compte de l'erreur sur l'incrément lui-même.</li>
 </ul>
 <h3>5.5 Effet routier modulé : bâti, trafic, vent, pluie</h3>
@@ -520,7 +524,24 @@ f_pluie  = 1 − min(0,5 ; 0,25 · P)                P = précipitations en mm/h
 <li><b>Vent.</b> Le profil horaire observé contient déjà l'effet moyen du vent en France à cette heure ; le facteur local ne porte donc que sur l'écart entre le vent du lieu et la médiane nationale. Hors des treize agglomérations du § 5.7, la direction du vent et l'orientation de la rue ne sont pas prises en compte.</li>
 <li><b>Pluie.</b> Elle réduit l'incrément routier des PM₁₀ (chaussée mouillée, moins de remise en suspension) ; k est calé sur les PM₁₀, et les PM₂,₅, surtout issues de l'échappement, n'en dépendent pas. Elle ne modifie pas le fond : dans l'onglet Geod'air, le fond est mesuré et contient déjà l'effet de la pluie ; ailleurs, il vient de l'indice du jour.</li>
 <li><b>Heure retenue.</b> Aperçu 2027 et Geod'air : l'heure affichée. Pire heure : le maximum de <i>F</i> sur la journée. Indice actuel, qui est journalier : la moyenne de <i>F</i> sur les 24 heures.</li>
-<li><b>Statut.</b> Incrément de base, profil horaire et exposant du vent sont calés sur les mesures (§ 5.6). Les fonctions du bâti et de la pluie restent des hypothèses, choisies pour valoir 1 en situation moyenne.</li>
+<li><b>Statut.</b> Incrément de base, profil horaire et exposant du vent sont calés sur les mesures (§ 5.6). Les fonctions du bâti et de la pluie restent des hypothèses, choisies pour valoir 1 en situation moyenne. Pour le NO₂, ces facteurs s'appliquent depuis le 24 novembre à l'incrément de NOₓ, avec la température, puis la conversion chimique du § 5.5 bis.</li>
+</ul>
+<h3>5.5 bis NO₂ par les NOₓ et l'ozone de fond (P5, par défaut depuis le 24 novembre)</h3>
+<pre>ΔNOₓ(x,h) = D_NOₓ · T̂(x) · F_NOₓ(x,h)                         NOₓ en équivalent NO₂ (NO₂ + 46/30 · NO)
+F_NOₓ     = f_bâti(x) · g_NOₓ(h) · f_vent(h) · f_temp(h) · f_pluie(h)      borné entre 0,3 et 2
+f_vent    = (u₀ / u)^a,  a = 0,2                borné entre 0,6 et 1,6 ; u = vent à 10 m (m/s)
+f_temp    = exp(− γ · (T − T₀)),  γ = 0,02/°C   borné entre 0,6 et 1,6 ; T = température à 2 m (°C)
+            u₀, T₀ : vent (moyenne géométrique) et température moyens aux stations trafic sur la fenêtre de calage de D_NOₓ
+f_pluie   = exp(− 0,1 · min(P ; 5))             P = précipitations (mm/h)
+ΔNO₂(x,h) = ΔNOₓ · [ f₀ + (1 − f₀) · (1 − exp(− B_O₃(x) / O₃*)) ]     f₀ = 0,10   O₃* = 185 µg/m³
+ΔO₃(x,h)  = − min( B_O₃ ; (ΔNO₂ − f₀ · ΔNOₓ) · 2,00 / 1,91 )</pre>
+<ul>
+<li><b>Pourquoi passer par les NOₓ.</b> L'incrément de NO₂ près d'un axe est le solde de deux effets contraires. Sur l'historique Geod'air 2023-2025 (81 couples trafic / fond, 52 ZAS, 2,3 millions d'heures), l'incrément de NOₓ, qui suit la dispersion, vaut environ 40 µg/m³ en hiver et 25 en été ; la part de NO₂ dans cet incrément, qui suit l'oxydant disponible, vaut 0,24 en hiver et 0,44 en été. Les deux se compensent : l'incrément de NO₂ reste presque plat (10 à 12 µg/m³), et un modèle calé directement sur le NO₂ n'y voit ni effet du vent ni effet de la température. Séparer la dispersion (NOₓ) de la chimie (conversion par l'ozone) rend ces effets visibles et explicables.</li>
+<li><b>Conversion chimique.</b> f₀ est la part du NO₂ émise directement à l'échappement ; le reste du NO est oxydé par l'ozone de fond pendant le trajet jusqu'au récepteur, selon une loi saturante. f₀ et O₃* sont stables d'une année de calage à l'autre. Calés sur 2023-2024 et testés à l'aveugle sur 2025 avec l'incrément de NOₓ observé, ils donnent une erreur de 5,4 µg/m³ sur l'incrément de NO₂, contre 8,4 avec une part constante et 7,3 avec une part mensuelle. B_O₃ est le fond d'ozone au point (krigé dans l'onglet Geod'air, communal sinon) ; 50 µg/m³ s'il est inconnu.</li>
+<li><b>Facteurs de l'incrément de NOₓ.</b> Calés sur le même historique avec la météo AROME HD (archive des prévisions d'Open-Meteo) : exposant du vent de 0,2 à 0,4, + 2 % par degré de moins, − 10 % par mm de pluie, stables d'une année à l'autre. La carte prend les valeurs prudentes (a = 0,2) comme valeurs par défaut. Comme D_NOₓ est recalé chaque jour sur les 30 derniers jours, il contient déjà la météo moyenne de la fenêtre : les facteurs du vent et de la température portent donc sur l'écart à ses moyennes u₀ et T₀ (sans cela, la saison serait comptée deux fois). Chaque jour, historique.py recale D_NOₓ, le profil horaire g_NOₓ (jours ouvrés et week-end), u₀, T₀, l'exposant du vent (5 000 heures-couples au moins, borné à 0,6) et le coefficient de température (ajusté avec le facteur du vent, si la fenêtre couvre au moins 8 °C entre ses 5ᵉ et 95ᵉ centiles) ; f₀ et O₃* restent fixes, leur recalage sur 30 jours n'étant publié qu'à titre de contrôle (f₀ = 0,10 et O₃* = 190 µg/m³ sur la fenêtre du 23 novembre). Sur la fenêtre restaurée du 23 novembre (§ 3.1) : exposant du vent 0,41 (u₀ = 2,5 m/s), aucun effet propre de la température à l'intérieur de la fenêtre (T₀ = 11 °C, 13,5 °C d'étendue) : l'effet pluriannuel est surtout saisonnier, déjà porté par D_NOₓ. La température et la pluie sont lues au centre de la carte, comme le vent.</li>
+<li><b>Précision.</b> Test de bout en bout aux stations trafic, NO₂ horaire, gain sur le fond seul : 29,5 % en 2025 et 28,2 % en 2026 (à l'aveugle), contre 29,0 % et 28,1 % pour le profil des 30 derniers jours ; ZAS écartées, 28,7 % et 27,7 % pour les deux. La précision est donc équivalente. P5 est retenu par défaut parce qu'il résiste mieux à la dérive : l'incrément de NOₓ baisse d'environ 5 % par an (34,5 µg/m³ en 2023, 29,0 en 2026), tandis que le fond d'ozone a monté en 2026 (59,7 µg/m³) ; P5 suit les deux, quand un modèle calé sur le NO₂ les confond (biais en 2026 : − 0,4 µg/m³ pour P5 avec correction apprise, + 1,1 pour le NO₂ direct). Essai du 23 novembre sur l'archive restaurée, test à l'aveugle des 17 au 21 novembre (cinq jours avec la météo, 9 000 couples-heures environ) : 9,8 µg/m³ pour P5 contre 10,0 pour le modèle calé sur le NO₂. Le levier principal reste la variabilité heure par heure de l'incrément de NOₓ (trafic réel, stabilité de l'air), non la chimie.</li>
+<li><b>Règle d'emploi.</b> P5 est actif quand la case « Effet routier modulé » est cochée et que l'historique fournit D_NOₓ. Il est suspendu automatiquement si, sur les 7 derniers jours testés à l'aveugle avec la météo AROME (vent et température lus pour la moitié des heures au moins ; 3 jours au moins), son erreur dépasse de plus de 5 % celle du modèle calé directement sur le NO₂ ; les jours sans météo ne comptent pas, car P5 y perd les facteurs du vent et de la température qui compensent la conversion chimique, ce qui ne représente pas la carte (sur la fenêtre du 23 novembre sans archive météo, P5 faisait 6 % moins bien que le modèle calé ; avec l'archive restaurée, 2 % mieux) ; la carte revient alors au calcul du § 5.4 et la ligne d'information l'indique. L'onglet Évaluation montre les deux erreurs (§ 8).</li>
+<li><b>Ce que P5 ne change pas.</b> Les particules gardent le calcul du § 5.5. Le fond de NO₂ n'est pas modifié : seul l'incrément l'est. L'humidité relative n'intervient pas.</li>
 </ul>
 <h3>5.6 Calage sur les couples de stations trafic / fond de Geod'air</h3>
 <p><b>Méthode.</b> La concentration près d'un axe est décomposée en fond urbain et incrément local, à la manière de Lenschow et al. (2001). Les fichiers Geod'air lus pour l'onglet du même nom contiennent aussi les stations sous influence du trafic. Chaque station trafic urbaine ou périurbaine est appariée aux stations de fond urbaines ou périurbaines situées à moins de 10 km (trois au plus, dont la moyenne sert de fond). Le calage est refait à chaque lecture, sans appel supplémentaire à l'API.</p>
@@ -606,6 +627,7 @@ a ∈ [0 ; 1], c ∈ [0 ; 1,5] : grille ; D : moindres carrés ; ancien modèle 
 <li><b>Exposant du vent</b> : même régression qu'au § 5.6, avec le vent AROME de chaque heure au droit de chaque station trafic.</li>
 <li><b>Effet de la pluie</b> sur les PM₁₀ : Δ ≈ D · g(h) · (1 − min(0,5 ; k · P)), k ajusté sur une grille (au moins 100 heures-couples pluvieuses) ; il remplace l'hypothèse k = 0,25.</li>
 <li><b>Trafic et confinement</b> : ajustement du § 5.9 sur l'incrément moyen de chaque station documentée sur la période (24 heures au moins par station).</li>
+<li><b>P5</b> (§ 5.5 bis) : incrément de NOₓ et son profil horaire, exposant du vent et coefficient de température de l'incrément de NOₓ (vent et température AROME au droit des stations trafic), contrôle de la conversion chimique, et règle d'emploi tirée des 7 derniers tests à l'aveugle.</li>
 </ul>
 <p>Le résultat est publié dans <code>calage/calage.json</code>, lu par la carte à l'ouverture. Les exposants du vent et du trafic, le confinement et l'effet de la pluie calés sur l'historique remplacent ceux du jour dès que 7 jours complets sont disponibles ; l'incrément et son profil horaire restent ceux du jour quand les mesures du jour sont lues. La ligne d'information des options indique l'origine de chaque valeur. Le premier jour complet (le 18 novembre, en heure de Paris) a été calculé le 19 au matin ; les 7 jours seront atteints le 25 novembre. Le même passage ajoute à <code>suivi/calage_jours.json</code> un test à l'aveugle du calage de la veille et l'évaluation de deux corrections apprises des résidus, par gradient boosting et par perceptron (§ 5.11), présentés dans l'onglet Évaluation (§ 8, « Progression du calage »).</p>
 <h3>5.11 Correction apprise des résidus : gradient boosting et perceptron (en évaluation)</h3>
@@ -724,7 +746,7 @@ e_i = z_i − ẑ₋ᵢ(x_i) = w_i / Q_ii                 erreur de prévision, 
 <li><b>Indicateur MQI de FAIRMODE.</b> Guide FAIRMODE sur les objectifs de qualité des modèles, version 4.1 (septembre 2026, JRC146736, alignée sur la directive 2024/2881), tableau 1, inchangé depuis la version 4.0 de mai 2026. Pour chaque station, MQI = RMSE / (√(1 + β²) · RMS<sub>U</sub>), l'incertitude de mesure U(O) valant U<sub>∅</sub> à concentration nulle, croissant linéairement jusqu'à U<sub>r</sub> · LV à la valeur limite, puis restant proportionnelle à la concentration. Paramètres (LV, U<sub>r</sub>, β, U<sub>∅</sub>) : NO₂ horaire 200 µg/m³, 15 %, 3,2, 3 ; O₃ (maximum journalier sur 8 h) 120, 15 %, 2,2, 10 ; PM₁₀ journalier 45, 25 %, 2,2, 4 ; PM₂,₅ journalier 25, 25 %, 2,5, 3. L'objectif est atteint si 90 % des stations ont un MQI ≤ 1 : l'onglet donne le MQI du 90<sup>e</sup> centile (au moins 10 stations). Le jour même, seul le NO₂ est évalué ; l'O₃ et les particules, à une valeur par jour, le sont sur 7 et 30 jours par la tâche GitHub (couverture d'au moins 75 %). Diagramme cible : biais en ordonnée et erreur centrée en abscisse, sur la même échelle ; la distance au centre est le MQI. La version 4.1 ne modifie que le tableau 6 de l'annexe (paramètres du CEN, alignés sur ceux du comité technique), qu'IATMO n'utilise pas ; ces paramètres, encore en validation, doivent être mis à jour fin 2026. Une analyse de VITO (2024), citée par le guide, suggère que le MQI du 90<sup>e</sup> centile n'est stable qu'au-delà de 20 stations. FAIRMODE évalue des séries annuelles : sur quelques jours et pour une interpolation, le MQI est un repère, pas une évaluation réglementaire.</li>
 <li><b>Cohérence avec l'indice ATMO publié par les AASQA.</b> Le sous-indice publié pour la commune de chaque station (géocodage inverse de la Géoplateforme ; arrondissements rapportés à la commune) est comparé à la classe, sur la grille de 2020, de la carte Geod'air au droit de la station : maximum horaire pour le NO₂ et l'O₃, moyenne pour les particules, sur les heures déjà mesurées. La journée n'étant pas finie et l'indice publié étant une prévision, un écart n'est pas une erreur de l'un ou de l'autre. Les communes couvertes par un indice d'intercommunalité sont écartées.</li>
 <li><b>Effet routier aux stations documentées.</b> Incrément du NO₂ observé contre celui du modèle calé (§ 5.9) et de l'ancien modèle, avec a, c et les erreurs en validation croisée.</li>
-<li><b>Progression du calage.</b> Test à l'aveugle du calage du § 5.10 : pour chaque jour J, historique.py cale les paramètres sur les 30 jours d'archive qui précèdent J et les applique aux couples station trafic / stations de fond de J (10 km au plus), C = fond + Δ<sub>p</sub> · g<sub>p</sub>(h) · facteurs du vent et de la pluie, avec le trafic et le confinement pour les stations documentées. Le fond est la moyenne mesurée aux stations de fond appariées. Trois erreurs quadratiques moyennes horaires sont comparées : fond seul, paramètres d'origine (incrément de référence du 16 novembre pour le NO₂, rapport 1,3 du bilan 2024 pour les particules, trafic proportionnel, confinement 1, vent en racine carrée, pluie 0,25) et paramètres calés. Gain = 1 − erreur / erreur du fond seul. Les intervalles à 90 % des paramètres viennent d'un tirage avec remise (bootstrap, Efron, 1979) des jours (incrément, vent, pluie) ou des stations documentées (trafic, confinement). Pendant le remplissage de la fenêtre, les intervalles doivent se resserrer et le gain se stabiliser au-dessus de celui des paramètres d'origine ; fenêtre pleine, les variations traduisent surtout la saison.</li>
+<li><b>Progression du calage.</b> Test à l'aveugle du calage du § 5.10 : pour chaque jour J, historique.py cale les paramètres sur les 30 jours d'archive qui précèdent J et les applique aux couples station trafic / stations de fond de J (10 km au plus), C = fond + Δ<sub>p</sub> · g<sub>p</sub>(h) · facteurs du vent et de la pluie (et, pour le NO₂, le calcul P5 sur les mêmes couples-heures, avec l'ozone de fond mesuré), avec le trafic et le confinement pour les stations documentées. Le fond est la moyenne mesurée aux stations de fond appariées. Trois erreurs quadratiques moyennes horaires sont comparées : fond seul, paramètres d'origine (incrément de référence du 16 novembre pour le NO₂, rapport 1,3 du bilan 2024 pour les particules, trafic proportionnel, confinement 1, vent en racine carrée, pluie 0,25) et paramètres calés. Gain = 1 − erreur / erreur du fond seul. Les intervalles à 90 % des paramètres viennent d'un tirage avec remise (bootstrap, Efron, 1979) des jours (incrément, vent, pluie) ou des stations documentées (trafic, confinement). Pendant le remplissage de la fenêtre, les intervalles doivent se resserrer et le gain se stabiliser au-dessus de celui des paramètres d'origine ; fenêtre pleine, les variations traduisent surtout la saison. Une vignette « NO₂ par les NOₓ (P5) » donne, sur les 7 derniers jours, l'erreur de P5 et celle du modèle calé sur le NO₂ pour les mêmes couples-heures, le biais de P5 et son état sur la carte (actif ou suspendu, § 5.5 bis).</li>
 <li><b>Correction apprise des résidus</b> (§ 5.11). Apport de chaque candidat = 1 − erreur corrigée / erreur du modèle calé, à l'aveugle et, pour le NO₂, par agglomération écartée, sur 7 jours glissants. Le verdict provisoire retient le meilleur candidat, ou aucun s'ils ne font pas mieux que le modèle calé sur des stations jamais vues.</li>
 <li><b>Périodes de 7 et 30 jours.</b> Chaque jour, la tâche GitHub calcule pour la veille la validation croisée du krigeage (erreur, biais, bonne classe, MQI par polluant), en krigeage ordinaire seulement : les prévisions Prev'air passées ne sont pas archivées.</li>
 <li><b>Délai de publication par AASQA.</b> Délai entre la fin de l'heure mesurée et sa première apparition dans la copie, à dix minutes près ; médiane et 90<sup>e</sup> centile par AASQA sur 30 jours.</li>
@@ -734,7 +756,7 @@ e_i = z_i − ẑ₋ᵢ(x_i) = w_i / Q_ii                 erreur de prévision, 
 </ul>
 <h2>9. Note méthodologique de synthèse</h2>
 <p>Les choix de méthode et les options d'IATMO sont résumés dans une note de dix pages, dont la date de mise à jour figure en haut de chaque page : organisation générale et sources, commandes, krigeage et validation croisée, aperçu 2027, descente d'échelle (incrément routier, titration, calage, modèle de rue, cohérence), limites, pistes, questions ouvertes et références. Elle est intégrée à la page et se télécharge sans connexion.</p>
-<p><a href="note_methodologique.pdf" id="noteLien" class="lnk notePdf" download="IATMO_Note_methodologique.pdf" target="_blank" rel="noopener">Télécharger la note méthodologique (PDF, 10 pages, 142 Ko)</a></p>
+<p><a href="note_methodologique.pdf" id="noteLien" class="lnk notePdf" download="IATMO_Note_methodologique.pdf" target="_blank" rel="noopener">Télécharger la note méthodologique (PDF, 10 pages, 144 Ko)</a></p>
 <h2>10. Références</h2>
 <p>Ouvrages, articles, guides et textes utilisés pour les choix de méthode. Les sources de données (producteur, licence, adresse) sont listées dans l'onglet Sources.</p>
 <h3>10.1 Textes réglementaires et guides</h3>
@@ -1108,7 +1130,7 @@ var map = new maplibregl.Map({
 });
 var maps = [map], insets = {};
 map.__done = new Set();
-window.__iatmo = {relire:function(){ GEO_RELU = 0; geoRelire(); },perft:function(){return PERFT;},map:map,state:state,calh:function(){return CALH;},calf:function(){return CALF;},perf:function(){return PERF;},bati:function(){return BATI;},arome:function(){return AROME;},aromeAt:function(a,b,c,d,e){return aromeAt(a,b,c,d,e);},traf:function(){return TRAF;},trafPres:function(a,b){return trafPres(a,b);},bati:function(){return BATI;},meteo:function(){return METEO;},dyn:function(){return DYN;},prevc:function(){return PREVC;},conc:function(c,p,h){var r=state.rec.get(String(c));return r?concentration(r,String(c),p,h):null;},prev:function(){return PREV;},paris:function(){return PARIS;},cal:function(){return CAL;},km:function(a,b,c,d){return krigeModel(a,b,c,d);},kp:function(m,x,y){return krigePredict(m,x,y);},cal:function(){return CAL;},routier:function(fv,th){return routier(fv,th,null);},cvtest:function(p){var hk=geoHour();var gm=geoModel(p,hk,'metro');return gm&&{cv:gm.cv,vg:gm.mod.vg,ness:gm.mod.nessais,m1cv:gm.m1&&gm.m1.cv,m1vg:gm.m1&&gm.m1.vg};},probc:function(p,q,v,sg){return probClasse(p,q,v,sg);},sigma:function(p,lon,lat){var gm=geoModel(p,geoHour(),'metro');return gm&&gm.m1?krigeSigma(gm.m1,kmX('metro',lon),kmY('metro',lat)):null;},geo:function(){return GEO;},geoPoint:function(a,b,c){return geoPoint(a,b,c);},laea:function(a,b){return laea(a,b);},selectCas:function(i){selectCas(i);},insets:insets,classeAEE:classeAEE,pointFin:function(a,b){return pointFin(a,b);},classeAffichee:classeAffichee};
+window.__iatmo = {relire:function(){ GEO_RELU = 0; geoRelire(); },p5:function(){ return {actif:p5Actif(),par:p5Par(),txt:p5Txt(),dynHeure:dynHeure,routier:routier,incTxt:incTxt,effetTxt:effetTxt,dynRe:function(){ DYN = dyn(); modInfo(); return DYN; }}; },perft:function(){return PERFT;},map:map,state:state,calh:function(){return CALH;},calf:function(){return CALF;},perf:function(){return PERF;},bati:function(){return BATI;},arome:function(){return AROME;},aromeAt:function(a,b,c,d,e){return aromeAt(a,b,c,d,e);},traf:function(){return TRAF;},trafPres:function(a,b){return trafPres(a,b);},bati:function(){return BATI;},meteo:function(){return METEO;},dyn:function(){return DYN;},prevc:function(){return PREVC;},conc:function(c,p,h){var r=state.rec.get(String(c));return r?concentration(r,String(c),p,h):null;},prev:function(){return PREV;},paris:function(){return PARIS;},cal:function(){return CAL;},km:function(a,b,c,d){return krigeModel(a,b,c,d);},kp:function(m,x,y){return krigePredict(m,x,y);},cal:function(){return CAL;},routier:function(fv,th){return routier(fv,th,null);},cvtest:function(p){var hk=geoHour();var gm=geoModel(p,hk,'metro');return gm&&{cv:gm.cv,vg:gm.mod.vg,ness:gm.mod.nessais,m1cv:gm.m1&&gm.m1.cv,m1vg:gm.m1&&gm.m1.vg};},probc:function(p,q,v,sg){return probClasse(p,q,v,sg);},sigma:function(p,lon,lat){var gm=geoModel(p,geoHour(),'metro');return gm&&gm.m1?krigeSigma(gm.m1,kmX('metro',lon),kmY('metro',lat)):null;},geo:function(){return GEO;},geoPoint:function(a,b,c){return geoPoint(a,b,c);},laea:function(a,b){return laea(a,b);},selectCas:function(i){selectCas(i);},insets:insets,classeAEE:classeAEE,pointFin:function(a,b){return pointFin(a,b);},classeAffichee:classeAffichee};
 map.addControl(new maplibregl.NavigationControl({showCompass:false}),"top-right");
 map.addControl(new maplibregl.ScaleControl({unit:"metric"}),"bottom-right");
 map.addControl(new maplibregl.AttributionControl({compact:true,
@@ -2478,12 +2500,16 @@ function aromeLire(){
     if(!met.length && !omj.length) throw "fichier AROME du "+m.jour;
     var tOM = 0; if(om) Object.keys(om.boites).forEach(function(b){ var x = om.boites[b]; tOM = Math.max(tOM,x.decalage+24*3*x.ni*x.nj); });
     var lire = function(f,taille){ return fetch(AROME_URL+f,{cache:"no-store"}).then(function(r){ if(!r.ok) throw r.status; return r.arrayBuffer(); }).then(function(b){ if(b.byteLength!==taille) throw "taille inattendue"; return b; }); };
-    var jours = {}, omJours = {};
+    var jours = {}, omJours = {}, ta = m.ta || null, taJ = {}, taOM = {}, tOMta = 0;
+    if(ta && om) Object.keys(om.boites).forEach(function(b){ var x = om.boites[b]; tOMta = Math.max(tOMta,(ta.decalages_om||{})[b]+24*2*x.ni*x.nj); });
+    var lireTA = ta ? J.map(function(j){ return lire("ta-"+j+".bin",24*2*n).then(function(b){ taJ[j] = {d:new Int8Array(b),u8:new Uint8Array(b)}; }).catch(function(){}); })
+      .concat(om && tOMta ? omj.map(function(j){ return lire("om-ta-"+j+".bin",tOMta).then(function(b){ taOM[j] = {d:new Int8Array(b),u8:new Uint8Array(b)}; }).catch(function(){}); }) : []) : [];
     return Promise.all(met.map(function(x){ return lire(x.jour+".bin",24*3*n).then(function(b){ jours[x.jour] = {d:new Int8Array(b),u8:new Uint8Array(b),h:x.h||x.heures}; }).catch(function(){}); })
-      .concat(omj.map(function(j){ return lire("om-"+j+".bin",tOM).then(function(b){ omJours[j] = {d:new Int8Array(b),u8:new Uint8Array(b),h:om.jours[j]}; }).catch(function(){}); })))
+      .concat(omj.map(function(j){ return lire("om-"+j+".bin",tOM).then(function(b){ omJours[j] = {d:new Int8Array(b),u8:new Uint8Array(b),h:om.jours[j]}; }).catch(function(){}); })).concat(lireTA))
       .then(function(){
         if(!Object.keys(jours).length && !Object.keys(omJours).length) throw "fichiers AROME illisibles";
-        AROME = {ok:!!jours[J[0]],jour:J[0],g:g,n:n,jours:jours,om:om ? {boites:om.boites,jours:omJours} : null,maj:m.maj,err:null,version:AROME.version+1};
+        AROME = {ok:!!jours[J[0]],jour:J[0],g:g,n:n,jours:jours,om:om ? {boites:om.boites,jours:omJours} : null,maj:m.maj,err:null,version:AROME.version+1,
+                 ta:ta ? {e:ta.echelle_temperature||0.5,dec:ta.decalages_om||{},j:taJ,om:taOM} : null};
         METEO.key = ""; meteoUpdate(); CAL.key = ""; calageVent(); modInfo(); return true;
       });
   }).catch(function(e){ AROME.err = e; modInfo(); return false; });
@@ -2498,16 +2524,29 @@ function aromeGrille(J,g,dec,n,lon,lat,h){
   var ev = g.echelle_vent||0.25, u = bil(b)*ev, v = bil(b+n)*ev, p = J.u8[b+2*n+Math.round(fy)*g.ni+Math.round(fx)];
   return {u:Math.sqrt(u*u+v*v), d:(Math.atan2(-u,-v)*180/Math.PI+360)%360, p:p===255 ? null : p*(g.echelle_pluie||0.1), src:"AROME de Météo-France"};
 }
+// Température (°C) et humidité relative (%) AROME au même point : fichiers ta-*.bin (2 octets par case et par heure), facultatifs
+function aromeTA(T,g,dec,n,lon,lat,h,e){
+  if(!T) return null;
+  var fx = (lon-g.lon0)/g.pas-0.5, fy = (g.lat0-lat)/g.pas-0.5;
+  if(fx<0 || fy<0 || fx>g.ni-1 || fy>g.nj-1) return null;
+  var i = Math.floor(fx), j = Math.floor(fy), ax = fx-i, ay = fy-j, i1 = Math.min(g.ni-1,i+1), j1 = Math.min(g.nj-1,j+1), b = dec+h*2*n, D = T.d;
+  var k = [j*g.ni+i, j*g.ni+i1, j1*g.ni+i, j1*g.ni+i1];
+  if(k.some(function(x){ return D[b+x]===-128; })) return null;
+  var t = ((D[b+k[0]]*(1-ax)+D[b+k[1]]*ax)*(1-ay)+(D[b+k[2]]*(1-ax)+D[b+k[3]]*ax)*ay)*e, r = T.u8[b+n+Math.round(fy)*g.ni+Math.round(fx)];
+  return {t:t, rh:r===255 ? null : r};
+}
 // Vent (vitesse, direction d'où il vient) et pluie AROME en un point, à une heure d'un jour (aujourd'hui par défaut) ; null hors grille
 // ou heure absente. Métropole : heure de Paris ; DROM : heure locale (comme Open-Meteo). metroSeul : ignore les DROM.
 function aromeAt(lon,lat,h,iso,metroSeul){
   iso = iso || parisDate(0); if(!(h>=0 && h<=23)) return null;
-  var J = AROME.jours[iso];
-  if(J && J.h[h]){ var r = aromeGrille(J,AROME.g,0,AROME.n,lon,lat,h); if(r) return r; }
+  var J = AROME.jours[iso], A = AROME.ta, x;
+  if(J && J.h[h]){ var r = aromeGrille(J,AROME.g,0,AROME.n,lon,lat,h);
+    if(r){ x = A ? aromeTA(A.j[iso],AROME.g,0,AROME.n,lon,lat,h,A.e) : null; if(x){ r.t = x.t; r.rh = x.rh; } return r; } }
   if(metroSeul || !AROME.om || !AROME.om.jours[iso]) return null;
   var O = AROME.om.jours[iso];
   for(var b in AROME.om.boites){ var g = AROME.om.boites[b]; if(!O.h[b] || !O.h[b][h]) continue;
-    var q = aromeGrille(O,g,g.decalage,g.ni*g.nj,lon,lat,h); if(q){ q.src = "AROME Outre-Mer de Météo-France"; return q; } }
+    var q = aromeGrille(O,g,g.decalage,g.ni*g.nj,lon,lat,h);
+    if(q){ q.src = "AROME Outre-Mer de Météo-France"; x = A && A.dec[b]!=null ? aromeTA(A.om[iso],g,A.dec[b],g.ni*g.nj,lon,lat,h,A.e) : null; if(x){ q.t = x.t; q.rh = x.rh; } return q; } }
   return null;
 }
 var METEO = {key:"",h:{},ok:false,busy:false,err:false,arome:0};
@@ -2517,44 +2556,65 @@ function meteoUpdate(){
   if(key===METEO.key || METEO.busy) return;
   METEO.busy = true;
   fetch("https://api.open-meteo.com/v1/forecast?latitude="+c.lat.toFixed(2)+"&longitude="+c.lng.toFixed(2)+
-    "&hourly=wind_speed_10m,wind_direction_10m,precipitation&models=meteofrance_seamless&wind_speed_unit=ms&timezone=auto&past_days=1&forecast_days=2")
+    "&hourly=wind_speed_10m,wind_direction_10m,precipitation,temperature_2m,relative_humidity_2m&models=meteofrance_seamless&wind_speed_unit=ms&timezone=auto&past_days=1&forecast_days=2")
     .then(function(r){ if(!r.ok) throw 0; return r.json(); })
     .then(function(j){ var t = j.hourly.time, u = j.hourly.wind_speed_10m, pr = j.hourly.precipitation, h = {};
-      var wd = j.hourly.wind_direction_10m||[];
-      for(var i=0;i<t.length;i++) if(u[i]!=null) h[t[i].slice(0,13)] = {u:u[i],p:pr[i]||0,d:wd[i]!=null?wd[i]:null,src:"Open-Meteo, AROME"};
+      var wd = j.hourly.wind_direction_10m||[], tt = j.hourly.temperature_2m||[], rh = j.hourly.relative_humidity_2m||[];
+      for(var i=0;i<t.length;i++) if(u[i]!=null) h[t[i].slice(0,13)] = {u:u[i],p:pr[i]||0,d:wd[i]!=null?wd[i]:null,t:tt[i]!=null?tt[i]:null,rh:rh[i]!=null?rh[i]:null,src:"Open-Meteo, AROME"};
       METEO.h = h; METEO.err = false; })
     .catch(function(){ METEO.h = {}; METEO.err = true; })
     .then(function(){
       var n = 0, src = null;                                                  // aujourd'hui et demain : AROME extrait par la tâche GitHub, s'il couvre le point
       [parisDate(0),parisDate(1)].forEach(function(jour){ for(var hh=0;hh<24;hh++){ var a = aromeAt(c.lng,c.lat,hh,jour); if(!a) continue;
-        var k = jour+"T"+(hh<10?"0":"")+hh, o = METEO.h[k]; if(a.p==null) a.p = o ? o.p : 0; METEO.h[k] = a; n++; src = a.src; } });
+        var k = jour+"T"+(hh<10?"0":"")+hh, o = METEO.h[k]; if(a.p==null) a.p = o ? o.p : 0; if(a.t==null && o){ a.t = o.t; a.rh = o.rh; } METEO.h[k] = a; n++; src = a.src; } });
       METEO.arome = n; METEO.aromeSrc = src; METEO.ok = Object.keys(METEO.h).length>0; if(METEO.ok) METEO.err = false;
       METEO.busy = false; METEO.key = key; state.version++; updateFine(true); updateGeo(true); modInfo(); });
 }
 function fVent(u){ return Math.max(0.6,Math.min(1.6,Math.sqrt(3/Math.max(u,0.3)))); }   // dilution : référence 3 m/s
 function kPluie(){ return calhOk(HIST_MIN) && CALH.pluie && CALH.pluie.k!=null && CALH.pluie.npluie>=100 ? CALH.pluie.k : 0.25; }   // calé sur l'historique, sinon hypothèse
 function fPluie(p){ return 1-Math.min(0.5,kPluie()*p); }                                     // chaussée mouillée : remise en suspension des PM₁₀ seulement (k calé sur les PM₁₀)
-// Facteurs dynamiques d'une heure : NO₂ et PM₂,₅ = trafic × vent ; PM₁₀ = trafic × vent × pluie
+/* P5 (depuis le 24/11/2026) : l'incrément de NO₂ est calculé à partir de l'incrément de NOₓ (en équivalent NO₂), converti selon
+   l'ozone de fond : ΔNO₂ = ΔNOₓ · [f₀ + (1 − f₀) · (1 − exp(−O₃ / O₃*))]. ΔNOₓ = D_NOₓ · T̂ · profil horaire · vent · température · pluie.
+   Valeurs par défaut : historique Geod'air 2023-2025 et AROME HD (calage 2023-2024, test à l'aveugle 2025, confirmé sur 2026) ; l'incrément,
+   son profil, l'exposant du vent et le coefficient de température sont recalés chaque jour sur les 30 derniers jours (calage.json, clé p5). */
+var P5_DEF = {vent:0.2, temp:0.02, pluie:0.1, f0:0.10, o3s:185};
+// Vent et température rapportés à leurs moyennes sur la fenêtre de calage de D_NOₓ (u0, t0) ; exposant et coefficient calés dès HIST_MIN jours
+function p5Par(){ var p = calhOk(1) && CALH.p5 ? CALH.p5 : {}, h = calhOk(HIST_MIN), v = p.vent || {}, t = p.temp || {};
+  return {a:h && v.a!=null ? v.a : P5_DEF.vent, u0:v.u0 || 3, g:h && t.g!=null ? t.g : P5_DEF.temp, t0:t.t0!=null ? t.t0 : 12,
+          k:P5_DEF.pluie, f0:P5_DEF.f0, o3s:P5_DEF.o3s, ventCale:!!(h && v.a!=null), tempCale:!!(h && t.g!=null)}; }
+// P5 actif : effet routier modulé, incrément de NOₓ calé sur l'historique, et règle d'emploi respectée (calage.json, p5.regle)
+function p5Actif(){ return !!(state.mod && calhOk(1) && CALH.D && CALH.D.NOX>0 && !(CALH.p5 && CALH.p5.regle && CALH.p5.regle.actif===false)); }
+function p5Conv(o3){ var P = P5_DEF; return P.f0+(1-P.f0)*(1-Math.exp(-Math.max(0,o3)/P.o3s)); }
+function fTraficNOx(iso,h){
+  var j = new Date(iso+"T12:00:00Z").getUTCDay(), pr = calhOk(1) && CALH.g ? CALH.g[(j===0 || j===6) ? "weekend" : "ouvre"].NOX : null;
+  if(pr && pr[h]!=null) return {v:pr[h],src:"historique NOₓ, "+CALH.nj+" j"};
+  var t = fTrafic(iso,h,0); return {v:t.v,src:t.src+", profil du NO₂"};
+}
+// Facteurs dynamiques d'une heure : NO₂ et PM₂,₅ = trafic × vent ; PM₁₀ = trafic × vent × pluie ; NOₓ (P5) = trafic × vent × température × pluie
 function dynHeure(iso,h){
   var hh = (h<10?"0":"")+h, w = METEO.ok ? METEO.h[iso+"T"+hh] : null, un = CAL.unat[iso+" "+hh], fv = 1, fp = w ? fPluie(w.p) : 1, cale = false;
   var aV = calhOk(HIST_MIN) && CALH.vent && CALH.vent.a!=null ? CALH.vent.a : CAL.a;        // exposant du vent : historique dès HIST_MIN jours
   if(w){ if(aV!=null && un!=null){ fv = Math.max(0.6,Math.min(1.6,Math.pow(Math.max(un,0.3)/Math.max(w.u,0.3),aV))); cale = true; } else fv = fVent(w.u); }
   var c = function(v){ return Math.max(0.3,Math.min(2.5,v)); }, t0 = fTrafic(iso,h,0), t2 = fTrafic(iso,h,2), t3 = fTrafic(iso,h,3);
-  return {ft:t0.v,ftSrc:t0.src,fv:fv,fvCale:cale,un:un,fp:fp,u:w?w.u:null,dir:w?w.d:null,p:w?w.p:null,src:w?w.src:null,m:[c(t0.v*fv),1,c(t2.v*fv*fp),c(t3.v*fv),1]};
+  var P = p5Par(), tx = fTraficNOx(iso,h), fvx = w ? Math.max(0.6,Math.min(1.6,Math.pow(P.u0/Math.max(w.u,0.3),P.a))) : 1,
+      ftp = w && w.t!=null ? Math.max(0.6,Math.min(1.6,Math.exp(-P.g*(w.t-P.t0)))) : 1, fpx = w && w.p!=null ? Math.exp(-P.k*Math.min(w.p,5)) : 1;
+  return {ft:t0.v,ftSrc:t0.src,fv:fv,fvCale:cale,un:un,fp:fp,u:w?w.u:null,dir:w?w.d:null,p:w?w.p:null,t:w?w.t:null,rh:w?w.rh:null,src:w?w.src:null,m:[c(t0.v*fv),1,c(t2.v*fv*fp),c(t3.v*fv),1],
+          ftx:tx.v,ftxSrc:tx.src,fvx:fvx,ftp:ftp,fpx:fpx,mx:c(tx.v*fvx*ftp*fpx)};
 }
 // Facteurs de la vue courante : une heure (aperçu 2027, Geod'air), la pire heure, ou la moyenne de la journée (indice actuel)
 function dyn(){
-  if(!state.mod) return {m:[1,1,1,1,1],mode:"fixe"};
+  if(!state.mod) return {m:[1,1,1,1,1],mx:1,mode:"fixe"};
   var iso = state.dates[state.day] || parisDate(state.day), h = null, i, d;
   if(geoOn()){ var hk = geoHour(); if(hk){ iso = hk.slice(0,10).replace(/\//g,"-"); h = +hk.slice(11,13); } }
   else if(state.view==="2027" && !state.pire) h = state.hour;
   if(h!=null){ d = dynHeure(iso,h); d.mode = "heure"; d.h = h; d.iso = iso; return d; }
   var all = []; for(i=0;i<24;i++) all.push(dynHeure(iso,i));
-  var pire = state.view==="2027" && state.pire, m = [1,1,1,1,1];
+  var pire = state.view==="2027" && state.pire, m = [1,1,1,1,1], vx = all.map(function(a){ return a.mx; });
   [0,2,3].forEach(function(p){ var v = all.map(function(a){ return a.m[p]; }); m[p] = pire ? Math.max.apply(null,v) : v.reduce(function(x,y){return x+y;},0)/24; });
-  return {m:m,mode:pire?"pire":"jour",iso:iso};
+  var tj = all.filter(function(a){ return a.t!=null; }).map(function(a){ return a.t; });
+  return {m:m,mx:pire ? Math.max.apply(null,vx) : vx.reduce(function(x,y){return x+y;},0)/24,mode:pire?"pire":"jour",iso:iso,t:tj.length ? tj.reduce(function(x,y){return x+y;},0)/tj.length : null};
 }
-var DYN = {m:[1,1,1,1,1],mode:"fixe"};
+var DYN = {m:[1,1,1,1,1],mx:1,mode:"fixe"};
 // Multiplicateur appliqué au fond : proximité routière T̂, bâti K, facteurs dynamiques
 /* Effet routier additif : C = fond + Δ_p · T̂ · F_p, où Δ_p est l'incrément trafic − fond calé sur les couples de stations
    (référence du 16/11 pour le NO₂ sans mesures du jour ; pour les particules non calées, incrément additif de la première journée d'archive, 18/11/2026).
@@ -2573,36 +2633,58 @@ function incrementBase(p){
   return null;
 }
 function facteurRoute(p,loc){ return state.mod ? Math.max(0.3,Math.min(2,(loc ? loc.fb : 1)*DYN.m[p])) : 1; }
+function facteurNOx(loc){ return Math.max(0.3,Math.min(2,(loc ? loc.fb : 1)*(DYN.mx!=null ? DYN.mx : 1))); }
+var O3_DEFAUT = 50;                                                         // ozone de fond supposé si aucune valeur n'est connue au point (µg/m³)
 // fv : valeurs de fond (null si absente) ; écrit les valeurs au point dans out et les suppléments dans inc
 function routierEcrit(fv,th,loc,out,inc){
   for(var p=0;p<5;p++){ out[p] = fv[p]; inc[p] = 0; }
   if(!(th>0)) return;
+  var p5 = p5Actif() && fv[0]!=null; inc.nox = null;
   for(var k=0;k<3;k++){
     var q = k===0 ? 0 : k+1, f = fv[q]; if(f==null) continue;
-    var D = incrementBase(q), F = facteurRoute(q,loc)*(loc && loc.tr ? trEff(loc.tr) : 1);
+    var tr = loc && loc.tr ? trEff(loc.tr) : 1;
+    if(q===0 && p5){                                                          // P5 : NOₓ, puis conversion selon l'ozone de fond au point
+      var nox = CALH.D.NOX*th*facteurNOx(loc)*tr, o3 = fv[1]!=null ? fv[1] : O3_DEFAUT;
+      inc.nox = nox; inc.conv = p5Conv(o3); inc[0] = nox*inc.conv; out[0] = f+inc[0]; continue;
+    }
+    var D = incrementBase(q), F = facteurRoute(q,loc)*tr;
     inc[q] = D!=null ? D*th*F : f*((state.mod ? rapportBase(q) : RATIO_TRAFIC[q])-1)*th*F;
     out[q] = f+inc[q];
   }
-  if(fv[1]!=null && inc[0]>0){ inc[1] = -Math.min(fv[1],(1-PHI_NO2)*inc[0]/PPB_NO2*PPB_O3); out[1] = fv[1]+inc[1]; }
+  // Titration : l'oxydant total O₃ + NO₂ (en ppb) est conservé, hormis le NO₂ émis directement (P5 : f₀ · ΔNOₓ ; sinon φ · ΔNO₂)
+  var oxyde = inc.nox!=null ? Math.max(0,inc[0]-P5_DEF.f0*inc.nox) : (1-PHI_NO2)*inc[0];
+  if(fv[1]!=null && inc[0]>0){ inc[1] = -Math.min(fv[1],oxyde/PPB_NO2*PPB_O3); out[1] = fv[1]+inc[1]; }
 }
 function routier(fv,th,loc){ var out = [], inc = []; routierEcrit(fv,th,loc,out,inc); return {val:out,inc:inc}; }
 function f2(v){ return v.toFixed(2).replace(".",","); }
 function incTxt(inc){
   var sg = function(v){ return (v>=0 ? "+ " : "− ")+fr1(Math.abs(v))+" µg/m³"; }, t = [];
-  if(inc[0]) t.push("NO₂ "+sg(inc[0])); if(inc[2]) t.push("PM₁₀ "+sg(inc[2])); if(inc[3]) t.push("PM₂,₅ "+sg(inc[3])); if(inc[1]) t.push("O₃ "+sg(inc[1])+" (titration)");
+  if(inc[0]) t.push("NO₂ "+sg(inc[0])+(inc.nox!=null ? " (NOₓ + "+fr1(inc.nox)+", converti à "+Math.round(100*inc.conv)+" % par l'ozone de fond)" : "")); if(inc[2]) t.push("PM₁₀ "+sg(inc[2])); if(inc[3]) t.push("PM₂,₅ "+sg(inc[3])); if(inc[1]) t.push("O₃ "+sg(inc[1])+" (titration)");
   return t.length ? t.join(", ") : "effet négligeable";
 }
 function effetTxt(K){
   if(!state.mod) return "Rapports fixes du bilan 2024 (1,9 et 1,3), atténués avec la distance à l'axe ; titration de l'ozone.";
-  var dd = function(p){ var D = incrementBase(p); return D!=null ? "+ "+fr1(D)+" µg/m³" : "× "+f2(rapportBase(p)); };
-  var d = DYN, t = (CAL.ok ? "Incréments calés sur "+CAL.n[0]+" couples de stations trafic / fond du jour" : "Incrément de référence du 16/11 pour le NO₂, rapport du bilan 2024 pour les particules")+
+  var dd = function(p){ if(p===0 && p5Actif()) return "par les NOₓ (+ "+fr1(CALH.D.NOX)+" µg/m³, converti selon l'ozone de fond)"; var D = incrementBase(p); return D!=null ? "+ "+fr1(D)+" µg/m³" : "× "+f2(rapportBase(p)); };
+  var d = DYN, t = (CAL.ok ? "Incréments calés sur "+CAL.n[0]+" couples de stations trafic / fond du jour"+(p5Actif() ? " (NOₓ : historique de "+CALH.nj+" j)" : "") :
+      calhOk(1) ? "Incréments de l'historique, sur "+CALH.nj+" jours de couples trafic / fond" : "Incrément de référence du 16/11 pour le NO₂, rapport du bilan 2024 pour les particules")+
     " (au droit d'un grand axe : NO₂ "+dd(0)+", PM₁₀ "+dd(2)+", PM₂,₅ "+dd(3)+"), modulés : "+(K && K.rue ? "modèle de rue ("+K.ag+") × "+f2(K.fb)+", rapport d'aspect "+f2(K.A)+(K.sin!=null ? ", vent "+(K.sin>0.7 ? "en travers" : K.sin<0.35 ? "dans l'axe" : "oblique")+(K.cote>0 ? ", côté sous le vent" : K.cote<0 ? ", côté au vent" : "") : ", orientation non prise en compte") :
       K && K.agAttente ? "modèle de rue ("+K.ag0+") non appliqué : bâtiments non lus à ce zoom, zoomez au niveau de la rue" :
       K && K.K==null && BATI.ok && !BATI.lu ? "bâti neutre (× 1), bâtiments non lus à ce zoom" :
       "bâti × "+f2(K ? K.fb : 1)+(!K || K.K==null ? " (non lu)" : ""));
-  if(d.mode==="heure") t += ", profil horaire × "+f2(d.ft)+" ("+d.ftSrc+")"+(d.u!=null ? ", vent "+f2(d.u)+" m/s × "+f2(d.fv)+", pluie "+f2(d.p)+" mm/h × "+f2(d.fp)+" (PM₁₀)" : ", vent et pluie non lus");
+  if(d.mode==="heure") t += ", profil horaire × "+f2(d.ft)+" ("+d.ftSrc+")"+(d.u!=null ? ", vent "+f2(d.u)+" m/s × "+f2(d.fv)+", pluie "+f2(d.p)+" mm/h × "+f2(d.fp)+" (PM₁₀)" : ", vent et pluie non lus")+
+    (p5Actif() ? " ; NOₓ (P5) : profil × "+f2(d.ftx)+", vent × "+f2(d.fvx)+(d.t!=null ? ", température "+fr1(d.t)+" °C × "+f2(d.ftp) : ", température non lue")+", pluie × "+f2(d.fpx) : "");
   else t += d.mode==="pire" ? ", pire heure de la journée pour le trafic et la météo" : ", trafic et météo en moyenne sur la journée";
   return t+".";
+}
+// Ligne d'information P5 : état, incrément de NOₓ, facteurs (calés ou par défaut), conversion, règle d'emploi
+function p5Txt(){
+  var R = CALH && CALH.p5 ? CALH.p5.regle : null, P = p5Par();
+  if(!state.mod) return "";
+  if(!(calhOk(1) && CALH.D && CALH.D.NOX>0)) return "NO₂ calculé directement (P5 en attente de l'incrément de NOₓ de l'historique)";
+  if(R && R.actif===false) return "P5 suspendu : sur les "+R.jours+" derniers jours testés avec la météo AROME, son erreur ("+fr1(R.p5)+" µg/m³) dépasse de plus de 5 % celle du modèle calé sur le NO₂ ("+fr1(R.cale)+"), utilisé à la place";
+  return "NO₂ par P5 : incrément de NOₓ + "+fr1(CALH.D.NOX)+" µg/m³ ("+CALH.nj+" j), vent (exposant "+f2(P.a)+(P.ventCale ? ", calé" : ", pluriannuel")+", rapporté à "+f2(P.u0)+" m/s), "+
+    (P.g>0 ? Math.round(100*P.g)+" % par °C sous "+fr1(P.t0)+" °C" : "sans effet de la température")+(P.tempCale ? " (calé)" : " (pluriannuel)")+", conversion en NO₂ f₀ = "+f2(P.f0)+", O₃* = "+P.o3s+" µg/m³"+
+    (DYN.t!=null ? ", température "+fr1(DYN.t)+" °C" : "")+(R && R.jours ? " ; test à l'aveugle sur "+R.jours+" j avec la météo AROME : "+fr1(R.p5)+" µg/m³ contre "+fr1(R.cale)+" pour le modèle calé" : R && R.sans_meteo ? " ; test à l'aveugle en attente de jours avec la météo AROME" : "");
 }
 function modInfo(){
   var el = document.getElementById("modInfo"); if(!el) return;
@@ -2628,6 +2710,7 @@ function modInfo(){
     calhOk(1) ? "Sans mesures du jour : incrément et profil horaire de l'historique ("+CALH.nj+" j), NO₂ + "+fr1(CALH.D.NO2||0)+" µg/m³" :
     "Sans mesures Geod'air : incrément de référence du 16/11 pour le NO₂ (+ 8,8 µg/m³), rapport du bilan 2024 pour les particules");
   if(kPluie()!==0.25) t.push("effet de la pluie calé sur l'historique : k = "+f2(kPluie())+" par mm/h");
+  t.push(p5Txt());
   t.push("trafic et confinement "+(CALF.hist ? "calés sur "+CALH.nj+" jours d'archive" : CALF.cale ? "calés sur "+CALF.n+" stations documentées" : "de référence (17 et 18/11)")+" : incrément ∝ trafic^"+f2(CALF.a)+", confinement c = "+f2(CALF.c));
   el.textContent = t.join(" · ")+".";
 }
@@ -3901,6 +3984,12 @@ function perfCalageG(){
     ["Stations documentées", der.nst+(der.nst>1 ? " utilisées" : " utilisée"), "sur "+der.fiches+" dossiers"+(nst30!=null && der.nst!==nst30 ? " · "+(der.nst>nst30?"+":"")+(der.nst-nst30)+" en 30 jours" : ""), ""],
     ["Heures trafic / fond", der.nh && der.nh[K]!=null ? der.nh[K].toLocaleString("fr-FR") : "—", "couples-heures "+nomK+" de la fenêtre, "+der.paires+" stations trafic appariées", ""],
     ["Gain sur 7 jours", gd ? Math.round(gd.g7)+" %" : "—", gd ? "erreur "+pfr(gd.c7)+" µg/m³ contre "+pfr(gd.f7)+" pour le fond seul"+(g7av!=null ? (Math.round(gd.g7-g7av)===0 ? " · stable sur 7 jours" : " · "+(gd.g7>g7av?"+":"−")+Math.abs(Math.round(gd.g7-g7av))+" pts en 7 jours") : "") : "pas encore de jour testé", gd ? (gd.g7>0 ? "bon" : "mauvais") : ""]];
+  // P5 : NO₂ calculé à partir des NOₓ (test à l'aveugle des 7 derniers jours, mêmes couples-heures que le modèle calé sur le NO₂)
+  if(K==="NO2"){ var q5 = J.filter(function(e){ return tj(der.jour)-tj(e.jour)<7*864e5 && e.test && e.test.NO2 && e.test.NO2.p5!=null; }).map(function(e){ return e.test.NO2.p5; });
+    var nt5 = q5.length, qm = q5.filter(function(q){ return q.meteo==null || q.meteo>=0.5; }); if(qm.length) q5 = qm;     // jours testés avec la météo AROME, comme la règle d'emploi
+    if(q5.length){ var n5 = 0, e5 = 0, ec = 0, b5 = 0; q5.forEach(function(q){ n5 += q.n; e5 += q.n*q.p5*q.p5; ec += q.n*q.cale*q.cale; b5 += q.n*(q.biais||0); });
+      e5 = Math.sqrt(e5/n5); ec = Math.sqrt(ec/n5); b5 /= n5; var rg = CALH && CALH.p5 ? CALH.p5.regle : null, act = !(rg && rg.actif===false);
+      tu.push(["NO₂ par les NOₓ (P5)", pfr(e5)+" µg/m³", "erreur sur "+q5.length+" j"+(qm.length ? (nt5>q5.length ? " avec météo AROME ("+(nt5-q5.length)+" sans, écartés)" : "") : " (sans météo AROME)")+" contre "+pfr(ec)+" pour le modèle calé sur le NO₂ · biais "+(Math.abs(b5)<0.05 ? "nul" : (b5>0 ? "+ " : "− ")+pfr(Math.abs(b5)))+" · "+(act ? "actif sur la carte" : "suspendu (erreur > 5 % au-dessus)"), e5<=1.05*ec ? "bon" : "mauvais"]); } }
   var h = '<div class="kpis">'+tu.map(function(t){ return '<div class="kpi"><div class="kl">'+t[0]+'</div><div class="kv '+t[3]+'">'+t[1]+'</div><div class="ks">'+t[2]+'</div></div>'; }).join("")+'</div>';
   if(autre) h += '<p class="muted">L\'ozone et le SO₂ n\'ont pas d\'incrément routier calé : la progression est montrée pour le NO₂.</p>';
   if(!G.some(function(r){ return r.g!=null; })){ el.innerHTML = h+'<p class="muted">Pas encore de jour testé : le test à l\'aveugle d\'un jour demande au moins un jour d\'archive complet avant lui. Les courbes apparaissent au prochain passage quotidien de la tâche GitHub, après 4 h.</p>'; return; }
