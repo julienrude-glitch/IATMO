@@ -585,7 +585,8 @@ C_p(x) = B_p(x) + Δ_p · T̂(x) · F_p(x,h) · tr(s*)^a   s* : tronçon qui dom
 <li><b>Référence.</b> tr = 1 pour un axe national médian. L'incrément Δ étant calé sur des stations trafic surtout situées dans des rues, la bonne référence serait le trafic au droit de ces stations : elle viendra des fiches stations et de l'archive (§ 2.3).</li>
 <li><b>Affichage.</b> Les points de comptage sont dessinés en blanc avec les axes routiers (case « Axes routiers ») ; une légende, sous celle des classes, les nomme dès qu'ils sont à l'écran ; la fiche au clic donne, dans « Détails du calcul », le débit et la vitesse de l'axe national le plus proche (à moins de 300 m), leur origine (mesure au point, interpolation entre deux points ou point le plus proche) et le facteur appliqué.</li>
 <li><b>Couverture.</b> Le jeu ne couvre qu'une partie du réseau national non concédé. Le 18 novembre, les 520 sections publiées se concentrent autour de Marseille (108 à moins de 28 km environ), Bordeaux (101), Toulouse (89), Lyon (74) et Rouen (36) ; aucune en Île-de-France, où les autoroutes relèvent de la DiRIF, ni autour de Lille, Nantes, Strasbourg, Rennes, Nice ou Metz. Sans point de comptage à proximité, la ligne d'information des options le dit et l'incrément n'est pas pondéré (tr = 1).</li>
-<li><b>Île-de-France (depuis le 18 novembre au soir).</b> La DiRIF ne publie pas de données ouvertes de trafic en temps réel : le seul jeu de data.gouv.fr (comptages 2008-2011 du réseau routier national d'Île-de-France) est ancien, et Sytadin n'a pas d'interface ouverte. La seule source ouverte et actualisée est celle de la Ville de Paris : débits horaires et taux d'occupation de plus de 3 000 arcs équipés de capteurs permanents (boucles), sur les rues et le boulevard périphérique, publiés chaque jour en J-1 sur opendata.paris.fr (jeu « Comptage routier – Données trafic issues des capteurs permanents », Licence ODbL ; horodate en fin d'heure, heure de Paris ; jointure avec le référentiel géographique par l'attribut iu_ac). Une fois par jour, après 6 h, la tâche GitHub en exporte les sept derniers jours et publie <code>trafic/paris.json</code> : pour chaque arc, coordonnées, extrémités et débit horaire moyen par type de jour (ouvré, samedi, dimanche). Quand la vue est à moins de 45 km de Paris, la carte lit ce fichier et prend le profil du type de jour courant. Les arcs sont rattachés et interpolés comme les points Bison Futé (à 500 m au plus pour un point isolé), mais chacun est rapporté à l'arc parisien médian de la même catégorie de route du Plan IGN, et non à la médiane nationale : le facteur traduit l'écart entre une rue et les rues de même catégorie. Les capteurs sont dessinés en jaune orangé ; ce sont des boucles de comptage du trafic, pas des capteurs de qualité de l'air. Limites : un jour type des sept derniers jours, pas le trafic du moment ; débit sans vitesse (e(V) = 1) ; rien sur les autoroutes et nationales hors de Paris (A1, A4, A13, A86, N118…), qui gardent le poids de leur classe. Testé sur des données d'essai (lecture, profils, rattachement, normalisation) ; les noms de champs de l'export (iu_ac, t_1h, q ; libelle, geo_point_2d, geo_shape) sont à confirmer au premier passage réel (<code>trafic/paris_etat.json</code>, qui liste les champs disponibles en cas de refus).</li>
+<li><b>Île-de-France (depuis le 18 novembre au soir).</b> La DiRIF ne publie pas de données ouvertes de trafic en temps réel : le seul jeu de data.gouv.fr (comptages 2008-2011 du réseau routier national d'Île-de-France) est ancien, et Sytadin n'a pas d'interface ouverte. La seule source ouverte et actualisée est celle de la Ville de Paris : débits horaires et taux d'occupation de plus de 3 000 arcs équipés de capteurs permanents (boucles), sur les rues et le boulevard périphérique, publiés chaque jour en J-1 sur opendata.paris.fr (jeu « Comptage routier – Données trafic issues des capteurs permanents », Licence ODbL ; horodate en fin d'heure, heure de Paris ; jointure avec le référentiel géographique par l'attribut iu_ac). Une fois par jour, après 6 h, la tâche GitHub en exporte les sept derniers jours publiés, en calant la fenêtre sur la dernière heure mise en ligne par la Ville pour résister aux retards de publication, et publie <code>trafic/paris.json</code> : pour chaque arc, coordonnées, extrémités et débit horaire moyen par type de jour (ouvré, samedi, dimanche). Quand la vue est à moins de 45 km de Paris, la carte lit ce fichier et prend le profil du type de jour courant. Les arcs sont rattachés et interpolés comme les points Bison Futé (à 500 m au plus pour un point isolé), mais chacun est rapporté à l'arc parisien médian de la même catégorie de route du Plan IGN, et non à la médiane nationale : le facteur traduit l'écart entre une rue et les rues de même catégorie. Les capteurs sont dessinés en jaune orangé ; ce sont des boucles de comptage du trafic, pas des capteurs de qualité de l'air. Limites : un jour type des sept derniers jours, pas le trafic du moment ; débit sans vitesse (e(V) = 1) ; rien sur les autoroutes et nationales hors de Paris (A1, A4, A13, A86, N118…), qui gardent le poids de leur classe. Testé sur des données d'essai (lecture, profils, rattachement, normalisation) ; les noms de champs de l'export (iu_ac, t_1h, q ; libelle, geo_point_2d, geo_shape) sont à confirmer au premier passage réel (<code>trafic/paris_etat.json</code>, qui liste les champs disponibles en cas de refus).</li>
+<li><b>Publication.</b> Le 23 novembre, les dernières données mises en ligne par la Ville dataient du 16 novembre (fichier mis à jour le 17 selon data.gouv.fr). La carte utilise alors les sept jours qui précèdent la dernière publication et l'indique dans la ligne d'information et dans l'onglet Sources (« publication de la Ville arrêtée au … ») dès que le retard dépasse un jour.</li>
 <li><b>Statut.</b> Lecture des fichiers réels vérifiée le 18 novembre (mesures et référentiel) ; rattachement et interpolation vérifiés sur des données d'essai, à contrôler visuellement sur la carte (points blancs sur les axes).</li>
 </ul>
 <h3>5.9 Calage sur les dossiers stations</h3>
@@ -2985,7 +2986,7 @@ function trafLire(){
 }
 /* Île-de-France : le jeu Bison Futé ne couvre pas le réseau de la DiRIF, qui ne publie pas de données ouvertes en temps réel.
    On lit, quand la vue est à moins de 45 km de Paris, les capteurs permanents de la Ville de Paris (rues et boulevard
-   périphérique, opendata.paris.fr, publiés en J-1) : débit horaire moyen par type de jour sur les 7 derniers jours,
+   périphérique, opendata.paris.fr, publiés en J-1) : débit horaire moyen par type de jour sur les 7 derniers jours publiés,
    copié une fois par jour par la tâche GitHub. Chaque arc est rapporté à l'arc parisien médian de la même catégorie de route. */
 var PTRAF_URL = "https://raw.githubusercontent.com/julienrude-glitch/IATMO/donnees/trafic/paris.json";
 var PTRAF = {ok:false,busy:false,err:null,pts:[],dernier:null,jours:[],ty:null};
@@ -2995,10 +2996,10 @@ function parisLire(){
   PTRAF.busy = true; var t0 = performance.now();
   return fetch(PTRAF_URL,{cache:"no-store"}).then(function(r){ if(!r.ok) throw r.status; return r.json(); }).then(function(j){
     var w = new Date(parisDate(0)+"T12:00:00Z").getUTCDay(), ty = w===0 ? "d" : w===6 ? "s" : "o";
-    var pts = (j.arcs||[]).map(function(a){ var qh = a.p[ty] || a.p.o || a.p.s || a.p.d; if(!qh || !a.sec) return null;
+    var nty = 0, pts = (j.arcs||[]).map(function(a){ if(a.p[ty]) nty++; var qh = a.p[ty] || a.p.o || a.p.s || a.p.d; if(!qh || !a.sec) return null;
       var p = {id:"paris-"+a.id, lon:a.lon, lat:a.lat, route:a.lib, paris:true, qh:qh, q:null, v:null, sec:a.sec};
       p.x = mx(p.lon); p.y = my(p.lat); p.cl = Math.cos(p.lat*Math.PI/180); p.cands = [[p.x,p.y],[mx(a.sec[0]),my(a.sec[1])],[mx(a.sec[2]),my(a.sec[3])]]; return p; }).filter(Boolean);
-    PTRAF = {ok:pts.length>0,busy:false,err:pts.length ? null : "aucun arc",pts:pts,dernier:j.dernier||null,jours:j.jours||[],ty:ty};
+    PTRAF = {ok:pts.length>0,busy:false,err:pts.length ? null : "aucun arc",pts:pts,dernier:j.dernier||null,jours:j.jours||[],ty:nty ? ty : "o"};
     TRAF.pts = TRAF.pts.filter(function(p){ return !p.paris; }).concat(pts); TRAF.ok = TRAF.pts.length>0; TRAF.version++;
     var src = map.getSource("comptages"); if(src) src.setData(trafGeo());
     tLoad("Trafic Ville de Paris (copie GitHub)",t0,true); state.version++; updateFine(true); updateGeo(true); modInfo(); legPtsMaj(); return true;
@@ -3082,10 +3083,16 @@ function trafPres(lon,lat){
   return best ? best[6] : null;
 }
 // Couverture du trafic réel autour de la vue : le jeu Bison Futé ne couvre qu'une partie du réseau national non concédé
+// Période réellement couverte par le fichier de la Ville : jours publiés et retard éventuel de publication
+function parisPeriode(){
+  var J = PTRAF.jours||[], f = function(d){ return d.slice(8,10)+"/"+d.slice(5,7); }, ty = {o:"jour ouvré",s:"samedi",d:"dimanche"}[PTRAF.ty]||"";
+  if(!PTRAF.dernier || !J.length) return ty+" moyen";
+  var p = ty+" moyen, "+(J.length>1 ? "sur les "+J.length+" jours publiés du "+f(J[0])+" au "+f(J[J.length-1]) : "sur le seul jour publié, le "+f(J[0]));
+  return PTRAF.dernier<parisDate(-2) ? p+" ; publication de la Ville arrêtée au "+f(PTRAF.dernier) : p+", publié en J-1";
+}
 function parisTxt(){
   if(!parisProche()) return null;
-  var dj = PTRAF.dernier ? PTRAF.dernier.slice(8,10)+"/"+PTRAF.dernier.slice(5,7) : "?", ty = {o:"jour ouvré",s:"samedi",d:"dimanche"}[PTRAF.ty]||"";
-  if(PTRAF.ok) return "trafic réel : "+PTRAF.pts.length.toLocaleString("fr-FR")+" capteurs permanents de la Ville de Paris (rues et boulevard périphérique ; "+ty+" moyen des 7 derniers jours, jusqu'au "+dj+", publié en J-1)"+
+  if(PTRAF.ok) return "trafic réel : "+PTRAF.pts.length.toLocaleString("fr-FR")+" capteurs permanents de la Ville de Paris (rues et boulevard périphérique ; "+parisPeriode()+")"+
     (TRAF.info ? ", "+(TRAF.info.np||0)+" rattachés aux axes affichés" : "")+" ; autoroutes et nationales franciliennes (DiRIF) : pas de données ouvertes en temps réel";
   if(PTRAF.busy) return "trafic réel : lecture des capteurs de la Ville de Paris…";
   if(PTRAF.err!=null) return "trafic réel : capteurs de la Ville de Paris non lus (copie GitHub : "+PTRAF.err+") ; le jeu Bison Futé ne couvre pas l'Île-de-France (réseau de la DiRIF)";
@@ -3104,7 +3111,7 @@ function trafCouverture(){
 }
 function trafTxt(t){
   if(!t) return "";
-  if(t.paris) return "Trafic de l'axe le plus proche (capteurs permanents de la Ville de Paris"+(t.lib ? ", "+t.lib.replace(/_/g," ") : "")+", "+({o:"jour ouvré",s:"samedi",d:"dimanche"}[PTRAF.ty]||"")+" moyen des 7 derniers jours, "+(TRAF.info && TRAF.info.h>=0 ? TRAF.info.h+" h" : "moyenne du jour")+") : "+
+  if(t.paris) return "Trafic de l'axe le plus proche (capteurs permanents de la Ville de Paris"+(t.lib ? ", "+t.lib.replace(/_/g," ") : "")+", "+parisPeriode()+", "+(TRAF.info && TRAF.info.h>=0 ? TRAF.info.h+" h" : "moyenne du jour")+") : "+
     Math.round(t.q).toLocaleString("fr-FR")+" véh/h, "+t.src+" ; émissions × "+f2(t.tr)+" par rapport à l'arc parisien médian de la même catégorie de route, incrément × "+f2(trEff(t.tr))+" (exposant "+f2(CALF.a)+", § 5.9).";
   return "Trafic de l'axe national le plus proche (Bison Futé, "+(TRAF.info && TRAF.info.h>=0 ? TRAF.info.h+" h" : "moyenne du jour")+") : "+
     Math.round(t.q).toLocaleString("fr-FR")+" véh/h"+(t.v!=null ? " à "+Math.round(t.v)+" km/h" : "")+", "+t.src+" ; émissions × "+f2(t.tr)+" par rapport à un axe national médian, incrément × "+f2(trEff(t.tr))+" (exposant "+f2(CALF.a)+", § 5.9).";
@@ -3525,9 +3532,9 @@ var SRC_LISTE = [
    a:"Source : toutes les 6 minutes<br>Copie : toutes les 10 minutes (archive horaire de 60 jours)<br>Page : à l'ouverture",
    e:function(){ var n = TRAF.pts.filter(function(p){ return !p.paris; }).length; return srcLu("Trafic Bison Futé (copie GitHub)",n ? n+" sections"+(TRAF.maj ? ", copie du "+srcHeure(TRAF.maj) : "") : null); }},
   {d:"Trafic de Paris", l:[["débits horaires", "https://opendata.paris.fr/explore/dataset/comptages-routiers-permanents/"], ["référentiel géographique", "https://opendata.paris.fr/explore/dataset/referentiel-comptages-routiers/"]], p:"Ville de Paris, capteurs permanents (opendata.paris.fr) ; licence ODbL",
-   b:"Export des débits horaires et du référentiel géographique par la tâche GitHub (<code>trafic/paris.json</code> : jour type des 7 derniers jours)",
+   b:"Export des débits horaires et du référentiel géographique par la tâche GitHub (<code>trafic/paris.json</code> : jour type des 7 derniers jours publiés par la Ville)",
    a:"Source : une fois par jour, données de la veille<br>Copie : une fois par jour, après 6 h<br>Page : quand la vue est à moins de 45 km de Paris",
-   e:function(){ return srcLu("Trafic Ville de Paris (copie GitHub)",PTRAF.ok ? PTRAF.pts.length+" arcs, jusqu'au "+PTRAF.dernier.slice(8,10)+"/"+PTRAF.dernier.slice(5,7) : null); }},
+   e:function(){ return srcLu("Trafic Ville de Paris (copie GitHub)",PTRAF.ok ? PTRAF.pts.length+" arcs, "+(PTRAF.jours||[]).length+" jour"+((PTRAF.jours||[]).length>1?"s":"")+" jusqu'au "+PTRAF.dernier.slice(8,10)+"/"+PTRAF.dernier.slice(5,7)+(PTRAF.dernier<parisDate(-2) ? " (publication de la Ville arrêtée)" : "") : null); }},
   {d:"Calage sur l'historique, suivi des performances", l:[["branche donnees (GitHub)", "https://github.com/julienrude-glitch/IATMO/tree/donnees"]], p:"IATMO (script historique.py), à partir des archives du LCSQA et d'AROME",
    b:"Calcul par la tâche GitHub (<code>calage/calage.json</code>, <code>suivi/</code>, dont <code>suivi/calage_jours.json</code> pour la progression du calage), lu par la carte et par l'onglet Évaluation",
    a:"Calcul : une fois par jour, après 4 h, sur les 30 derniers jours<br>Page : à l'ouverture",
