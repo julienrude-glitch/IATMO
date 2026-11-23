@@ -1,8 +1,10 @@
 # IATMO : météo horaire historique aux stations trafic, pour l'apprentissage et l'évaluation sur 2023-2025 (tâche ponctuelle).
 # Source : API « Historical Forecast » d'Open-Meteo (archive des prévisions, licence CC BY 4.0), modèle AROME France HD de
 # Météo-France (0,01°, archive depuis le 13/11/2022) en métropole ; meilleur modèle disponible (best_match) dans les DROM.
+# Seconde source au choix (entrée « source ») : réanalyse ERA5 (API d'archive d'Open-Meteo, environ 25 km, CC BY 4.0), pour la
+# pluie de 2023 (absente de l'archive AROME HD), le rayonnement solaire, la nébulosité et la hauteur de couche limite.
 # Un point par groupe de stations trafic distantes de moins de 2 km (89 points), heures en temps universel.
-# Résultat : branche « historique » du dépôt, dossier meteo/ (un fichier compressé par point, et points.json).
+# Résultat : branche « historique » du dépôt, dossiers meteo/ (AROME) et meteo_era5/ (ERA5), un fichier compressé par point.
 # Quotas gratuits d'Open-Meteo (600 appels par minute, 5 000 par heure, 10 000 par jour ; une requête de plus de deux semaines
 # compte pour plusieurs appels, soit environ 100 par point pour 2023-2026) : la tâche espace les requêtes (une toutes les
 # 80 secondes, environ deux heures pour les 89 points), publie sa progression tous les 10 points et reprend là où elle s'est
@@ -23,6 +25,11 @@ on:
         description: "Retélécharger les points déjà présents"
         type: boolean
         default: false
+      source:
+        description: "Source : AROME HD (archive des prévisions) ou ERA5 (réanalyse)"
+        type: choice
+        options: [arome, era5]
+        default: arome
 
 permissions:
   contents: write
@@ -41,6 +48,7 @@ jobs:
       DEBUT: ${{ inputs.debut }}
       FIN: ${{ inputs.fin }}
       REFAIRE: ${{ inputs.refaire }}
+      SOURCE: ${{ inputs.source }}
     steps:
       - name: Reprendre la branche historique
         shell: bash
@@ -57,7 +65,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          cd h && mkdir -p meteo
+          cd h
           python3 - <<'PY'
           import json, os, gzip, time, subprocess, urllib.request, urllib.parse, urllib.error, datetime as dt
           POINTS = [
@@ -151,13 +159,14 @@ jobs:
             {"id":"FR82020","lon":6.85928,"lat":47.64067,"drom":False,"stations":["FR82020"]},
             {"id":"FR82070","lon":6.35972,"lat":47.35129,"drom":False,"stations":["FR82070"]}
           ]
-          API = os.environ.get("METEO_API") or "https://historical-forecast-api.open-meteo.com/v1/forecast"
-          VARS = ["temperature_2m", "relative_humidity_2m", "precipitation", "wind_speed_10m", "wind_direction_10m",
-                  "shortwave_radiation", "cloud_cover", "boundary_layer_height"]
+          ERA5 = os.environ.get("SOURCE") == "era5"; DOS = "meteo_era5" if ERA5 else "meteo"; os.makedirs(DOS, exist_ok=True)
+          API = os.environ.get("METEO_API") or ("https://archive-api.open-meteo.com/v1/archive" if ERA5 else "https://historical-forecast-api.open-meteo.com/v1/forecast")
+          VARS = (["precipitation", "shortwave_radiation", "cloud_cover", "boundary_layer_height", "temperature_2m", "wind_speed_10m", "wind_direction_10m"] if ERA5 else
+                  ["temperature_2m", "relative_humidity_2m", "precipitation", "wind_speed_10m", "wind_direction_10m", "shortwave_radiation", "cloud_cover", "boundary_layer_height"])
           debut = os.environ.get("DEBUT") or "2023-01-01"
-          fin = os.environ.get("FIN") or (dt.datetime.now(dt.timezone.utc).date() - dt.timedelta(days=2)).isoformat()
+          fin = os.environ.get("FIN") or (dt.datetime.now(dt.timezone.utc).date() - dt.timedelta(days=6 if ERA5 else 2)).isoformat()   # ERA5 : environ 5 jours de délai
           refaire = os.environ.get("REFAIRE") == "true"; PAS = float(os.environ.get("PAS") or 80)
-          json.dump({"debut": debut, "fin": fin, "variables": VARS, "points": POINTS}, open("meteo/points.json", "w", encoding="utf-8"), ensure_ascii=False, indent=0)
+          json.dump({"debut": debut, "fin": fin, "variables": VARS, "points": POINTS}, open(f"{DOS}/points.json", "w", encoding="utf-8"), ensure_ascii=False, indent=0)
           def publier(msg):
               subprocess.run(["git", "add", "-A"], check=True)
               if subprocess.run(["git", "diff", "--cached", "--quiet"]).returncode == 0: return
@@ -169,18 +178,18 @@ jobs:
           def obtenir(p, variables):
               q = {"latitude": p["lat"], "longitude": p["lon"], "start_date": debut, "end_date": fin, "hourly": ",".join(variables),
                    "timezone": "GMT", "wind_speed_unit": "ms"}
-              if not p["drom"]: q["models"] = "meteofrance_arome_france_hd"
+              if not p["drom"] and not ERA5: q["models"] = "meteofrance_arome_france_hd"
               req = urllib.request.Request(API + "?" + urllib.parse.urlencode(q), headers={"User-Agent": "IATMO"})
               with urllib.request.urlopen(req, timeout=180) as r: return json.loads(r.read())
-          faits = 0; dernier = 0.0; arret = None; sans = {False: set(), True: set()}          # variables refusées, métropole / DROM
+          faits = 0; dernier = 0.0; arret = None; echecs = []; sans = {False: set(), True: set()}          # variables refusées, métropole / DROM
           for i, p in enumerate(POINTS):
-              f = f"meteo/{p['id']}.json.gz"
+              f = f"{DOS}/{p['id']}.json.gz"
               if not refaire and os.path.exists(f):
                   try:
                       with gzip.open(f, "rt", encoding="utf-8") as g: o = json.load(g)
                       if o.get("debut") == debut and o.get("fin", "") >= fin: continue
                   except Exception: pass
-              variables = [v for v in VARS if v not in sans[p["drom"]]]; essais = 0
+              variables = [v for v in VARS if v not in sans[p["drom"]]]; essais = 0; erreur = None; code = None
               while True:
                   attente = PAS - (time.time() - dernier)
                   if attente > 0: time.sleep(attente)
@@ -191,27 +200,33 @@ jobs:
                       if e.code == 400 and "boundary_layer_height" in variables:
                           print(p["id"], ": couche limite indisponible pour ce modèle, abandonnée"); variables.remove("boundary_layer_height"); sans[p["drom"]].add("boundary_layer_height"); continue
                       if e.code == 429 and essais < 3: essais += 1; print(p["id"], ": quota atteint, pause de 10 minutes (", corps, ")"); time.sleep(600); continue
-                      arret = f"{p['id']} : HTTP {e.code} {corps}"; break
+                      if e.code >= 500 and essais < 4: essais += 1; print(p["id"], f": erreur passagère du serveur (HTTP {e.code}), nouvel essai dans {60 * essais} s"); time.sleep(60 * essais); continue
+                      erreur = f"HTTP {e.code} {corps[:120]}"; code = e.code; break
                   except Exception as e:
-                      if essais < 3: essais += 1; print(p["id"], ": erreur", str(e)[:120], ", nouvel essai"); time.sleep(30); continue
-                      arret = f"{p['id']} : {str(e)[:200]}"; break
-              if arret: break
+                      if essais < 4: essais += 1; print(p["id"], ": erreur", str(e)[:120], f", nouvel essai dans {60 * essais} s"); time.sleep(60 * essais); continue
+                      erreur = str(e)[:200]; break
+              if erreur:                                                              # point sauté : la relance le reprendra
+                  echecs.append(p["id"]); print(p["id"], ": abandonné pour ce passage (", erreur, ")")
+                  if code == 429: arret = f"quota épuisé à {p['id']}"; break
+                  continue
               h = j.get("hourly", {}); t = h.get("time", [])
               val = {v: [None if x is None else round(x, 2) for x in h.get(v, [])] for v in variables if v in h}
               val = {v: x for v, x in val.items() if any(y is not None for y in x)}       # variables entièrement vides écartées
               sortie = {"id": p["id"], "lon": p["lon"], "lat": p["lat"], "stations": p["stations"], "drom": p["drom"],
-                        "modele": "meteofrance_arome_france_hd" if not p["drom"] else "best_match", "grille": [j.get("longitude"), j.get("latitude"), j.get("elevation")],
+                        "modele": "era5 (archive best_match)" if ERA5 else ("meteofrance_arome_france_hd" if not p["drom"] else "best_match"), "grille": [j.get("longitude"), j.get("latitude"), j.get("elevation")],
                         "debut": debut, "fin": fin, "t0": (t[0] + "Z") if t else None, "heures": len(t), "unites": j.get("hourly_units", {}), "valeurs": val}
               with gzip.open(f, "wt", encoding="utf-8") as g: json.dump(sortie, g, separators=(",", ":"))
               faits += 1; print(f"{i + 1}/{len(POINTS)} {p['id']} ({', '.join(p['stations'])}) : {len(t)} heures, {len(val)} variables")
-              if faits % 10 == 0: publier(f"Météo historique : {faits} points de plus")
+              if faits % 10 == 0: publier(f"Météo historique ({DOS}) : {faits} points de plus")
           open("LISEZMOI.txt", "w", encoding="utf-8").write(
               "Données historiques pour l'apprentissage et l'évaluation d'IATMO (tâche .github/workflows/meteo_historique.yml).\n"
               "- meteo/ : météo horaire (temps universel) aux stations trafic, un fichier compressé par point (stations à moins de 2 km regroupées) ;\n"
               "  source : Open-Meteo, API Historical Forecast (licence CC BY 4.0), modèle AROME France HD de Météo-France en métropole,\n"
-              "  meilleur modèle disponible dans les DROM ; points.json liste les points, les stations rattachées et la période.\n")
-          publier(f"Météo historique du {debut} au {fin}" + (f" (arrêt : {arret})" if arret else ""))
-          n = sum(1 for p in POINTS if os.path.exists(f"meteo/{p['id']}.json.gz"))
+              "  meilleur modèle disponible dans les DROM ; points.json liste les points, les stations rattachées et la période ;\n"
+              "- meteo_era5/ : mêmes points, réanalyse ERA5 (API d'archive d'Open-Meteo, CC BY 4.0) : pluie (y compris 2023), rayonnement,\n"
+              "  nébulosité, hauteur de couche limite, température et vent.\n")
+          publier(f"Météo historique ({DOS}) du {debut} au {fin}" + (f" (arrêt : {arret})" if arret else "") + (f" (points à reprendre : {', '.join(echecs)})" if echecs else ""))
+          n = sum(1 for p in POINTS if os.path.exists(f"{DOS}/{p['id']}.json.gz"))
           print(f"Points disponibles : {n}/{len(POINTS)}")
-          if arret: raise SystemExit("Arrêt : " + arret + " — relancer la tâche plus tard, elle reprendra au point suivant.")
+          if arret or echecs: raise SystemExit("Incomplet : " + " ; ".join(x for x in (arret, "points à reprendre : " + ", ".join(echecs) if echecs else None) if x) + " — relancer la tâche plus tard, elle ne refera que les points manquants.")
           PY
