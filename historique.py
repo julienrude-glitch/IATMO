@@ -4,6 +4,8 @@
 # Écrit :
 #   calage/calage.json      : incrément trafic − fond, profil horaire (jours ouvrés, week-end), exposant du vent, effet de la pluie,
 #                             exposant du trafic et confinement calés sur les stations documentées, sur les 30 derniers jours complets ;
+#                             P5 (clé « p5 ») : incrément de NOx et son profil (clés D, g « NOX »), exposant du vent et coefficient de
+#                             température des NOx ; conversion en NO2 selon l'ozone de fond (valeurs pluriannuelles, estimation sur 30 jours en suivi) ;
 #   suivi/performances.json : pour chaque jour complet, validation croisée du krigeage ordinaire (station retirée tour à tour) par
 #                             polluant, taux de bonne classe, MQI de FAIRMODE sur 7 et 30 jours glissants, et bilan des copies (90 jours) ;
 #   suivi/mqi_jours.json    : sommes quotidiennes par station et par polluant pour le MQI (30 jours) ;
@@ -97,11 +99,12 @@ for f in sorted(glob.glob(os.path.join(OUT, "archive/lcsqa/*.csv.gz")))[-(32 + R
             if not s: continue
             t = dt.datetime.strptime(x[1], "%Y-%m-%d %H").replace(tzinfo=UTC) - dt.timedelta(hours=decalage(s["organisme"]))
             hk = t.astimezone(PARIS).strftime("%Y-%m-%d %H"); d = V.setdefault((code, hk), {})
-            for p in ("NO2", "O3", "PM10", "PM25"):
-                v = x[ix[p]]
+            for p in ("NO2", "O3", "PM10", "PM25", "NO", "NOX"):
+                v = x[ix[p]] if p in ix else ""
                 if v != "":
                     try: d[p] = max(0.0, float(v))
                     except ValueError: pass
+            if "NOX" not in d and "NO" in d and "NO2" in d: d["NOX"] = d["NO2"] + 46.0055 / 30.0061 * d["NO"]   # NOx en équivalent NO2
 jours_fichiers = sorted(os.path.basename(f)[:10] for f in glob.glob(os.path.join(OUT, "archive/lcsqa/*.csv.gz")))
 # Jour de Paris complet : fichiers du jour et de la veille présents (la première heure de Paris est la dernière du fichier de la veille, en TU), et jour passé
 complets = [j for j in jours_fichiers if (dt.date.fromisoformat(j) - dt.timedelta(days=1)).isoformat() in jours_fichiers and dt.date.fromisoformat(j) < AUJ]
@@ -233,8 +236,8 @@ for t in TRAFIC:
 def fond_moyen(fs, hk, p):
     v = [V[(f, hk)][p] for f in fs if p in V.get((f, hk), {})]
     return sum(v) / len(v) if v else None
-# Vent et pluie AROME aux stations trafic (fichiers du jour gardés 30 jours, heure de Paris)
-AR = {}
+# Vent, pluie, température AROME aux stations trafic (fichiers du jour gardés 30 jours, heure de Paris)
+AR = {}; TA = {}
 meteo = lire_json(os.path.join(OUT, "arome/meteo.json"), None)
 if meteo:
     g = meteo["grille"]; N = g["ni"] * g["nj"]
@@ -242,6 +245,9 @@ if meteo:
         f = os.path.join(OUT, "arome", j + ".bin")
         if os.path.exists(f) and os.path.getsize(f) == 24 * 3 * N:
             AR[j] = np.frombuffer(open(f, "rb").read(), dtype=np.int8).reshape(24, 3, N)
+        f = os.path.join(OUT, "arome", "ta-" + j + ".bin")                    # température (demi-degrés) et humidité, depuis le 24/11/2026
+        if os.path.exists(f) and os.path.getsize(f) == 24 * 2 * N:
+            TA[j] = np.frombuffer(open(f, "rb").read(), dtype=np.int8).reshape(24, 2, N)
 def arome(c, hk):
     a = AR.get(hk[:10])
     if a is None: return None
@@ -252,8 +258,27 @@ def arome(c, hk):
     if any(a[h, 0, k] == -128 for k in ks): return None
     bil = lambda o: ((a[h, o, ks[0]] * (1 - ax) + a[h, o, ks[1]] * ax) * (1 - ay) + (a[h, o, ks[2]] * (1 - ax) + a[h, o, ks[3]] * ax) * ay) * g["echelle_vent"]
     u, v = bil(0), bil(1); pr = int(np.uint8(a[h, 2, int(round(fy)) * g["ni"] + int(round(fx))]))
-    return math.hypot(u, v), (0.0 if pr == 255 else pr * g["echelle_pluie"])
+    t2 = None; b = TA.get(hk[:10])
+    if b is not None:
+        tv = [int(b[h, 0, k]) for k in ks]
+        if -128 not in tv: t2 = ((tv[0] * (1 - ax) + tv[1] * ax) * (1 - ay) + (tv[2] * (1 - ax) + tv[3] * ax) * ay) * (meteo.get("ta") or {}).get("echelle_temperature", 0.5)
+    return math.hypot(u, v), (0.0 if pr == 255 else pr * g["echelle_pluie"]), t2
 
+# P5 : incrément de NOx = D · g(h) · vent · température · pluie, converti en NO2 selon l'ozone de fond :
+# ΔNO2 = ΔNOx · [f0 + (1 − f0) · (1 − exp(−O3 / O3*))]. Valeurs par défaut : historique Geod'air 2023-2025 et AROME HD (calage 2023-2024,
+# test à l'aveugle 2025, confirmé sur 2026) ; la carte utilise les mêmes.
+P5_DEF = {"vent": 0.2, "temp": 0.02, "pluie": 0.1, "f0": 0.10, "o3s": 185.0, "source": "historique Geod'air 2023-2025, AROME HD (Open-Meteo)"}
+def p5_conv(o3): return P5_DEF["f0"] + (1 - P5_DEF["f0"]) * (1 - math.exp(-max(0.0, o3) / P5_DEF["o3s"]))
+def p5_fac(p5, u, P, T2, cale=True):
+    # Vent et température rapportés à leurs valeurs moyennes sur la fenêtre de calage (u0, t0), puisque l'incrément D_NOx est calé sur
+    # cette même fenêtre ; exposant et coefficient calés si cale est vrai et s'ils existent, valeurs pluriannuelles sinon.
+    v = (p5 or {}).get("vent") or {}; te = (p5 or {}).get("temp") or {}
+    a = v["a"] if cale and v.get("a") is not None else P5_DEF["vent"]; u0 = v.get("u0") or 3.0
+    g = te["g"] if cale and te.get("g") is not None else P5_DEF["temp"]; t0 = te.get("t0", 12.0)
+    fv = 1.0 if u is None else max(0.6, min(1.6, (u0 / max(u, 0.3)) ** a))
+    ft = 1.0 if T2 is None else max(0.6, min(1.6, math.exp(-g * (T2 - t0))))
+    fp = 1.0 if P is None else math.exp(-P5_DEF["pluie"] * min(P, 5.0))
+    return fv * ft * fp
 def pente_vent(ov):
     """Exposant du vent (NO₂) : incrément moyen par quart de vitesse de vent, droite de régression en log-log (comme dans la page)."""
     if len(ov) < 200: return None
@@ -280,7 +305,7 @@ def caler(jours, boot=False):
     """Calage sur les jours donnés. boot=True : intervalles à 90 % par rééchantillonnage (des jours, ou des stations documentées)."""
     CAL = {"maj": dt.datetime.now(PARIS).isoformat(timespec="seconds"), "jours": jours, "nj": len(jours), "paires": len(paires),
            "D": {}, "R": {}, "n": {}, "g": {"ouvre": {}, "weekend": {}}, "vent": None, "pluie": None, "fiches": None}
-    obs = {p: [] for p in ("NO2", "PM10", "PM25")}           # (heure, type de jour, T, F, code)
+    obs = {p: [] for p in ("NO2", "PM10", "PM25", "NOX")}    # (heure, type de jour, T, F, code)
     for j in jours:
         we = dt.date.fromisoformat(j).weekday() >= 5
         for h in range(24):
@@ -314,6 +339,47 @@ def caler(jours, boot=False):
         if pente is not None:
             CAL["vent"] = {"a": round(max(0.0, min(1.0, pente)), 3), "pente": round(pente, 3), "n": len(ov),
                            "u0": round(math.exp(sum(math.log(o[0]) for o in ov) / len(ov)), 2)}
+    # P5 : exposant du vent et coefficient de température des NOx (la pluie garde sa valeur pluriannuelle) ; chimie estimée sur la
+    # fenêtre pour le suivi seulement (la carte garde f0 et O3* pluriannuels, mieux contraints que sur 30 jours)
+    p5 = {"defauts": P5_DEF, "vent": None, "temp": None, "chimie_30j": None}
+    if AR and CAL["D"].get("NOX"):
+        D = CAL["D"]["NOX"]; ovx = []; ot = []
+        for hk, we, T, F, t in obs["NOX"]:
+            a = arome(coord(t), hk)
+            if not a: continue
+            ovx.append((max(0.3, a[0]), T, F))
+            if a[2] is not None:
+                gg = CAL["g"]["weekend" if we else "ouvre"].get("NOX", {}).get(int(hk[11:13]), 1.0); ot.append((a[2], T - F, D * gg, max(0.3, a[0])))
+        pe = pente_vent(ovx) if len(ovx) >= 5000 else None                 # 5 000 heures-couples au moins (environ 4 jours) ; sinon valeur pluriannuelle
+        if ovx: p5["vent"] = {"a": None if pe is None else round(max(0.0, min(0.6, pe)), 3), "n": len(ovx), "u0": round(math.exp(sum(math.log(o[0]) for o in ovx) / len(ovx)), 2)}
+        # Température : ajustée avec le facteur du vent (le doux et le venteux vont souvent ensemble en hiver), et seulement si la fenêtre
+        # couvre au moins 8 °C entre ses 5e et 95e centiles ; sinon valeur pluriannuelle.
+        etendue = float(np.percentile([o[0] for o in ot], 95) - np.percentile([o[0] for o in ot], 5)) if ot else 0.0
+        t0 = round(sum(o[0] for o in ot) / len(ot), 1) if ot else None    # température moyenne de la fenêtre : référence du facteur
+        if len(ot) >= 500 and etendue >= 8:
+            av = (p5["vent"] or {}).get("a"); av = P5_DEF["vent"] if av is None else av; u0v = (p5["vent"] or {}).get("u0") or 3.0
+            ot = [(tt, d, m * max(0.6, min(1.6, (u0v / uu) ** av))) for tt, d, m, uu in ot]
+            err = [(sum((m * math.exp(-k / 200 * (tt - t0)) - d) ** 2 for tt, d, m in ot), k / 200) for k in range(17)]
+            p5["temp"] = {"g": min(err)[1], "n": len(ot), "t0": t0, "etendue": round(etendue, 1)}
+        else: p5["temp"] = {"g": None, "n": len(ot), "t0": t0, "etendue": round(etendue, 1)}
+        if t0 is None: del p5["temp"]["t0"]
+    oc = []
+    for j in jours:
+        for h in range(24):
+            hk = "%s %02d" % (j, h)
+            for t, fs in paires:
+                dv = V.get((t, hk))
+                if not dv or "NOX" not in dv or "NO2" not in dv: continue
+                fx, f2, o3 = fond_moyen(fs, hk, "NOX"), fond_moyen(fs, hk, "NO2"), fond_moyen(fs, hk, "O3")
+                if None not in (fx, f2, o3) and dv["NOX"] - fx > 10: oc.append((dv["NOX"] - fx, dv["NO2"] - f2, o3))
+    if len(oc) >= 2000:
+        X = np.array(oc); best = None
+        for f0 in np.arange(0.0, 0.31, 0.02):
+            for o3s in np.arange(20, 301, 10):
+                e = float(np.mean((X[:, 0] * (f0 + (1 - f0) * (1 - np.exp(-X[:, 2] / o3s))) - X[:, 1]) ** 2))
+                if best is None or e < best[0]: best = (e, f0, o3s)
+        p5["chimie_30j"] = {"f0": round(float(best[1]), 2), "o3s": int(best[2]), "n": len(oc)}
+    CAL["p5"] = p5
     # Pluie (particules) : Δ ≈ D · g(h) · (1 − min(0,5 ; k · P)), k ajusté sur une grille ; 100 heures-couples pluvieuses au moins
     Ej = {}
     if AR and "PM10" in CAL["D"] and CAL["D"]["PM10"] > 0.2:
@@ -392,6 +458,7 @@ print("calage :", len(jours), "jours,", len(paires), "couples ; D", CAL["D"], ";
 HIST_MIN = 7
 GREF = {1: 0.33, 2: 0.32, 3: 0.37, 4: 0.55, 5: 0.88, 6: 1.34, 7: 1.55, 8: 1.61, 9: 1.33, 10: 1.40, 11: 1.39}   # référence du 16/11, jours ouvrés
 def f_vent_ref(u): return max(0.6, min(1.6, math.sqrt(3 / max(u, 0.3))))                              # dilution, référence 3 m/s
+P5PRED = {}                                                  # (station, jour, heure) -> (incrément de NO2 prévu par P5, vent et température AROME lus)
 def lignes(jours_l, C):
     """Couples station trafic / fond, heure par heure : (polluant, station, jour, heure, week-end, vent, pluie, fond, incrément
     d'origine, incrément calé, mesure à la station trafic). Même calcul que la carte sans mesures du jour."""
@@ -404,7 +471,7 @@ def lignes(jours_l, C):
             for h in range(24):
                 hk = "%s %02d" % (J, h); dv = V.get((t, hk))
                 if not dv: continue
-                met = arome(coord(t), hk); u = met[0] if met else None; P = met[1] if met else None
+                met = arome(coord(t), hk); u = met[0] if met else None; P = met[1] if met else None; T2 = met[2] if met else None
                 Pp = P or 0.0; fvr = f_vent_ref(u) if u is not None else 1.0
                 fv = fvr
                 if u is not None and hist and C["vent"]: fv = max(0.6, min(1.6, (C["vent"]["u0"] / max(u, 0.3)) ** C["vent"]["a"]))
@@ -419,13 +486,26 @@ def lignes(jours_l, C):
                     base = C["D"][p]
                     if p == "NO2" and fi: base = C["fiches"]["D"] * pred({"q": fi["tmja"], "A": fi["A"] if fi.get("A") is not None else 1 / 3}, C["fiches"]["a"], C["fiches"]["c"])
                     out.append((p, t, J, h, we, u, P, F, dref, base * max(0.3, min(2.5, fac)), dv[p]))
+                    if p == "NO2" and C["D"].get("NOX") and C["D"].get("NO2"):
+                        o3b = fond_moyen(fs, hk, "O3")
+                        if o3b is not None:
+                            gx = C["g"]["weekend" if we else "ouvre"].get("NOX", {}).get(h, 1.0)
+                            dnox = C["D"]["NOX"] * (base / C["D"]["NO2"]) * max(0.3, min(2.5, gx * p5_fac(C.get("p5"), u, P, T2, cale=hist)))
+                            P5PRED[(t, J, h)] = (dnox * p5_conv(o3b), u is not None and T2 is not None)
     return out
 def tester(J, C):
     acc = {p: [0, 0.0, 0.0, 0.0, 0.0] for p in ("NO2", "PM10", "PM25")}     # n, Σ(fond seul)², Σ(origine)², Σ(calé)², Σ biais calé
-    for p, t, _, h, we, u, P, F, dref, dc, T in lignes([J], C):
+    p5 = [0, 0.0, 0.0, 0.0, 0.0, 0]                                         # NO2, heures avec ozone de fond : n, Σ(fond)², Σ(calé)², Σ(P5)², Σ biais P5, heures avec météo
+    for p, t, Jj, h, we, u, P, F, dref, dc, T in lignes([J], C):
         a = acc[p]; a[0] += 1; a[1] += (F - T) ** 2; a[2] += (F + dref - T) ** 2; a[3] += (F + dc - T) ** 2; a[4] += F + dc - T
+        q = P5PRED.get((t, Jj, h)) if p == "NO2" else None
+        if q is not None:
+            q, m = q; p5[0] += 1; p5[1] += (F - T) ** 2; p5[2] += (F + dc - T) ** 2; p5[3] += (F + q - T) ** 2; p5[4] += F + q - T; p5[5] += m
     r = lambda s, n: round(math.sqrt(s / n), 2)
-    return {p: {"n": a[0], "fond": r(a[1], a[0]), "ref": r(a[2], a[0]), "cale": r(a[3], a[0]), "biais": round(a[4] / a[0], 2)} for p, a in acc.items() if a[0] >= 50}
+    out = {p: {"n": a[0], "fond": r(a[1], a[0]), "ref": r(a[2], a[0]), "cale": r(a[3], a[0]), "biais": round(a[4] / a[0], 2)} for p, a in acc.items() if a[0] >= 50}
+    if "NO2" in out and p5[0] >= 50:
+        out["NO2"]["p5"] = {"n": p5[0], "fond": r(p5[1], p5[0]), "cale": r(p5[2], p5[0]), "p5": r(p5[3], p5[0]), "biais": round(p5[4] / p5[0], 2), "meteo": round(p5[5] / p5[0], 2)}
+    return out
 
 # ---------- Correction apprise des résidus (gradient boosting), évaluée à l'aveugle et par agglomération écartée ----------
 # Le modèle paramétrique reste la base : un modèle de gradient boosting apprend, sur les 30 jours de la fenêtre, l'écart
@@ -475,8 +555,17 @@ class PerceptronMoyen:
         return self
     def predict(self, X):
         Z = self._prep(X); return self.ym + self.ys * np.mean([m.predict(Z) for m in self.m], axis=0)
-CANDIDATS = {"gbm": (lambda p, cv: HistGradientBoostingRegressor(max_iter=150, learning_rate=0.05, max_leaf_nodes=15, min_samples_leaf=100,
-                                                                  l2_regularization=1.0, monotonic_cst=ML_MONO[p], random_state=0)),
+class GBMFiltre:
+    """Gradient boosting sur les seules variables qui varient dans l'apprentissage : scikit-learn 1.9 refuse une variable entièrement
+    absente ou constante (vent et pluie sans archive AROME, par exemple après la remise à zéro de la branche donnees)."""
+    def __init__(self, p): self.p = p
+    def fit(self, X, y):
+        self.k = [j for j in range(X.shape[1]) if len(np.unique(X[~np.isnan(X[:, j]), j])) >= 2]
+        self.m = HistGradientBoostingRegressor(max_iter=150, learning_rate=0.05, max_leaf_nodes=15, min_samples_leaf=100, l2_regularization=1.0,
+                                               monotonic_cst=[ML_MONO[self.p][j] for j in self.k], random_state=0).fit(X[:, self.k], y)
+        return self
+    def predict(self, X): return self.m.predict(X[:, self.k])
+CANDIDATS = {"gbm": (lambda p, cv: GBMFiltre(p)),
              "mlp": (lambda p, cv: PerceptronMoyen(MLP_GRAINES[1] if cv else MLP_GRAINES[0]))}
 def ml_rmse(a, b): return float(np.sqrt(np.mean((a - b) ** 2)))
 def ml_evaluer(J, C):
@@ -517,16 +606,18 @@ def ml_evaluer(J, C):
     return res
 fcj = os.path.join(OUT, "suivi/calage_jours.json"); CJ = lire_json(fcj, [])
 NFICHES = sum(1 for f in FICHES.values() if f.get("tmja"))
-faits_cj = {e["jour"] for e in CJ if e.get("v") == 1}
+faits_cj = {e["jour"] for e in CJ if e.get("v") == 1 and "p5" in (e.get("p") or {})}   # jours antérieurs à P5 : recalculés (au plus RATTRAPAGE par passage)
 CJC = {}
 for J in [j for j in complets[-RATTRAPAGE:] if j not in faits_cj]:
     t1 = time.time(); C, IC = caler([j for j in complets if j < J][-30:], boot=True)
     e = {"v": 1, "jour": J, "fen": C["nj_obs"], "paires": len(paires), "fiches": NFICHES, "nst": C["nst"], "nh": C["n"],
          "p": {"D": C["D"], "a": C["fiches"]["a"] if C["fiches"] else None, "c": C["fiches"]["c"] if C["fiches"] else None,
                "Df": C["fiches"]["D"] if C["fiches"] else None, "vent": C["vent"]["a"] if C["vent"] else None,
-               "pluie": C["pluie"]["k"] if C["pluie"] else None},
+               "pluie": C["pluie"]["k"] if C["pluie"] else None,
+               "p5": {"D": C["D"].get("NOX"), "vent": ((C.get("p5") or {}).get("vent") or {}).get("a"),
+                      "temp": ((C.get("p5") or {}).get("temp") or {}).get("g"), "chimie_30j": (C.get("p5") or {}).get("chimie_30j")}},
          "ic": IC, "test": tester(J, C) if C["D"] else {}, "arome": J in AR}
-    CJ.append(e); CJC[J] = C; print("progression du calage", J, ": fenêtre", e["fen"], "jours ; test", e["test"], ";", round(time.time() - t1, 1), "s")
+    CJ[:] = [x for x in CJ if x["jour"] != J]; CJ.append(e); CJC[J] = C; print("progression du calage", J, ": fenêtre", e["fen"], "jours ; test", e["test"], ";", round(time.time() - t1, 1), "s")
 # Correction apprise : derniers jours sans évaluation (au plus ML_MAX par passage)
 if SKL:
     for e in [e for e in CJ if e["jour"] in complets[-ML_MAX:] and ("ml" not in e or (e["ml"] and "mlp" not in e["ml"]))]:
@@ -537,4 +628,16 @@ if SKL:
 else: print("correction apprise : scikit-learn absent, évaluation sautée")
 CJ = sorted(CJ, key=lambda e: e["jour"])[-400:]
 ecrire_json(fcj, CJ)
+# Règle d'emploi de P5 dans la carte : actif, sauf si, sur les 7 derniers jours testés à l'aveugle avec la météo AROME (vent et température
+# lus pour la moitié des heures au moins, comme sur la carte ; 3 jours au moins), son erreur sur le NO2 dépasse de plus de 5 % celle du
+# modèle calé directement sur le NO2 ; la carte revient alors au modèle calé et l'indique. Sans météo, P5 perd ses facteurs du vent et de
+# la température, qui compensent la conversion chimique : ces jours ne représentent pas la carte et ne comptent pas.
+t5 = [e["test"]["NO2"]["p5"] for e in CJ[-7:] if ((e.get("test") or {}).get("NO2") or {}).get("p5")]
+q5 = [x for x in t5 if x.get("meteo", 0) >= 0.5]
+if q5:
+    n5 = sum(x["n"] for x in q5); ep = math.sqrt(sum(x["n"] * x["p5"] ** 2 for x in q5) / n5); ec = math.sqrt(sum(x["n"] * x["cale"] ** 2 for x in q5) / n5)
+    regle = {"jours": len(q5), "sans_meteo": len(t5) - len(q5), "p5": round(ep, 2), "cale": round(ec, 2), "actif": len(q5) < 3 or ep <= 1.05 * ec}
+else: regle = {"jours": 0, "sans_meteo": len(t5), "p5": None, "cale": None, "actif": True}
+CAL.setdefault("p5", {})["regle"] = regle; ecrire_json(os.path.join(OUT, "calage/calage.json"), CAL)
+print("P5 :", {k: v for k, v in CAL["p5"].items() if k != "defauts"})
 print("durée totale", round(time.time() - T0, 1), "s")
