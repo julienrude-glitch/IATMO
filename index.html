@@ -5,6 +5,28 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow, noarchive">
 <meta name="googlebot" content="noindex, nofollow">
+<script>
+/* Mesure d'audience (GoatCounter, sans cookie) : page en ligne seulement ; #ne-pas-compter active ou annule l'exclusion du navigateur */
+(function(){
+  var K = "iatmoSansStat";
+  function exclu(){ try{ return !!localStorage.getItem(K); }catch(e){ return false; } }
+  function bascule(){
+    if(location.hash !== "#ne-pas-compter") return;
+    try{
+      if(localStorage.getItem(K)) localStorage.removeItem(K); else localStorage.setItem(K,"1");
+      alert(exclu() ? "IATMO : vos visites ne seront plus comptées dans ce navigateur." : "IATMO : vos visites sont de nouveau comptées dans ce navigateur.");
+      history.replaceState(null,"",location.pathname+location.search);
+    }catch(e){}
+  }
+  bascule();
+  window.addEventListener("hashchange",bascule);
+  if(exclu() || !/\.github\.io$/.test(location.hostname)) return;
+  var s = document.createElement("script");
+  s.async = true; s.src = "https://gc.zgo.at/count.js";
+  s.setAttribute("data-goatcounter","https://iatmo.goatcounter.com/count");
+  document.head.appendChild(s);
+})();
+</script>
 <title>IATMO</title>
 <link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABmJLR0QA/wD/AP+gvaeTAAAFFklEQVRYhb2XW2xUVRSGv3PO9JROS1usBSt0WoiAD9JWINxFJFA1QRESRCn4YgSRek3QBB9qYrwEFQkmGhN9UFAgKCiRogIiGEorAuVWLlKaltp26GXu7ZyZM7N8aDvQzoU7fzLJ2Wv/Z/3/mp29zt7QAxFJFpFXRKRSRLxy6+Htyf2yiCRzJURkqIhU3wbReDgqIkMBlB43VUAhdxbVwCQLsOxGxCXsRMIu1BYN0tO7f9eHIuAFRUSqgAlXY4eCtZjGAUzjMGbgNGACkPFSRjdB02D0aCgshAkTID//WkxUKiLiAdLiMUzjMIZvI6ZxJOZ8xEB/FBbC/PlQUJDIgFcREYk1I+Kjy7WOYNeuhCXENdCLKVNg+XJIi12jGitY1+nA0/baVcWvCRUVGG+uor367LUZuNDppOzf/XzvegiUpJvWDysqvx9x8PMjy7h06FRiA82Gl7Jz+/CYAX5zpXDQnHfTBv7yZ9NYVYPh9PDLY6W4zl+MbSAkwtq6KryhQGTyS3sWjcqsGxY/lmyjZuehyNjocLPr2VWEg2a0gW0tZzjn64hKUtY0Cp829rrF61Pv5eAPFVHx1n9qqP54fWSsiIh0hoIsPbEDXygYM1mmFuaTnJ1o4QZULQc9dR6W5PGoWg5KALDboboaysvBbseRdjdbt58l4PbFzKenp7KkoRw9I63bwNaWM6z/70QUse3vM3ScqOWe6YWMLxhCWW4A68DFgCV22aaJuXEzm1ZtwNN4KeE/NHn1qxStfK57CXa31UURfBftHHt/PRe3H+DQyi84vnYfTt/j8cUBLBYsS0oY83pJQnGA01//BIDaGuik2fBGEYJeP/T2KBEOlP/B2Omz+Wjd5/gNA4BAMEggGL1shW8sZvjcGQkNOM/W421oQa3pdJKiRe/3zPtt5C+Ygapd3qmdnV28u/pTiqbNYmrxk+SMLCBnZAHzFz9PfUNjn/cnflAKihLXgCUjg6aKUyjfdrllq+ElIxQkywyQEuwiZHjx+r3YDQ8Z7X5cG/7k1917E1Zkyx1K5a4dpKWlRmJbxi6i42QtA4bZSLblow7KISDJ+JwmzkY3k16cijbz7bfeqQsFMVQNh0WnVbfSZs3EnT4YNTOXWXmjee/phYwrKuDo8ZN0OJwxDbjcHvJswyga80AkdqnVSl1DOu5wNk5XMg57ALe9C7/LAIGsEVmoPgnHrcpUwKLpABTPnEHlnnKmTZ4Yl3/u/IU+Y0XXCQVDcfl+lx81VYn5PYrAe4XBJIuFBU/Nicsddd+IPmPD40+Ye0DGANTMqxg43685LZw3lxH5eVG8PNswFsx9ok+s+VhTwtyp2WmoOaqWkFQbCtIYvty7rdYUtm/8htmPPIyelISelETxzBns2LyB1FRrhNd+vo2WU80Jc2faBmEpsCQnJNk0C8F+ZxZb7lB+XP9VpAfoSdHb2AyYZI8aTOvZ+B0xf8rw7la8wtNK0xVVAqQrKosGDGS2bo19arkGSEio3nSE/Wv20uXo7DN31/Aslu5Z0Z17lp4SmdCAYt3KZwOzefQmxAEUTeHBknEs21vavef1y8td+EzPF1ZEPL5wWEpcLVLmbZd6M3jbbiMdde2ybcUWWTPmQ/G7/SIiLkSkSkSkJWTeNuH+cDQ4eh8PqsAGgCFX2Q23Epm5mb2P3/VezSp7bip3EtXARFVRFAOY0xO4k+JzFEW5fAAVEV1ESkXkoIh4bsPSe0SkokdD79X9H5zhF+pSQlovAAAAAElFTkSuQmCC">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNiIgZmlsbD0iI2ZmZmZmZiIvPjxnIGZpbGw9Im5vbmUiIHN0cm9rZS13aWR0aD0iOC4yIj48cGF0aCBkPSJNNS45NSAyNS4zMEExMS42IDExLjYgMCAwIDEgNC41OCAxNy40OSIgc3Ryb2tlPSIjNTBGMEU2Ii8+PHBhdGggZD0iTTQuNTggMTcuNDlBMTEuNiAxMS42IDAgMCAxIDguNTQgMTAuNjEiIHN0cm9rZT0iIzUwQ0NBQSIvPjxwYXRoIGQ9Ik04LjU0IDEwLjYxQTExLjYgMTEuNiAwIDAgMSAxNi4wMCA3LjkwIiBzdHJva2U9IiNGMEU2NDEiLz48cGF0aCBkPSJNMTYuMDAgNy45MEExMS42IDExLjYgMCAwIDEgMjMuNDYgMTAuNjEiIHN0cm9rZT0iI0ZGNTA1MCIvPjxwYXRoIGQ9Ik0yMy40NiAxMC42MUExMS42IDExLjYgMCAwIDEgMjcuNDIgMTcuNDkiIHN0cm9rZT0iIzk2MDAzMiIvPjxwYXRoIGQ9Ik0yNy40MiAxNy40OUExMS42IDExLjYgMCAwIDEgMjYuMDUgMjUuMzAiIHN0cm9rZT0iIzg3MjE4MSIvPjwvZz48cGF0aCBkPSJNMTYgMTkuNUw4LjM4IDE1LjEwIiBzdHJva2U9IiMwZDFiMjQiIHN0cm9rZS13aWR0aD0iMy40IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48Y2lyY2xlIGN4PSIxNiIgY3k9IjE5LjUiIHI9IjMuNiIgZmlsbD0iIzBkMWIyNCIvPjwvc3ZnPg==">
@@ -318,7 +340,7 @@
 <div id="insets" class="off"></div>
 <div id="methodo" class="sheet" role="dialog" aria-modal="true" aria-label="Méthodologie"><article><button type="button" class="sheetClose">Fermer ✕</button>
 <h1><span class="ia">IA</span>TMO – Méthodologie</h1>
-<p class="by">Mise à jour : <span id="methMaj">22 novembre 2026</span></p>
+<p class="by">Mise à jour : <span id="methMaj">23 novembre 2026</span></p>
 <div class="enbref"><b>En bref.</b> IATMO affiche l'indice ATMO publié chaque jour par les AASQA, tel quel, à la commune. En dessous, il simule ce que donnerait une descente d'échelle jusqu'au quartier, par des règles explicites dont les paramètres sont appris chaque jour des mesures aux stations trafic, de l'IA au sens large : ce n'est pas l'indice officiel. Deux modèles d'apprentissage automatique (gradient boosting et perceptron) sont mis à l'épreuve pour corriger cette descente d'échelle, sans être encore appliqués. L'Aperçu 2027 préfigure le futur indice horaire sur la grille européenne, à partir de concentrations simulées. L'onglet Geod'air cartographie les mesures horaires des stations de fond, et l'onglet Évaluation mesure la justesse de ces calculs. Toutes les sources sont ouvertes (onglet Sources) ; IATMO sert à montrer l'interface, pas à informer.</div>
 <nav class="sommaire"><a href="#" data-cible="partieCdc">I. Cahier des charges</a><a href="#" data-cible="partieNote">II. Note méthodologique</a></nav>
 <h2 class="partie" id="partieCdc">I. Cahier des charges</h2>
@@ -798,7 +820,7 @@ e_i = z_i − ẑ₋ᵢ(x_i) = w_i / Q_ii                 erreur de prévision, 
 <p class="by">Toutes les données utilisées par la carte, leur producteur et leur licence, la façon dont elles arrivent dans la page et leur fréquence d'actualisation. La dernière colonne dit ce qui a été lu depuis l'ouverture de la page.</p>
 <p><b>Avertissement.</b> L'indice par commune est celui d'Atmo France et des AASQA (Atmo Data, licence ODbL), repris tel que diffusé. Sous la commune et en « Aperçu 2027 », les valeurs sont <b>simulées</b> et ne sont pas l'indice officiel ; les mesures de l'onglet Geod'air ne sont pas validées.</p>
 <h2>Chaîne de données</h2>
-<p>Le navigateur lit directement les services qui l'autorisent (Atmo Data, Prev'air sur data.gouv.fr, IGN, Open-Meteo, Agence européenne pour l'environnement). Les autres sources, illisibles depuis une page web ou trop volumineuses, passent par une tâche GitHub Actions du dépôt d'IATMO, qui les télécharge, les convertit et les publie sur la branche <code>donnees</code>, d'où la page les lit (<code>raw.githubusercontent.com</code>).</p>
+<p>Le navigateur lit directement les services qui l'autorisent (Atmo Data, Prev'air sur data.gouv.fr, IGN, Open-Meteo). Les autres sources, illisibles depuis une page web ou trop volumineuses, passent par une tâche GitHub Actions du dépôt d'IATMO, qui les télécharge, les convertit et les publie sur la branche <code>donnees</code>, d'où la page les lit (<code>raw.githubusercontent.com</code>).</p>
 <div id="srcTab"></div>
 <h2>Tâche de copie GitHub</h2>
 <ul>
@@ -807,6 +829,9 @@ e_i = z_i − ẑ₋ᵢ(x_i) = w_i / Q_ii                 erreur de prévision, 
 <li><b>Suivi.</b> Chaque passage est noté dans <a href="https://raw.githubusercontent.com/julienrude-glitch/IATMO/donnees/suivi/journal.json" target="_blank" rel="noopener"><code>suivi/journal.json</code></a> (trois jours), présenté dans l'onglet Évaluation (« Copies des données »), avec le retard de publication des mesures par AASQA.</li>
 <li><b>Secrets.</b> Aucune clé n'est dans la page ni sur GitHub. La clé de l'API Geod'air reste sur le poste de l'utilisateur et ne sert qu'au relais local, en secours.</li>
 </ul>
+<h2>Mesure d'audience</h2>
+<p>Les visites de la page en ligne sont comptées par <a href="https://www.goatcounter.com/" target="_blank" rel="noopener">GoatCounter</a>, outil libre, sans cookie ni identifiant conservé dans le navigateur. Sont transmis l'adresse de la page, le site d'origine, le navigateur, le système, la taille d'écran et le pays ; selon son éditeur, l'adresse IP sert à distinguer les visites uniques sans être conservée. Ces statistiques servent uniquement à suivre la fréquentation d'IATMO. Rien n'est compté quand la page est ouverte depuis un fichier.</p>
+<p>Pour ne pas être compté, ouvrez une fois la page en ajoutant <code>#ne-pas-compter</code> à la fin de son adresse : le choix est gardé dans ce navigateur, et la même opération l'annule.</p>
 <p class="muted" id="srcEditeur">Éditeur : Julien Rude. Hébergement : GitHub Pages.</p>
 </article></div>
 
