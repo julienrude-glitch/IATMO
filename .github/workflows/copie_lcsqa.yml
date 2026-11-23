@@ -24,7 +24,7 @@ on:
   workflow_dispatch:                # bouton « Run workflow » de l'onglet Actions, et appels de cron-job.org
     inputs:
       force:
-        description: "Réextraire toutes les heures AROME du jour"
+        description: "Réextraire toutes les heures AROME du jour et recalculer l'historique"
         type: boolean
         default: false
 
@@ -60,10 +60,19 @@ jobs:
           git init -q out
           cd out
           git remote add origin "$DEST"
-          if git fetch -q --depth 1 origin donnees 2>/dev/null; then
+          # Garde-fou (incident du 23/11/2026) : une branche vide n'est créée que si GitHub confirme qu'elle n'existe pas ; si elle existe
+          # mais ne peut être lue, la tâche s'arrête sans rien publier (sinon la poussée forcée effacerait l'archive).
+          set +e; git ls-remote --exit-code --heads origin donnees >/dev/null 2>&1; rc=$?; set -e
+          if [ "$rc" -eq 0 ]; then
+            ok=0; for k in 1 2 3; do if git fetch -q --depth 1 origin donnees; then ok=1; break; fi; echo "Lecture de la branche donnees impossible (essai $k)"; sleep 20; done
+            if [ "$ok" -ne 1 ]; then echo "::error::Branche donnees existante mais illisible : arrêt sans publier"; exit 1; fi
             git checkout -q -B donnees FETCH_HEAD; echo "Branche donnees reprise"
+            n=$(git ls-tree -r --name-only HEAD | wc -l); echo "Fichiers repris : $n"
+            if [ "$n" -lt 5 ]; then echo "::error::Branche donnees reprise presque vide ($n fichiers) : arrêt sans publier"; exit 1; fi
+          elif [ "$rc" -eq 2 ]; then
+            git checkout -q --orphan donnees; echo "Branche donnees absente sur GitHub : création"
           else
-            git checkout -q --orphan donnees; echo "Branche donnees créée"
+            echo "::error::GitHub injoignable (code $rc) : arrêt sans publier"; exit 1
           fi
 
       - name: Mesures du LCSQA (jour et veille)
@@ -125,6 +134,22 @@ jobs:
               for (code, h), d in sorted(acc.items()): w.writerow([code, h] + [d.get(c, "") for c in COLS])
               with gzip.open("out/archive/lcsqa/" + jour + ".csv.gz", "wt", encoding="utf-8") as fo: fo.write(buf.getvalue())
               print("archive LCSQA", jour, ":", len(acc), "couples station-heure")
+          # Restauration (après l'incident du 23/11/2026) : jours absents de l'archive repris des exports Geod'air déposés dans
+          # restauration/lcsqa/ sur la branche principale (liste.json et AAAA-MM-JJ.csv.gz, même format) ; sans effet si le dossier est absent.
+          import urllib.request
+          RB = "https://raw.githubusercontent.com/" + os.environ.get("REPO", "") + "/main/restauration/lcsqa/"
+          try:
+              liste = json.loads(urllib.request.urlopen(urllib.request.Request(RB + "liste.json", headers={"User-Agent": "IATMO"}), timeout=30).read())
+          except Exception: liste = {}
+          for jr in liste.get("jours", []):
+              fa = "out/archive/lcsqa/" + jr + ".csv.gz"
+              if os.path.exists(fa): continue
+              try:
+                  b = urllib.request.urlopen(urllib.request.Request(RB + jr + ".csv.gz", headers={"User-Agent": "IATMO"}), timeout=60).read()
+                  gzip.decompress(b); open(fa, "wb").write(b); print("archive LCSQA restaurée :", jr)
+              except Exception as e: print("restauration impossible :", jr, str(e)[:80])
+          for c, m in (liste.get("stations") or {}).items():
+              if c not in stations: stations[c] = dict(m, code=c)
           with open(fst, "w", encoding="utf-8", newline="") as fo:
               w = csv.DictWriter(fo, fieldnames=["code", "nom", "organisme", "implantation", "influence", "zas"], delimiter=";"); w.writeheader()
               for c in sorted(stations): w.writerow(stations[c])
@@ -543,7 +568,7 @@ jobs:
           if archive[0] != hier: print("Paris : la Ville n'a publié que jusqu'au", archive[0], "; nouvel essai dans une heure")
           PY
 
-      - name: AROME (vent à 10 m et pluie, aujourd'hui et demain, métropole et DROM)
+      - name: AROME (vent à 10 m, pluie, température et humidité à 2 m, aujourd'hui et demain, métropole et DROM)
         id: arome
         continue-on-error: true
         timeout-minutes: 10
@@ -553,17 +578,34 @@ jobs:
           mkdir -p out/arome
           python3 -m pip install -q --user --break-system-packages eccodes numpy >/dev/null 2>&1 || python3 -m pip install -q --user eccodes numpy >/dev/null
           python3 - <<'PY'
-          # Vent à 10 m (10u, 10v, paquet SP1) et pluie (tirf, tsnowp, paquet SP2) des calculs AROME de Météo-France, heure par heure,
+          # Vent à 10 m (10u, 10v, paquet SP1), température et humidité relative à 2 m (2t, 2r, paquet SP1 ; fichiers ta-*.bin, facultatifs)
+          # et pluie (tirf, tsnowp, paquet SP2) des calculs AROME de Météo-France, heure par heure,
           # pour le jour même et le lendemain : AROME 0,01° sur la métropole (moyenne sur des carrés de 0,1°) et AROME Outre-Mer 0,025°
           # sur les DROM (carrés de 0,05°, 0,1° en Guyane). Seuls les messages utiles sont téléchargés (requêtes partielles).
           # Métropole : heures de Paris ; DROM : heures locales. Jour même en métropole : renouvelé à chaque nouveau calcul ;
           # lendemain et DROM : renouvelés quand un calcul plus récent d'au moins 6 h est disponible. Budget de 7 minutes par passage.
-          import json, os, time, datetime as dt, urllib.request, urllib.error, re, glob, warnings
+          import json, os, time, datetime as dt, urllib.request, urllib.error, re, glob, warnings, gzip
           from zoneinfo import ZoneInfo
           import numpy as np, eccodes
           warnings.simplefilter("ignore")
           PARIS = ZoneInfo("Europe/Paris"); UTC = dt.timezone.utc
           os.chdir("out/arome"); BASE = os.environ["AROME_BASE"]; force = os.environ.get("FORCE") == "true"
+          # Restauration (après l'incident du 23/11/2026) : jours passés absents de l'archive repris de restauration/arome/ sur la branche
+          # principale (séries Open-Meteo AROME HD aux stations trafic, même format) ; sans effet si le dossier est absent ou les jours présents.
+          try:
+              RB = "https://raw.githubusercontent.com/" + os.environ.get("REPO", "") + "/main/restauration/arome/"
+              lr = json.loads(urllib.request.urlopen(urllib.request.Request(RB + "liste.json", headers={"User-Agent": "IATMO"}), timeout=30).read())
+              lim_r = (dt.datetime.now(PARIS) - dt.timedelta(days=30)).strftime("%Y-%m-%d")
+              for jr in lr.get("jours", []):
+                  if jr < lim_r: continue
+                  for pre, tl in (("", lr["taille"]), ("ta-", lr["taille_ta"])):
+                      f = pre + jr + ".bin"
+                      if os.path.exists(f): continue
+                      b = gzip.decompress(urllib.request.urlopen(urllib.request.Request(RB + f + ".gz", headers={"User-Agent": "IATMO"}), timeout=60).read())
+                      if len(b) == tl: open(f, "wb").write(b); print("AROME restauré :", f)
+          except urllib.error.HTTPError as e:
+              if e.code != 404: print("restauration AROME :", e.code)
+          except Exception as e: print("restauration AROME :", str(e)[:100])
           def requete(url, debut=None, fin=None, tete=False, delai=120):
               req = urllib.request.Request(url, method="HEAD" if tete else "GET", headers={"User-Agent": "IATMO"})
               if debut is not None: req.add_header("Range", "bytes=%d-%d" % (debut, fin))
@@ -582,9 +624,12 @@ jobs:
           T = {b: BOITES[b][5] * BOITES[b][6] for b in BOITES}; N = T["METRO"]
           OFF, TOM = {}, 0
           for b in OM: OFF[b] = TOM; TOM += 24 * 3 * T[b]
+          OFF_TA, TOM_TA = {}, 0                                                      # température (int8, demi-degrés) et humidité (uint8, %)
+          for b in OM: OFF_TA[b] = TOM_TA; TOM_TA += 24 * 2 * T[b]
           maintenant = dt.datetime.now(PARIS); J0 = maintenant.strftime("%Y-%m-%d"); J1 = (maintenant.date() + dt.timedelta(days=1)).isoformat()
           def groupe(b): return "METRO" if b == "METRO" else "OM"
           def fichier(g, j): return f"{j}.bin" if g == "METRO" else f"om-{j}.bin"
+          def fichier_ta(g, j): return f"ta-{j}.bin" if g == "METRO" else f"om-ta-{j}.bin"
           etat = {}
           if os.path.exists("etat.json"):
               try: etat = json.load(open("etat.json", encoding="utf-8"))
@@ -598,6 +643,12 @@ jobs:
           if (anc.get("lendemain") or {}).get("jour"): index[anc["lendemain"]["jour"] + "|METRO"] = anc["lendemain"].get("heures")
           for j, d in ((anc.get("om") or {}).get("jours") or {}).items():
               for b, hs in d.items(): index[j + "|" + b] = hs
+          def vide_ta(g):
+              buf = np.zeros(24 * 2 * N if g == "METRO" else TOM_TA, dtype=np.uint8)
+              for b in (["METRO"] if g == "METRO" else OM):
+                  t, o = T[b], (0 if g == "METRO" else OFF_TA[b])
+                  for h in range(24): base = o + h * 2 * t; buf[base:base + t] = 128; buf[base + t:base + 2 * t] = 255
+              return buf
           def vide(g):
               buf = np.zeros(24 * 3 * N if g == "METRO" else TOM, dtype=np.uint8)
               for b in (["METRO"] if g == "METRO" else OM):
@@ -615,7 +666,21 @@ jobs:
                       buf = vide(g)
                       for b in (["METRO"] if g == "METRO" else OM): index[j + "|" + b] = None
                   bufs[(g, j)] = buf
+          bufs_ta, ta_neufs = {}, set()                                               # température / humidité : fichier absent -> jour réextrait
+          for g in ("METRO", "OM"):
+              for j in (J0, J1):
+                  f, attendu, buf = fichier_ta(g, j), (24 * 2 * N if g == "METRO" else TOM_TA), None
+                  if os.path.exists(f):
+                      x = np.frombuffer(open(f, "rb").read(), dtype=np.uint8).copy()
+                      if x.size == attendu: buf = x
+                  if buf is None: buf = vide_ta(g); ta_neufs.add((g, j))
+                  bufs_ta[(g, j)] = buf
           index = {k: (v if isinstance(v, list) and len(v) == 24 else [None] * 24) for k, v in index.items() if k[:10] in (J0, J1)}
+          ta_index = {k: v for k, v in ((anc.get("ta") or {}).get("index") or {}).items() if k[:10] in (J0, J1) and isinstance(v, list) and len(v) == 24}
+          for b in BOITES:
+              for j in (J0, J1):
+                  if (groupe(b), j) in ta_neufs: ta_index[j + "|" + b] = [None] * 24
+                  ta_index.setdefault(j + "|" + b, [None] * 24)
           for b in BOITES:
               for j in (J0, J1): index.setdefault(j + "|" + b, [None] * 24)
           # calculs présents sur le stockage
@@ -641,6 +706,7 @@ jobs:
               return out
           RANGS = etat.get("rangs") or {}                                             # rang des messages, appris au premier passage
           RANGS.setdefault("METRO", {"SP1": {"10u": 2, "10v": 3}, "SP2": {"tirf": 7, "tsnowp": 8}})
+          for d_ in RANGS.values(): d_.setdefault("SP1", {}).setdefault("2t", 0); d_["SP1"].setdefault("2r", 1)   # premiers essais, appris ensuite
           NOMS, CACHE = {}, {}
           def champs(u, voulus, dom, paquet):
               """Champs complets {nom: (valeurs nord→sud, lat nord, lon ouest, dx, dy, stepRange)}, gardés en mémoire pendant le passage."""
@@ -692,7 +758,20 @@ jobs:
                       prec = champs(U(run, "SP2", pas - 1), {sn}, dom, "SP2").get(sn) if pas > 1 else None
                       val = val - bloc(prec, b) if prec else val / max(1, d1 - d0)
                   val = np.maximum(val, 0); pluie = val if pluie is None else pluie + val
-              return bloc(a["10u"], b), bloc(a["10v"], b), pluie
+              t2, rh = extraire_ta(b, run, pas)                                       # facultatifs : leur absence n'empêche pas le vent et la pluie
+              return bloc(a["10u"], b), bloc(a["10v"], b), pluie, t2, rh
+          def extraire_ta(b, run, pas):
+              dom = BOITES[b][0]; t2 = rh = None
+              try:
+                  c2 = champs(DOMS[dom](run, "SP1", pas), {"2t", "2r"}, dom, "SP1")
+                  if "2t" in c2: t2 = bloc(c2["2t"], b); t2 = t2 - 273.15 if np.nanmean(t2) > 150 else t2   # kelvins -> °C
+                  if "2r" in c2: rh = bloc(c2["2r"], b)
+              except Exception as e: print("température / humidité indisponibles :", b, run, pas, str(e)[:100])
+              return t2, rh
+          def ecrire_ta(b, j, h, t2, rh):
+              t = T[b]; buf = bufs_ta[(groupe(b), j)]; base = (0 if b == "METRO" else OFF_TA[b]) + h * 2 * t
+              if t2 is not None: buf[base:base + t] = np.where(np.isnan(t2), -128, np.clip(np.round(t2 * 2), -127, 127)).astype(np.int8).ravel().view(np.uint8)
+              if rh is not None: buf[base + t:base + 2 * t] = np.where(np.isnan(rh), 255, np.clip(np.round(rh), 0, 100)).astype(np.uint8).ravel()
           def ecrire(b, j, h, u, v, p):
               t = T[b]; buf = bufs[(groupe(b), j)]; base = (0 if b == "METRO" else OFF[b]) + h * 3 * t
               i8 = lambda x: np.where(np.isnan(x), -128, np.clip(np.round(x * 4), -127, 127)).astype(np.int8).ravel().view(np.uint8)
@@ -707,7 +786,7 @@ jobs:
               if time.monotonic() - debut > 420: essais.append([b, j, h, None, None, "budget atteint"]); break
               tz = ZoneInfo(BOITES[b][1]); y, m, d = map(int, j.split("-"))
               tl = dt.datetime(y, m, d, h, tzinfo=tz); t = tl.astimezone(UTC); passe = dt.datetime.now(tz) - dt.timedelta(hours=2) > tl
-              cle = j + "|" + b; actuel = index[cle][h]; ecart = 0 if (b == "METRO" and j == J0) else 6
+              cle = j + "|" + b; actuel = index[cle][h]; ecart = 0 if (b == "METRO" and j == J0) else 6; extrait = False
               for run in recents:
                   r = date_run(run); pas = int((t - r).total_seconds() // 3600)
                   if pas < 1 or pas > 48: continue
@@ -718,17 +797,28 @@ jobs:
                   try: requete(DOMS[dom](run, "SP1", pas), tete=True); requete(DOMS[dom](run, "SP2", pas), tete=True)
                   except Exception: absents.add((dom, run, pas)); essais.append([b, j, h, run, pas, "absent"]); continue
                   try:
-                      u, v, p = extraire(b, run, pas); ecrire(b, j, h, u, v, p)
-                      index[cle][h] = run; faits.append([b, j, h, run, pas]); break
+                      u, v, p, t2, rh = extraire(b, run, pas); ecrire(b, j, h, u, v, p); ecrire_ta(b, j, h, t2, rh)
+                      index[cle][h] = run; faits.append([b, j, h, run, pas]); extrait = True
+                      if t2 is not None: ta_index[cle][h] = run
+                      break
                   except Exception as e:
                       essais.append([b, j, h, run, pas, str(e)[:160]])
+              run = index[cle][h]
+              if not extrait and run and ta_index[cle][h] != run:                    # vent à jour, température / humidité manquantes : elles seules
+                  pas = int((t - date_run(run)).total_seconds() // 3600)
+                  if 1 <= pas <= 48:
+                      t2, rh = extraire_ta(b, run, pas)
+                      if t2 is not None: ecrire_ta(b, j, h, t2, rh); ta_index[cle][h] = run; faits.append([b, j, h, run, pas, "température"])
           for (g, j), buf in bufs.items(): open(fichier(g, j), "wb").write(buf.tobytes())
+          for (g, j), buf in bufs_ta.items(): open(fichier_ta(g, j), "wb").write(buf.tobytes())
           def point(b, j, lat, lon, h):
               _, _, lat0, lon0, pas, ni, nj = BOITES[b]; jj = int((lat0 - lat) / pas); ii = int((lon - lon0) / pas)
               if index[j + "|" + b][h] is None or not (0 <= jj < nj and 0 <= ii < ni): return None
               t = T[b]; buf = bufs[(groupe(b), j)]; base = (0 if b == "METRO" else OFF[b]) + h * 3 * t; k = jj * ni + ii
               u = buf[base + k:base + k + 1].view(np.int8)[0] / 4; v = buf[base + t + k:base + t + k + 1].view(np.int8)[0] / 4; p = int(buf[base + 2 * t + k])
-              return {"vitesse": round(float(np.hypot(u, v)), 2), "direction": round(float((np.degrees(np.arctan2(-u, -v)) + 360) % 360)), "pluie": None if p == 255 else p / 10}
+              bt = bufs_ta[(groupe(b), j)]; bta = (0 if b == "METRO" else OFF_TA[b]) + h * 2 * t; tt = int(bt[bta + k:bta + k + 1].view(np.int8)[0]); hr = int(bt[bta + t + k])
+              return {"vitesse": round(float(np.hypot(u, v)), 2), "direction": round(float((np.degrees(np.arctan2(-u, -v)) + 360) % 360)), "pluie": None if p == 255 else p / 10,
+                      "temperature": None if tt == -128 else tt / 2, "humidite": None if hr == 255 else hr}
           def boite_json(b):
               _, tz, lat0, lon0, pas, ni, nj = BOITES[b]
               return {"fuseau": tz, "lat0": lat0, "lon0": lon0, "pas": pas, "ni": ni, "nj": nj, "decalage": OFF.get(b, 0), "echelle_vent": 0.25, "echelle_pluie": 0.1}
@@ -736,7 +826,12 @@ jobs:
                    "grille": dict(boite_json("METRO"), format="24 heures × (u int8, v int8, pluie uint8), rangées du nord au sud ; -128 et 255 = absent"),
                    "heures": index[J0 + "|METRO"], "lendemain": {"jour": J1, "heures": index[J1 + "|METRO"]},
                    "om": {"fichier": "om-AAAA-MM-JJ.bin", "format": "boîtes à la suite (décalage en octets), chacune 24 heures locales × (u, v, pluie)",
-                          "boites": {b: boite_json(b) for b in OM}, "jours": {j: {b: index[j + "|" + b] for b in OM} for j in (J0, J1)}}}
+                          "boites": {b: boite_json(b) for b in OM}, "jours": {j: {b: index[j + "|" + b] for b in OM} for j in (J0, J1)}},
+                   "ta": {"fichier": "ta-AAAA-MM-JJ.bin", "om_fichier": "om-ta-AAAA-MM-JJ.bin", "echelle_temperature": 0.5,
+                          "format": "24 heures × (température int8 en demi-degrés Celsius, humidité relative uint8 en %), mêmes grilles ; -128 et 255 = absent",
+                          "decalages_om": {b: OFF_TA[b] for b in OM},
+                          "heures": ta_index.get(J0 + "|METRO"), "lendemain": ta_index.get(J1 + "|METRO"),
+                          "om_jours": {j: {b: ta_index[j + "|" + b] for b in OM} for j in (J0, J1)}, "index": ta_index}}
           json.dump(meteo, open("meteo.json", "w", encoding="utf-8"), ensure_ascii=False)
           hp = min(23, maintenant.hour); rempli = lambda k: sum(1 for x in index[k] if x)
           etat = {"maj": meteo["maj"], "calculs": runs, "heures_remplies": rempli(J0 + "|METRO"),
@@ -748,7 +843,7 @@ jobs:
           json.dump(etat, open("etat.json", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
           lim, lim_om = (maintenant - dt.timedelta(days=30)).strftime("%Y-%m-%d"), (maintenant - dt.timedelta(days=3)).strftime("%Y-%m-%d")
           for f in glob.glob("*.bin"):                                                # archive : 30 jours en métropole, 3 jours outre-mer
-              mm = re.match(r"(om-)?(\d{4}-\d\d-\d\d)\.bin$", f)
+              mm = re.match(r"(om-)?(?:ta-)?(\d{4}-\d\d-\d\d)\.bin$", f)
               if mm and mm.group(2) < (lim_om if mm.group(1) else lim): os.remove(f)
           print(json.dumps({k: etat[k] for k in ("heures_remplies", "Paris_heure_courante", "Fort-de-France_12h_locale", "Saint-Denis_12h_locale")}, ensure_ascii=False), "|", len(faits), "heures extraites")
           if not any(index[J0 + "|METRO"]): raise SystemExit("Aucune heure AROME extraite pour la métropole (voir arome/etat.json)")
@@ -790,7 +885,7 @@ jobs:
             "Contenu :" \
             "- lcsqa/ : fichiers temps réel du LCSQA (data.gouv.fr), jour et veille ;" \
             "- trafic/ : débits et vitesses Bison Futé sur le réseau national non concédé (data.gouv.fr) : fichiers bruts du moment, dernier état par point, points.json pour IATMO, archive horaire de 60 jours ; paris.json : débits horaires des capteurs permanents de la Ville de Paris (opendata.paris.fr, ODbL), profil type par jour de la semaine et par heure (médiane des 4 derniers jours de ce type publiés, hors jours fériés et vacances scolaires de la zone C), tiré de l'archive quotidienne paris_jours/ (56 jours) ;" \
-            "- arome/ : vent à 10 m et pluie AROME (Météo-France) heure par heure, aujourd'hui et demain : métropole sur une grille de 0,1° (AAAA-MM-JJ.bin, 30 jours gardés), DROM en AROME Outre-Mer (om-AAAA-MM-JJ.bin) ;" \
+            "- arome/ : vent à 10 m, pluie, température et humidité à 2 m AROME (Météo-France) heure par heure, aujourd'hui et demain : métropole sur une grille de 0,1° (AAAA-MM-JJ.bin et ta-AAAA-MM-JJ.bin, 30 jours gardés), DROM en AROME Outre-Mer (om-AAAA-MM-JJ.bin, om-ta-AAAA-MM-JJ.bin) ; jours du 21/10 au 21/11/2026 restaurés aux seules stations trafic (Open-Meteo) ;" \
             "- archive/lcsqa/ : mesures horaires du LCSQA par station (NO, NO2, NOx, O3, PM10, PM2,5, SO2), un fichier compressé par jour sur 180 jours, et table des stations ;" \
             "- suivi/ : journal des passages (3 jours), première apparition de chaque heure du LCSQA (30 jours) et performances quotidiennes du krigeage (90 jours), progression du calage (calage_jours.json, 400 jours), lus par l'onglet Évaluation ;" \
             "- calage/ : calage de l'effet routier sur les 30 derniers jours (incrément, profil horaire, vent, pluie, trafic et confinement), lu par la carte." \
