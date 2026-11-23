@@ -186,7 +186,7 @@ for jour in [j for j in complets if j not in faits][-5:]:
     jj = [x for x in journal if str(x.get("t", "")).startswith(jour)]
     res["copies"] = {"n": len(jj), "complets": sum(1 for x in jj if x.get("lcsqa") == x.get("trafic") == x.get("arome") == "success"),
                      "lcsqa": sum(1 for x in jj if x.get("lcsqa") == "success")} if jj else None
-    PERF.append(res); print("performances", jour, ":", len(hs), "heures,", round(time.time() - t1, 1), "s")
+    PERF = [d for d in PERF if d["jour"] != jour] + [res]; print("performances", jour, ":", len(hs), "heures,", round(time.time() - t1, 1), "s")
 # MQI sur fenêtres glissantes de 7 et 30 jours, recalculé pour chaque jour à partir des sommes quotidiennes par station
 MQJ = {j: MQJ[j] for j in sorted(MQJ)[-30:]}
 def fenetre(fin, w, p, details=False):
@@ -212,7 +212,9 @@ for d in PERF:
         if q is None: continue
         f7, f30 = fenetre(d["jour"], 7, p), fenetre(d["jour"], 30, p)
         q["mqi90"] = f7["mqi90"] if f7 else None; q["nmqi"] = f7["ns"] if f7 else 0; q["mqi90_30"] = f30["mqi90"] if f30 else None
-PERF = sorted(PERF, key=lambda d: d["jour"])[-90:]
+uniq = {}                                                                                  # un seul enregistrement par jour : le format le plus récent l'emporte
+for d in sorted(PERF, key=lambda d: (d["jour"], d.get("v", 0))): uniq[d["jour"]] = d
+PERF = [uniq[j] for j in sorted(uniq)][-90:]
 ecrire_json(fperf, PERF); ecrire_json(fmj, MQJ)
 if MQJ:
     fin = max(MQJ)
