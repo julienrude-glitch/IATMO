@@ -855,8 +855,86 @@ jobs:
           for f in glob.glob("*.bin"):                                                # archive : 30 jours en métropole, 3 jours outre-mer
               mm = re.match(r"(om-)?(?:ta-)?(\d{4}-\d\d-\d\d)\.bin$", f)
               if mm and mm.group(2) < (lim_om if mm.group(1) else lim): os.remove(f)
+          # Prévisions telles qu'émises, pour évaluer honnêtement la prévision horaire de la qualité de l'air : à 8 h, 12 h et 16 h (Paris),
+          # au premier passage de l'heure, valeurs AROME aux stations (stations_ref.json de la branche principale) pour les heures locales
+          # de h − 2 à 23 h du jour ; dossier previsions/, 60 jours gardés. Par station : [vitesse m/s, direction °, pluie mm/h, T °C, HR %] par heure.
+          try:
+              if maintenant.hour in (8, 12, 16):
+                  os.makedirs("previsions", exist_ok=True); fp = f"previsions/{J0}-{maintenant.hour:02d}.json.gz"
+                  if not os.path.exists(fp):
+                      ref = json.loads(requete("https://raw.githubusercontent.com/" + os.environ.get("REPO", "") + "/main/stations_ref.json", delai=30))
+                      val, calc = {}, {}
+                      for code, r in ref.items():
+                          lon, lat = (r["lon"], r["lat"]) if isinstance(r, dict) else (r[0], r[1])
+                          for b in BOITES:
+                              _, tz, lat0, lon0, pb, ni, nj = BOITES[b]
+                              if not (0 <= int((lat0 - lat) / pb) < nj and 0 <= int((lon - lon0) / pb) < ni): continue
+                              hl = dt.datetime.now(ZoneInfo(tz)).hour; lignes = []
+                              for h in range(max(0, hl - 2), 24):
+                                  q = point(b, J0, lat, lon, h)
+                                  lignes.append(None if q is None else [q["vitesse"], q["direction"], q["pluie"], q["temperature"], q["humidite"]])
+                              val[code] = {"boite": b, "de": max(0, hl - 2), "h": lignes}; calc[b] = index[J0 + "|" + b]; break
+                      with gzip.open(fp, "wt", encoding="utf-8") as g:
+                          json.dump({"jour": J0, "heure": maintenant.hour, "emis": maintenant.isoformat(timespec="seconds"), "calculs": calc,
+                                     "colonnes": ["vitesse", "direction", "pluie", "temperature", "humidite"], "stations": val}, g, ensure_ascii=False, separators=(",", ":"))
+                      print("prévisions archivées :", fp, len(val), "stations")
+              lp = (maintenant - dt.timedelta(days=60)).strftime("%Y-%m-%d")
+              for f in glob.glob("previsions/*.json.gz"):
+                  if os.path.basename(f)[:10] < lp: os.remove(f)
+          except Exception as e: print("archive des prévisions impossible :", str(e)[:120])
           print(json.dumps({k: etat[k] for k in ("heures_remplies", "Paris_heure_courante", "Fort-de-France_12h_locale", "Saint-Denis_12h_locale")}, ensure_ascii=False), "|", len(faits), "heures extraites")
           if not any(index[J0 + "|METRO"]): raise SystemExit("Aucune heure AROME extraite pour la métropole (voir arome/etat.json)")
+          PY
+
+      - name: Prévisions Prev'air aux stations (archive, une fois par jour après 9 h)
+        id: prevair
+        continue-on-error: true
+        timeout-minutes: 6
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -c "import h5py" 2>/dev/null || python3 -m pip install -q --user --break-system-packages h5py >/dev/null 2>&1 || python3 -m pip install -q --user h5py >/dev/null
+          python3 - <<'PY'
+          # Prévisions Prev'air (Ineris, data.gouv.fr, NetCDF 4) du jour et du lendemain, émises le jour même : maximum horaire (O3, NO2) ou
+          # moyenne (PM10, PM2,5), lues aux stations (stations_ref.json), pour comparer la prévision d'IATMO à celle de Prev'air sur l'historique.
+          # Fichier prevair/AAAA-MM-JJ.json.gz : {"emis", "fichiers", "valeurs": {station: {"O3_max_j0": …}}} ; 400 jours gardés.
+          import json, os, re, io, gzip, glob, datetime as dt, urllib.request
+          from zoneinfo import ZoneInfo
+          import numpy as np, h5py
+          PARIS = ZoneInfo("Europe/Paris"); now = dt.datetime.now(PARIS); J = now.strftime("%Y-%m-%d")
+          os.makedirs("out/prevair", exist_ok=True); fo = f"out/prevair/{J}.json.gz"
+          def lire(u, delai=60): return urllib.request.urlopen(urllib.request.Request(u, headers={"User-Agent": "IATMO"}), timeout=delai).read()
+          if os.path.exists(fo) and os.environ.get("FORCE") != "true": print("Prev'air déjà archivé aujourd'hui"); raise SystemExit(0)
+          if now.hour < 9: print("Avant 9 h : prévisions du jour pas encore attendues"); raise SystemExit(0)
+          jeu = json.loads(lire("https://www.data.gouv.fr/api/1/datasets/prevair-previsions-de-la-qualite-de-lair-pour-la-france-air-quality-forecasts-for-france/"))
+          motif = re.compile(r"prevision\.(\d{8})\.(moy|max)j(\d)\.(o3|no2|pm10|pm25)\.", re.I); choix = {}
+          for r in jeu.get("resources", []):
+              m = motif.search(r.get("title") or "") or motif.search(r.get("url") or "")
+              if not m or f"{m[1][:4]}-{m[1][4:6]}-{m[1][6:]}" != J: continue
+              pol, stat, ech = m[4].upper(), m[2].lower(), int(m[3])
+              if ech <= 1 and stat == ("max" if pol in ("O3", "NO2") else "moy"): choix[(pol, stat, ech)] = r["url"]
+          if not choix: print("Prev'air : aucune prévision émise aujourd'hui pour l'instant"); raise SystemExit(0)
+          ref = json.loads(lire("https://raw.githubusercontent.com/" + os.environ.get("REPO", "") + "/main/stations_ref.json", 30))
+          co = {c: ((r["lon"], r["lat"]) if isinstance(r, dict) else (r[0], r[1])) for c, r in ref.items()}
+          valeurs, fichiers = {}, {}
+          for (pol, stat, ech), url in sorted(choix.items()):
+              try:
+                  with h5py.File(io.BytesIO(lire(url, 120)), "r") as h:
+                      var = [k for k in h.keys() if k not in ("lat", "lon", "time") and getattr(h[k], "ndim", 0) == 3][0]
+                      la, lo, V = h["lat"][:], h["lon"][:], h[var][0]
+              except Exception as e: print("lecture impossible :", url, str(e)[:100]); continue
+              cle = f"{pol}_{stat}_j{ech}"; fichiers[cle] = url.rsplit("/", 1)[-1]; dla, dlo = abs(la[1] - la[0]), abs(lo[1] - lo[0])
+              for c, (x, y) in co.items():
+                  if not (la.min() - dla <= y <= la.max() + dla and lo.min() - dlo <= x <= lo.max() + dlo): continue
+                  v = float(V[int(np.argmin(abs(la - y))), int(np.argmin(abs(lo - x)))])
+                  if np.isfinite(v) and 0 <= v < 1e4: valeurs.setdefault(c, {})[cle] = round(v, 1)
+          if not valeurs: raise SystemExit("Prev'air : aucun champ lu")
+          with gzip.open(fo, "wt", encoding="utf-8") as g:
+              json.dump({"emis": J, "fichiers": fichiers, "valeurs": valeurs}, g, ensure_ascii=False, separators=(",", ":"))
+          lim = (now - dt.timedelta(days=400)).strftime("%Y-%m-%d")
+          for f in glob.glob("out/prevair/*.json.gz"):
+              if os.path.basename(f)[:10] < lim: os.remove(f)
+          print("Prev'air archivé :", fo, len(valeurs), "stations,", sorted(fichiers))
           PY
 
       - name: Historique (calage et performances, une fois par jour après 4 h)
@@ -896,6 +974,8 @@ jobs:
             "- lcsqa/ : fichiers temps réel du LCSQA (data.gouv.fr), jour et veille ;" \
             "- trafic/ : débits et vitesses Bison Futé sur le réseau national non concédé (data.gouv.fr) : fichiers bruts du moment, dernier état par point, points.json pour IATMO, archive horaire de 60 jours ; paris.json : débits horaires des capteurs permanents de la Ville de Paris (opendata.paris.fr, ODbL), profil type par jour de la semaine et par heure (médiane des 4 derniers jours de ce type publiés, hors jours fériés et vacances scolaires de la zone C), tiré de l'archive quotidienne paris_jours/ (56 jours) ;" \
             "- arome/ : vent à 10 m, pluie, température et humidité à 2 m AROME (Météo-France) heure par heure, aujourd'hui et demain : métropole sur une grille de 0,1° (AAAA-MM-JJ.bin et ta-AAAA-MM-JJ.bin, 30 jours gardés), DROM en AROME Outre-Mer (om-AAAA-MM-JJ.bin, om-ta-AAAA-MM-JJ.bin) ; jours du 21/10 au 21/11/2026 restaurés aux seules stations trafic (Open-Meteo) ;" \
+            "- arome/previsions/ : prévisions AROME telles qu'émises à 8 h, 12 h et 16 h, aux stations, pour les heures restantes du jour (60 jours) ;" \
+            "- prevair/ : prévisions Prev'air (Ineris) du jour et du lendemain lues aux stations, une fois par jour (400 jours) ;" \
             "- archive/lcsqa/ : mesures horaires du LCSQA par station (NO, NO2, NOx, O3, PM10, PM2,5, SO2), un fichier compressé par jour sur 180 jours, et table des stations ;" \
             "- suivi/ : journal des passages (3 jours), première apparition de chaque heure du LCSQA (30 jours) et performances quotidiennes du krigeage (90 jours), progression du calage (calage_jours.json, 400 jours), lus par l'onglet Évaluation ;" \
             "- calage/ : calage de l'effet routier sur les 30 derniers jours (incrément, profil horaire, vent, pluie, trafic et confinement), lu par la carte." \
