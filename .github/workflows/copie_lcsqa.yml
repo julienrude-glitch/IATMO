@@ -141,13 +141,21 @@ jobs:
           try:
               liste = json.loads(urllib.request.urlopen(urllib.request.Request(RB + "liste.json", headers={"User-Agent": "IATMO"}), timeout=30).read())
           except Exception: liste = {}
+          # Versions : quand liste.json annonce une version plus récente que celle déjà appliquée (restauration.json), les jours de sa
+          # liste « remplacer » (jours venus d'une restauration précédente, jamais des jours copiés du LCSQA) sont téléchargés à nouveau.
+          fr = "out/archive/lcsqa/restauration.json"
+          try: appl = json.load(open(fr, encoding="utf-8"))
+          except Exception: appl = {"version": 1}
+          vers = liste.get("version", 1); rempl = set(liste.get("remplacer", [])) if vers > appl.get("version", 1) else set(); tout_ok = True
           for jr in liste.get("jours", []):
               fa = "out/archive/lcsqa/" + jr + ".csv.gz"
-              if os.path.exists(fa): continue
+              if os.path.exists(fa) and jr not in rempl: continue
               try:
                   b = urllib.request.urlopen(urllib.request.Request(RB + jr + ".csv.gz", headers={"User-Agent": "IATMO"}), timeout=60).read()
-                  gzip.decompress(b); open(fa, "wb").write(b); print("archive LCSQA restaurée :", jr)
-              except Exception as e: print("restauration impossible :", jr, str(e)[:80])
+                  gzip.decompress(b); open(fa, "wb").write(b); print("archive LCSQA restaurée :", jr, "(version " + str(vers) + ")")
+              except Exception as e: print("restauration impossible :", jr, str(e)[:80]); tout_ok = False
+          if liste and tout_ok and vers != appl.get("version"):
+              json.dump({"version": vers, "le": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds")}, open(fr, "w", encoding="utf-8"))
           for c, m in (liste.get("stations") or {}).items():
               if c not in stations: stations[c] = dict(m, code=c)
           with open(fst, "w", encoding="utf-8", newline="") as fo:
