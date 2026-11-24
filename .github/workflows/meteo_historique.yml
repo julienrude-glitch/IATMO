@@ -9,11 +9,16 @@
 # compte pour plusieurs appels, soit environ 100 par point pour 2023-2026) : la tâche espace les requêtes selon leur poids (80 secondes
 # pour une série complète, environ deux heures pour les 89 points), publie sa progression tous les 10 points et reprend là où elle
 # s'est arrêtée si on la relance. Une relance ne demande que les jours qui manquent à la fin des séries existantes (une minute et
-# 89 appels environ pour quelques jours) ; « Retélécharger les points déjà présents » refait les séries complètes. À lancer à la main : onglet Actions, « Météo historique (Open-Meteo) », « Run workflow ».
+# 89 appels environ pour quelques jours) ; « Retélécharger les points déjà présents » refait les séries complètes.
+# Lancement automatique chaque matin (5 h 17 TU, source AROME, depuis le 25/11/2026) : il termine les séries manquantes, quota après
+# quota, puis ajoute chaque jour les jours manquants (quelques minutes). Un arrêt sur quota épuisé n'est alors pas une erreur.
+# À la main : onglet Actions, « Météo historique (Open-Meteo) », « Run workflow » (ERA5 seulement ainsi).
 # À enregistrer dans le dépôt sous le nom .github/workflows/meteo_historique.yml
 name: Météo historique (Open-Meteo)
 
 on:
+  schedule:
+    - cron: "17 5 * * *"            # chaque matin, 6 h 17 à Paris en hiver ; GitHub peut le retarder
   workflow_dispatch:
     inputs:
       debut:
@@ -50,6 +55,7 @@ jobs:
       FIN: ${{ inputs.fin }}
       REFAIRE: ${{ inputs.refaire }}
       SOURCE: ${{ inputs.source }}
+      EVENT: ${{ github.event_name }}
     steps:
       - name: Reprendre la branche historique
         shell: bash
@@ -57,8 +63,14 @@ jobs:
           set -euo pipefail
           git init -q h && cd h
           git remote add origin "https://x-access-token:${TOKEN}@github.com/${REPO}.git"
-          if git fetch -q --depth 1 origin historique 2>/dev/null; then git checkout -q -B historique FETCH_HEAD; echo "Branche historique reprise"
-          else git checkout -q --orphan historique; echo "Branche historique créée"; fi
+          # La branche n'est créée que si GitHub confirme qu'elle n'existe pas ; illisible ou GitHub injoignable : arrêt (sinon tout serait retéléchargé)
+          set +e; git ls-remote --exit-code --heads origin historique >/dev/null 2>&1; rc=$?; set -e
+          if [ "$rc" -eq 0 ]; then
+            ok=0; for k in 1 2 3; do if git fetch -q --depth 1 origin historique; then ok=1; break; fi; echo "lecture impossible, nouvel essai dans 20 s"; sleep 20; done
+            if [ "$ok" -ne 1 ]; then echo "::error::Branche historique existante mais illisible : arrêt"; exit 1; fi
+            git checkout -q -B historique FETCH_HEAD; echo "Branche historique reprise"
+          elif [ "$rc" -eq 2 ]; then git checkout -q --orphan historique; echo "Branche historique créée"
+          else echo "::error::GitHub injoignable (code $rc) : arrêt"; exit 1; fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
@@ -510,5 +522,7 @@ jobs:
           publier(f"Météo historique ({DOS}) du {debut} au {fin}" + (f" (arrêt : {arret})" if arret else "") + (f" (points à reprendre : {', '.join(echecs)})" if echecs else ""))
           n = sum(1 for p in POINTS if os.path.exists(f"{DOS}/{p['id']}.json.gz"))
           print(f"Points disponibles : {n}/{len(POINTS)}")
+          if arret and not echecs[:-1] and os.environ.get("EVENT") == "schedule":      # passage du matin arrêté par le quota : il reprendra demain
+              print(f"::notice::Quota du jour épuisé ({arret}) : le passage de demain matin reprendra les points manquants."); raise SystemExit(0)
           if arret or echecs: raise SystemExit("Incomplet : " + " ; ".join(x for x in (arret, "points à reprendre : " + ", ".join(echecs) if echecs else None) if x) + " — relancer la tâche plus tard, elle ne refera que les points manquants.")
           PY
