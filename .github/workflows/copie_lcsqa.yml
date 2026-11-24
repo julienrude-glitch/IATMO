@@ -41,6 +41,8 @@ jobs:
     timeout-minutes: 20
     env:
       SOURCE: https://files.data.gouv.fr/ineris/lcsqa/concentrations-de-polluants-atmospheriques-reglementes/temps-reel
+      # Secours (24/11/2026) : stockage objet de data.gouv.fr indiqué sur la fiche du jeu de données, essayé seulement si SOURCE échoue
+      SOURCE2: https://object.infra.data.gouv.fr/ineris-prod/lcsqa/concentrations-de-polluants-atmospheriques-reglementes/temps-reel
       TRAFIC_1: https://www.data.gouv.fr/api/1/datasets/r/625048a9-9d8f-4a6b-a7bf-b62094fb2c2e
       TRAFIC_2: https://www.data.gouv.fr/api/1/datasets/r/82673e5e-904f-41ae-8e1f-c64ff4095c1b
       TRAFIC_3: https://www.data.gouv.fr/api/1/datasets/r/501e1cee-2961-41dc-b229-d14ba96819a8
@@ -83,25 +85,28 @@ jobs:
           set -euo pipefail
           export TZ=Europe/Paris
           rm -rf tmp_lcsqa && mkdir -p tmp_lcsqa
-          entrees=""
+          entrees=""; SRC_OK="$SOURCE"
           for D in "$(date +%F)" "$(date -d yesterday +%F)"; do
             AN="${D:0:4}"; D2="${D//-/}"
-            LISTE="$(curl -fsSL --retry 3 --max-time 60 "$SOURCE/$AN/" || true)"
+            LISTE="$(curl -fsSL --connect-timeout 20 --retry 2 --max-time 60 "$SOURCE/$AN/" || true)"
             NOMS="$(printf '%s' "$LISTE" | grep -oE '[A-Za-z0-9_.-]+\.csv' | sort -u || true)"
             NOM="$(printf '%s\n' "$NOMS" | grep -x "FR_E2_$D.csv" || true)"
             [ -n "$NOM" ] || NOM="$(printf '%s\n' "$NOMS" | grep -E "($D|$D2)" | grep 'E2' | tail -n 1 || true)"
             [ -n "$NOM" ] || NOM="$(printf '%s\n' "$NOMS" | grep -E "($D|$D2)" | tail -n 1 || true)"
             [ -n "$NOM" ] || NOM="FR_E2_$D.csv"
-            if curl -fsSL --retry 3 --max-time 300 -o "tmp_lcsqa/$NOM" "$SOURCE/$AN/$NOM" \
-               && [ "$(head -c 2000 "tmp_lcsqa/$NOM" | grep -ci 'polluant' || true)" != "0" ]; then
-              echo "$D : $NOM ($(wc -c < "tmp_lcsqa/$NOM") octets)"
-              entrees="$entrees${entrees:+,}\"$D\":\"$NOM\""
-            else
-              echo "$D : aucun fichier lisible ($NOM)"; rm -f "tmp_lcsqa/$NOM"
-            fi
+            ok=""
+            for S in "$SOURCE" "$SOURCE2"; do
+              if curl -fsSL --connect-timeout 20 --retry 2 --max-time 240 -o "tmp_lcsqa/$NOM" "$S/$AN/$NOM" \
+                 && [ "$(head -c 2000 "tmp_lcsqa/$NOM" | grep -ci 'polluant' || true)" != "0" ]; then
+                echo "$D : $NOM ($(wc -c < "tmp_lcsqa/$NOM") octets, $S)"; ok=1; SRC_OK="$S"; break
+              else
+                echo "$D : aucun fichier lisible ($NOM) sur $S"; rm -f "tmp_lcsqa/$NOM"
+              fi
+            done
+            [ -n "$ok" ] && entrees="$entrees${entrees:+,}\"$D\":\"$NOM\""
           done
           if [ -z "$entrees" ]; then echo "Aucun fichier du LCSQA copié : la copie précédente est gardée."; exit 1; fi
-          printf '{"maj":"%s","source":"%s","fichiers":{%s}}\n' "$(date -Iseconds)" "$SOURCE" "$entrees" > tmp_lcsqa/etat.json
+          printf '{"maj":"%s","source":"%s","fichiers":{%s}}\n' "$(date -Iseconds)" "$SRC_OK" "$entrees" > tmp_lcsqa/etat.json
           rm -rf out/lcsqa && mv tmp_lcsqa out/lcsqa
           cat out/lcsqa/etat.json
           python3 - <<'PY'
