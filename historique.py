@@ -267,6 +267,10 @@ def arome(c, hk):
 # P5 : incrément de NOx = D · g(h) · vent · température · pluie, converti en NO2 selon l'ozone de fond :
 # ΔNO2 = ΔNOx · [f0 + (1 − f0) · (1 − exp(−O3 / O3*))]. Valeurs par défaut : historique Geod'air 2023-2025 et AROME HD (calage 2023-2024,
 # test à l'aveugle 2025, confirmé sur 2026) ; la carte utilise les mêmes.
+# Effet de la pluie sur l'incrément de PM10, f = 1 − min(0,5 ; k · P) : valeur pluriannuelle (exports Geod'air 2023-2026, 63 couples, AROME HD).
+# k choisi pour annuler le biais sur les heures de pluie : 0,65 (calage 2023-2024), 0,55 (2023-2025) ; tests à l'aveugle sans biais pour 0,25 (2025)
+# et 0,55 (2026) ; 0,5 retenu. Le calage sur 30 jours, qui minimise l'erreur quadratique, surcorrige (k au plafond, biais positif) : contrôle seulement.
+K_PLUIE = 0.5
 P5_DEF = {"vent": 0.2, "temp": 0.02, "pluie": 0.1, "f0": 0.10, "o3s": 185.0, "source": "historique Geod'air 2023-2025, AROME HD (Open-Meteo)"}
 def p5_conv(o3): return P5_DEF["f0"] + (1 - P5_DEF["f0"]) * (1 - math.exp(-max(0.0, o3) / P5_DEF["o3s"]))
 def p5_fac(p5, u, P, T2, cale=True):
@@ -393,12 +397,12 @@ def caler(jours, boot=False):
         for o in op:
             e = Ej.setdefault(o[3], [0.0] * 21)
             for k10 in range(21): e[k10] += (o[2] * (1 - min(0.5, k10 / 20 * o[0])) - o[1]) ** 2
-        # 100 heures de pluie et 7 jours au moins avec PM10 et AROME : un calage tiré d'un ou deux jours épouse la météo de ces jours-là
-        # (le 24/11/2026, une seule journée donnait k = 1,0, borne haute de la grille) ; sinon valeur par défaut (0,25) sur la carte.
+        # Valeur appliquée : K_PLUIE (pluriannuelle). Contrôle : calage sur la fenêtre (erreur quadratique minimale), si 100 heures de pluie et
+        # 7 jours au moins avec PM10 et AROME (le 24/11/2026, une seule journée donnait k = 1,0, borne haute de la grille).
+        k30 = None
         if npl >= 100 and len(Ej) >= 7:
-            tot = [sum(e[k] for e in Ej.values()) for k in range(21)]
-            CAL["pluie"] = {"k": tot.index(min(tot)) / 20, "n": len(op), "npluie": npl, "jours": len(Ej)}
-        else: CAL["pluie"] = {"k": None, "n": len(op), "npluie": npl, "jours": len(Ej)}
+            tot = [sum(e[k] for e in Ej.values()) for k in range(21)]; k30 = tot.index(min(tot)) / 20
+        CAL["pluie"] = {"k": K_PLUIE, "source": "historique 2023-2026", "controle_30j": k30, "n": len(op), "npluie": npl, "jours": len(Ej)}
     # Trafic et confinement sur les stations documentées : Δ = D · (TMJA / 30 000)^a · (1 + c·H/L) / (1 + c/3)
     pts = []
     for code, f in FICHES.items():
@@ -435,7 +439,7 @@ def caler(jours, boot=False):
             pe = pente_vent([o for _ in ks for o in ovj[ks[rg.randrange(len(ks))]]])
             if pe is not None: v.append(max(0.0, min(1.0, pe)))
         IC["vent"] = centiles(v)
-    if CAL["pluie"] and CAL["pluie"]["k"] is not None:
+    if CAL["pluie"] and CAL["pluie"].get("controle_30j") is not None:
         ks = list(Ej); v = []
         for _ in range(200):
             tir = [Ej[ks[rg.randrange(len(ks))]] for _ in ks]; tot = [sum(e[k] for e in tir) for k in range(21)]
@@ -477,7 +481,7 @@ def lignes(jours_l, C):
                 Pp = P or 0.0; fvr = f_vent_ref(u) if u is not None else 1.0
                 fv = fvr
                 if u is not None and hist and C["vent"]: fv = max(0.6, min(1.6, (C["vent"]["u0"] / max(u, 0.3)) ** C["vent"]["a"]))
-                k = C["pluie"]["k"] if hist and C["pluie"] and C["pluie"]["k"] is not None and C["pluie"]["npluie"] >= 100 else 0.25
+                k = K_PLUIE
                 for p in ("NO2", "PM10", "PM25"):
                     if p not in dv or C["D"].get(p) is None: continue
                     F = fond_moyen(fs, hk, p)
@@ -615,7 +619,7 @@ for J in [j for j in complets[-RATTRAPAGE:] if j not in faits_cj]:
     e = {"v": 1, "jour": J, "fen": C["nj_obs"], "paires": len(paires), "fiches": NFICHES, "nst": C["nst"], "nh": C["n"],
          "p": {"D": C["D"], "a": C["fiches"]["a"] if C["fiches"] else None, "c": C["fiches"]["c"] if C["fiches"] else None,
                "Df": C["fiches"]["D"] if C["fiches"] else None, "vent": C["vent"]["a"] if C["vent"] else None,
-               "pluie": C["pluie"]["k"] if C["pluie"] else None,
+               "pluie": C["pluie"].get("controle_30j") if C["pluie"] else None,     # contrôle sur 30 jours (la valeur appliquée est K_PLUIE)
                "p5": {"D": C["D"].get("NOX"), "vent": ((C.get("p5") or {}).get("vent") or {}).get("a"),
                       "temp": ((C.get("p5") or {}).get("temp") or {}).get("g"), "chimie_30j": (C.get("p5") or {}).get("chimie_30j")}},
          "ic": IC, "test": tester(J, C) if C["D"] else {}, "arome": J in AR}
