@@ -393,10 +393,12 @@ def caler(jours, boot=False):
         for o in op:
             e = Ej.setdefault(o[3], [0.0] * 21)
             for k10 in range(21): e[k10] += (o[2] * (1 - min(0.5, k10 / 20 * o[0])) - o[1]) ** 2
-        if npl >= 100:
+        # 100 heures de pluie et 7 jours au moins avec PM10 et AROME : un calage tiré d'un ou deux jours épouse la météo de ces jours-là
+        # (le 24/11/2026, une seule journée donnait k = 1,0, borne haute de la grille) ; sinon valeur par défaut (0,25) sur la carte.
+        if npl >= 100 and len(Ej) >= 7:
             tot = [sum(e[k] for e in Ej.values()) for k in range(21)]
-            CAL["pluie"] = {"k": tot.index(min(tot)) / 20, "n": len(op), "npluie": npl}
-        else: CAL["pluie"] = {"k": None, "n": len(op), "npluie": npl}
+            CAL["pluie"] = {"k": tot.index(min(tot)) / 20, "n": len(op), "npluie": npl, "jours": len(Ej)}
+        else: CAL["pluie"] = {"k": None, "n": len(op), "npluie": npl, "jours": len(Ej)}
     # Trafic et confinement sur les stations documentées : Δ = D · (TMJA / 30 000)^a · (1 + c·H/L) / (1 + c/3)
     pts = []
     for code, f in FICHES.items():
