@@ -1,0 +1,823 @@
+{
+"debut": "2023-01-01",
+"fin": "2026-11-18",
+"variables": [
+"precipitation",
+"shortwave_radiation",
+"cloud_cover",
+"boundary_layer_height",
+"temperature_2m",
+"wind_speed_10m",
+"wind_direction_10m"
+],
+"points": [
+{
+"id": "FR01064",
+"lon": 6.18122,
+"lat": 49.12508,
+"drom": false,
+"stations": [
+"FR01064"
+]
+},
+{
+"id": "FR01065",
+"lon": 5.38746,
+"lat": 49.16778,
+"drom": false,
+"stations": [
+"FR01065"
+]
+},
+{
+"id": "FR03006",
+"lon": 5.39736,
+"lat": 43.27645,
+"drom": false,
+"stations": [
+"FR03006"
+]
+},
+{
+"id": "FR03021",
+"lon": 5.44816,
+"lat": 43.52408,
+"drom": false,
+"stations": [
+"FR03021"
+]
+},
+{
+"id": "FR03044",
+"lon": 5.37996,
+"lat": 43.31818,
+"drom": false,
+"stations": [
+"FR03044"
+]
+},
+{
+"id": "FR03068",
+"lon": 5.9216,
+"lat": 43.12682,
+"drom": false,
+"stations": [
+"FR03068"
+]
+},
+{
+"id": "FR03091",
+"lon": 4.82688,
+"lat": 43.9314,
+"drom": false,
+"stations": [
+"FR03091"
+]
+},
+{
+"id": "FR04012",
+"lon": 2.3275,
+"lat": 48.82778,
+"drom": false,
+"stations": [
+"FR04012"
+]
+},
+{
+"id": "FR04031",
+"lon": 2.31123,
+"lat": 48.86877,
+"drom": false,
+"stations": [
+"FR04031",
+"FR04118",
+"FR04131"
+]
+},
+{
+"id": "FR04058",
+"lon": 2.35667,
+"lat": 48.92528,
+"drom": false,
+"stations": [
+"FR04058"
+]
+},
+{
+"id": "FR04071",
+"lon": 2.33528,
+"lat": 48.85639,
+"drom": false,
+"stations": [
+"FR04071",
+"FR04141"
+]
+},
+{
+"id": "FR04122",
+"lon": 2.65361,
+"lat": 48.52806,
+"drom": false,
+"stations": [
+"FR04122"
+]
+},
+{
+"id": "FR04180",
+"lon": 2.26872,
+"lat": 48.64093,
+"drom": false,
+"stations": [
+"FR04180"
+]
+},
+{
+"id": "FR04329",
+"lon": 2.41278,
+"lat": 48.83861,
+"drom": false,
+"stations": [
+"FR04329"
+]
+},
+{
+"id": "FR05089",
+"lon": 0.1109,
+"lat": 49.50019,
+"drom": false,
+"stations": [
+"FR05089"
+]
+},
+{
+"id": "FR06006",
+"lon": 3.52273,
+"lat": 50.36425,
+"drom": false,
+"stations": [
+"FR06006"
+]
+},
+{
+"id": "FR07053",
+"lon": 3.11159,
+"lat": 45.78043,
+"drom": false,
+"stations": [
+"FR07053"
+]
+},
+{
+"id": "FR09106",
+"lon": 0.16239,
+"lat": 45.65146,
+"drom": false,
+"stations": [
+"FR09106"
+]
+},
+{
+"id": "FR09305",
+"lon": -0.47188,
+"lat": 46.33388,
+"drom": false,
+"stations": [
+"FR09305"
+]
+},
+{
+"id": "FR09403",
+"lon": 0.34039,
+"lat": 46.59123,
+"drom": false,
+"stations": [
+"FR09403"
+]
+},
+{
+"id": "FR10030",
+"lon": 1.60591,
+"lat": 50.71703,
+"drom": false,
+"stations": [
+"FR10030"
+]
+},
+{
+"id": "FR11034",
+"lon": 3.18066,
+"lat": 50.70654,
+"drom": false,
+"stations": [
+"FR11034"
+]
+},
+{
+"id": "FR12054",
+"lon": 1.46824,
+"lat": 43.64394,
+"drom": false,
+"stations": [
+"FR12054"
+]
+},
+{
+"id": "FR12085",
+"lon": 1.4152,
+"lat": 43.61039,
+"drom": false,
+"stations": [
+"FR12085"
+]
+},
+{
+"id": "FR14011",
+"lon": 4.02306,
+"lat": 49.25073,
+"drom": false,
+"stations": [
+"FR14011"
+]
+},
+{
+"id": "FR14028",
+"lon": 3.95591,
+"lat": 49.0461,
+"drom": false,
+"stations": [
+"FR14028"
+]
+},
+{
+"id": "FR15046",
+"lon": 5.72063,
+"lat": 45.18069,
+"drom": false,
+"stations": [
+"FR15046"
+]
+},
+{
+"id": "FR15053",
+"lon": 5.74523,
+"lat": 45.15467,
+"drom": false,
+"stations": [
+"FR15053"
+]
+},
+{
+"id": "FR16034",
+"lon": 7.74498,
+"lat": 48.59043,
+"drom": false,
+"stations": [
+"FR16034",
+"FR16215"
+]
+},
+{
+"id": "FR16069",
+"lon": 7.32136,
+"lat": 47.74768,
+"drom": false,
+"stations": [
+"FR16069"
+]
+},
+{
+"id": "FR18089",
+"lon": 2.08429,
+"lat": 49.43593,
+"drom": false,
+"stations": [
+"FR18089"
+]
+},
+{
+"id": "FR19002",
+"lon": -1.66586,
+"lat": 48.10861,
+"drom": false,
+"stations": [
+"FR19002",
+"FR19007"
+]
+},
+{
+"id": "FR19037",
+"lon": -3.36938,
+"lat": 47.75895,
+"drom": false,
+"stations": [
+"FR19037"
+]
+},
+{
+"id": "FR20013",
+"lon": 4.81816,
+"lat": 45.72002,
+"drom": false,
+"stations": [
+"FR20013"
+]
+},
+{
+"id": "FR20069",
+"lon": 4.89857,
+"lat": 45.77482,
+"drom": false,
+"stations": [
+"FR20069"
+]
+},
+{
+"id": "FR20070",
+"lon": 4.84439,
+"lat": 45.74969,
+"drom": false,
+"stations": [
+"FR20070"
+]
+},
+{
+"id": "FR21039",
+"lon": -1.62472,
+"lat": 49.63389,
+"drom": false,
+"stations": [
+"FR21039"
+]
+},
+{
+"id": "FR21042",
+"lon": -0.36962,
+"lat": 49.15562,
+"drom": false,
+"stations": [
+"FR21042"
+]
+},
+{
+"id": "FR23242",
+"lon": -0.55469,
+"lat": 47.46699,
+"drom": false,
+"stations": [
+"FR23242"
+]
+},
+{
+"id": "FR23251",
+"lon": -1.56481,
+"lat": 47.23356,
+"drom": false,
+"stations": [
+"FR23251"
+]
+},
+{
+"id": "FR23252",
+"lon": -0.76699,
+"lat": 48.07104,
+"drom": false,
+"stations": [
+"FR23252"
+]
+},
+{
+"id": "FR24035",
+"lon": 7.24207,
+"lat": 43.68929,
+"drom": false,
+"stations": [
+"FR24035"
+]
+},
+{
+"id": "FR24038",
+"lon": 6.06724,
+"lat": 44.54865,
+"drom": false,
+"stations": [
+"FR24038"
+]
+},
+{
+"id": "FR25051",
+"lon": 1.07397,
+"lat": 49.91801,
+"drom": false,
+"stations": [
+"FR25051"
+]
+},
+{
+"id": "FR25053",
+"lon": 1.09884,
+"lat": 49.4367,
+"drom": false,
+"stations": [
+"FR25053"
+]
+},
+{
+"id": "FR26094",
+"lon": 5.07071,
+"lat": 47.35137,
+"drom": false,
+"stations": [
+"FR26094"
+]
+},
+{
+"id": "FR27011",
+"lon": 4.80748,
+"lat": 45.34408,
+"drom": false,
+"stations": [
+"FR27011"
+]
+},
+{
+"id": "FR29441",
+"lon": 4.38876,
+"lat": 45.44798,
+"drom": false,
+"stations": [
+"FR29441"
+]
+},
+{
+"id": "FR30026",
+"lon": 6.4839,
+"lat": 48.58482,
+"drom": false,
+"stations": [
+"FR30026"
+]
+},
+{
+"id": "FR30036",
+"lon": 6.15419,
+"lat": 48.69708,
+"drom": false,
+"stations": [
+"FR30036"
+]
+},
+{
+"id": "FR31017",
+"lon": -1.52875,
+"lat": 43.49404,
+"drom": false,
+"stations": [
+"FR31017"
+]
+},
+{
+"id": "FR31039",
+"lon": -0.35212,
+"lat": 43.31109,
+"drom": false,
+"stations": [
+"FR31039"
+]
+},
+{
+"id": "FR31040",
+"lon": 0.14269,
+"lat": 44.50878,
+"drom": false,
+"stations": [
+"FR31040"
+]
+},
+{
+"id": "FR31045",
+"lon": -0.59852,
+"lat": 44.83382,
+"drom": false,
+"stations": [
+"FR31045"
+]
+},
+{
+"id": "FR31057",
+"lon": -0.50698,
+"lat": 44.84341,
+"drom": false,
+"stations": [
+"FR31057"
+]
+},
+{
+"id": "FR31067",
+"lon": -0.65918,
+"lat": 44.85717,
+"drom": false,
+"stations": [
+"FR31067"
+]
+},
+{
+"id": "FR32001",
+"lon": 4.84732,
+"lat": 46.78231,
+"drom": false,
+"stations": [
+"FR32001"
+]
+},
+{
+"id": "FR33105",
+"lon": 5.93299,
+"lat": 45.56943,
+"drom": false,
+"stations": [
+"FR33105"
+]
+},
+{
+"id": "FR33113",
+"lon": 6.48033,
+"lat": 45.20936,
+"drom": false,
+"stations": [
+"FR33113"
+]
+},
+{
+"id": "FR33203",
+"lon": 6.11825,
+"lat": 45.9097,
+"drom": false,
+"stations": [
+"FR33203"
+]
+},
+{
+"id": "FR33232",
+"lon": 6.84583,
+"lat": 45.90722,
+"drom": false,
+"stations": [
+"FR33232"
+]
+},
+{
+"id": "FR34013",
+"lon": 1.90114,
+"lat": 47.90708,
+"drom": false,
+"stations": [
+"FR34013"
+]
+},
+{
+"id": "FR34028",
+"lon": 0.70486,
+"lat": 47.39464,
+"drom": false,
+"stations": [
+"FR34028"
+]
+},
+{
+"id": "FR34030",
+"lon": 2.40718,
+"lat": 47.07504,
+"drom": false,
+"stations": [
+"FR34030"
+]
+},
+{
+"id": "FR34047",
+"lon": 1.23364,
+"lat": 48.76089,
+"drom": false,
+"stations": [
+"FR34047"
+]
+},
+{
+"id": "FR34048",
+"lon": 1.49247,
+"lat": 48.44916,
+"drom": false,
+"stations": [
+"FR34048"
+]
+},
+{
+"id": "FR34063",
+"lon": 1.32653,
+"lat": 47.58654,
+"drom": false,
+"stations": [
+"FR34063"
+]
+},
+{
+"id": "FR34064",
+"lon": 2.74011,
+"lat": 48.00694,
+"drom": false,
+"stations": [
+"FR34064"
+]
+},
+{
+"id": "FR35010",
+"lon": 1.25477,
+"lat": 45.82997,
+"drom": false,
+"stations": [
+"FR35010"
+]
+},
+{
+"id": "FR36032",
+"lon": 4.89013,
+"lat": 44.9492,
+"drom": false,
+"stations": [
+"FR36032"
+]
+},
+{
+"id": "FR37040",
+"lon": -61.53713,
+"lat": 16.25408,
+"drom": true,
+"stations": [
+"FR37040"
+]
+},
+{
+"id": "FR38009",
+"lon": 55.61892,
+"lat": -20.91055,
+"drom": true,
+"stations": [
+"FR38009"
+]
+},
+{
+"id": "FR38018",
+"lon": 55.31383,
+"lat": -20.94981,
+"drom": true,
+"stations": [
+"FR38018"
+]
+},
+{
+"id": "FR38023",
+"lon": 55.47864,
+"lat": -21.33164,
+"drom": true,
+"stations": [
+"FR38023"
+]
+},
+{
+"id": "FR38024",
+"lon": 55.30251,
+"lat": -21.22305,
+"drom": true,
+"stations": [
+"FR38024"
+]
+},
+{
+"id": "FR38091",
+"lon": 55.33258,
+"lat": -20.92869,
+"drom": true,
+"stations": [
+"FR38091"
+]
+},
+{
+"id": "FR38098",
+"lon": 55.40306,
+"lat": -21.27707,
+"drom": true,
+"stations": [
+"FR38098"
+]
+},
+{
+"id": "FR39010",
+"lon": -61.06349,
+"lat": 14.61384,
+"drom": true,
+"stations": [
+"FR39010",
+"FR39011"
+]
+},
+{
+"id": "FR40009",
+"lon": -52.32194,
+"lat": 4.92083,
+"drom": true,
+"stations": [
+"FR40009"
+]
+},
+{
+"id": "FR41060",
+"lon": 9.44639,
+"lat": 42.70283,
+"drom": false,
+"stations": [
+"FR41060"
+]
+},
+{
+"id": "FR41073",
+"lon": 8.73936,
+"lat": 41.92997,
+"drom": false,
+"stations": [
+"FR41073"
+]
+},
+{
+"id": "FR43001",
+"lon": 45.22321,
+"lat": -12.77294,
+"drom": true,
+"stations": [
+"FR43001",
+"FR43099"
+]
+},
+{
+"id": "FR50224",
+"lon": 2.88848,
+"lat": 42.69587,
+"drom": false,
+"stations": [
+"FR50224"
+]
+},
+{
+"id": "FR50225",
+"lon": 3.82787,
+"lat": 43.61161,
+"drom": false,
+"stations": [
+"FR50225"
+]
+},
+{
+"id": "FR50227",
+"lon": 3.89572,
+"lat": 43.60883,
+"drom": false,
+"stations": [
+"FR50227"
+]
+},
+{
+"id": "FR50232",
+"lon": 4.37792,
+"lat": 43.8291,
+"drom": false,
+"stations": [
+"FR50232"
+]
+},
+{
+"id": "FR82001",
+"lon": 6.02361,
+"lat": 47.23597,
+"drom": false,
+"stations": [
+"FR82001"
+]
+},
+{
+"id": "FR82020",
+"lon": 6.85928,
+"lat": 47.64067,
+"drom": false,
+"stations": [
+"FR82020"
+]
+},
+{
+"id": "FR82070",
+"lon": 6.35972,
+"lat": 47.35129,
+"drom": false,
+"stations": [
+"FR82070"
+]
+}
+]
+}
