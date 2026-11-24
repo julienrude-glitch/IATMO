@@ -1,5 +1,5 @@
 {
-"source": "exports Geod'air (moyennes horaires validées, valeurs brutes valides pour les derniers jours), réduits par IATMO ; lignes invalides écartées",
+"source": "exports Geod'air (moyennes horaires validées, valeurs brutes valides pour les derniers jours), réduits par IATMO ; lignes invalides écartées ; version 2 (24/11/2026) : PM10 ajoutées",
 "jours": [
 "2026-10-21",
 "2026-10-22",
@@ -49,6 +49,13 @@
 "influence": "Fond",
 "zas": "ZAG METZ"
 },
+"FR01014": {
+"nom": "Pont-à-Mousson",
+"organisme": "ATMO GRAND EST",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZR GRAND-EST"
+},
 "FR01016": {
 "nom": "Atton",
 "organisme": "ATMO GRAND EST",
@@ -77,6 +84,13 @@
 "influence": "Fond",
 "zas": "ZAG METZ"
 },
+"FR01059": {
+"nom": "HAYANGE-MARSPICH",
+"organisme": "ATMO GRAND EST",
+"implantation": "Périurbaine",
+"influence": "Industrielle",
+"zas": "ZAG METZ"
+},
 "FR01064": {
 "nom": "Metz- Pont Grilles",
 "organisme": "ATMO GRAND EST",
@@ -103,6 +117,13 @@
 "organisme": "ATMO SUD",
 "implantation": "Urbaine",
 "influence": "Fond",
+"zas": "ZAG MARSEILLE-AIX"
+},
+"FR02008": {
+"nom": "Port de Bouc Leque",
+"organisme": "ATMO SUD",
+"implantation": "Urbaine",
+"influence": "Industrielle",
 "zas": "ZAG MARSEILLE-AIX"
 },
 "FR02021": {
@@ -159,6 +180,13 @@
 "organisme": "ATMO SUD",
 "implantation": "Urbaine",
 "influence": "Fond",
+"zas": "ZAG MARSEILLE-AIX"
+},
+"FR03030": {
+"nom": "GARDANNE",
+"organisme": "ATMO SUD",
+"implantation": "Périurbaine",
+"influence": "Industrielle",
 "zas": "ZAG MARSEILLE-AIX"
 },
 "FR03037": {
@@ -427,6 +455,13 @@
 "influence": "Fond",
 "zas": "ZAG PARIS"
 },
+"FR04099": {
+"nom": "NOGENT-SUR-MARNE",
+"organisme": "AIRPARIF",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG PARIS"
+},
 "FR04100": {
 "nom": "VILLEMOMBLE",
 "organisme": "AIRPARIF",
@@ -495,6 +530,13 @@
 "organisme": "AIRPARIF",
 "implantation": "Rurale régionale",
 "influence": "Fond",
+"zas": "ZR ILE-DE-FRANCE"
+},
+"FR04173": {
+"nom": "RD934 Coulommiers",
+"organisme": "AIRPARIF",
+"implantation": "Périurbaine",
+"influence": "Trafic",
 "zas": "ZR ILE-DE-FRANCE"
 },
 "FR04179": {
@@ -608,6 +650,13 @@
 "implantation": "Urbaine",
 "influence": "Fond",
 "zas": "ZAR LE-HAVRE"
+},
+"FR06001": {
+"nom": "Valenciennes Acacias",
+"organisme": "ATMO HAUTS DE FRANCE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG BLDV"
 },
 "FR06003": {
 "nom": "Douai Theuriet",
@@ -847,6 +896,13 @@
 "influence": "Trafic",
 "zas": "ZR NOUVELLE-AQUITAINE"
 },
+"FR09203": {
+"nom": "La Pallice3 LR",
+"organisme": "ATMO NOUVELLE-AQUITAINE",
+"implantation": "Urbaine",
+"influence": "Industrielle",
+"zas": "ZR NOUVELLE-AQUITAINE"
+},
 "FR09302": {
 "nom": "Zoodyssée Chizé",
 "organisme": "ATMO NOUVELLE-AQUITAINE",
@@ -889,6 +945,20 @@
 "influence": "Fond",
 "zas": "ZR NOUVELLE-AQUITAINE"
 },
+"FR10004": {
+"nom": "Malo-les-Bains",
+"organisme": "ATMO HAUTS DE FRANCE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAR COTE-D-OPALE"
+},
+"FR10012": {
+"nom": "Mardyck",
+"organisme": "ATMO HAUTS DE FRANCE",
+"implantation": "Périurbaine",
+"influence": "Industrielle",
+"zas": "ZAR COTE-D-OPALE"
+},
 "FR10016": {
 "nom": "Calais Berthelot",
 "organisme": "ATMO HAUTS DE FRANCE",
@@ -910,6 +980,13 @@
 "influence": "Fond",
 "zas": "ZAR COTE-D-OPALE"
 },
+"FR10029": {
+"nom": "Cappelle la Grande",
+"organisme": "ATMO HAUTS DE FRANCE",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAR COTE-D-OPALE"
+},
 "FR10030": {
 "nom": "Boulogne Diderot",
 "organisme": "ATMO HAUTS DE FRANCE",
@@ -922,6 +999,13 @@
 "organisme": "ATMO HAUTS DE FRANCE",
 "implantation": "Périurbaine",
 "influence": "Fond",
+"zas": "ZAR COTE-D-OPALE"
+},
+"FR10034": {
+"nom": "Grande-synthe",
+"organisme": "ATMO HAUTS DE FRANCE",
+"implantation": "Urbaine",
+"influence": "Industrielle",
 "zas": "ZAR COTE-D-OPALE"
 },
 "FR10041": {
@@ -1015,6 +1099,20 @@
 "influence": "Fond",
 "zas": "ZR OCCITANIE"
 },
+"FR12039": {
+"nom": "EISENHOWER SETMI",
+"organisme": "ATMO OCCITANIE",
+"implantation": "Urbaine",
+"influence": "Industrielle",
+"zas": "ZAG TOULOUSE"
+},
+"FR12040": {
+"nom": "CHAPITRE SETMI",
+"organisme": "ATMO OCCITANIE",
+"implantation": "Urbaine",
+"influence": "Industrielle",
+"zas": "ZAG TOULOUSE"
+},
 "FR12041": {
 "nom": "SICOVAL",
 "organisme": "ATMO OCCITANIE",
@@ -1035,6 +1133,13 @@
 "implantation": "Urbaine",
 "influence": "Industrielle",
 "zas": "ZAG TOULOUSE"
+},
+"FR12047": {
+"nom": "BESSIERES ECONOTRE",
+"organisme": "ATMO OCCITANIE",
+"implantation": "Rurale près des villes",
+"influence": "Industrielle",
+"zas": "ZR OCCITANIE"
 },
 "FR12052": {
 "nom": "Tarbes lycée Dupuy",
@@ -1351,6 +1456,13 @@
 "influence": "Fond",
 "zas": "ZR HAUTS-DE-FRANCE"
 },
+"FR18080": {
+"nom": "TRAF Saint Quent 14",
+"organisme": "ATMO HAUTS DE FRANCE",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZR HAUTS-DE-FRANCE"
+},
 "FR18089": {
 "nom": "Trafic Beauvais 1",
 "organisme": "ATMO HAUTS DE FRANCE",
@@ -1454,6 +1566,13 @@
 "organisme": "ATMO AUVERGNE-RHÔNE-ALPES",
 "implantation": "Urbaine",
 "influence": "Fond",
+"zas": "ZAG LYON"
+},
+"FR20029": {
+"nom": "FEYZIN STADE",
+"organisme": "ATMO AUVERGNE-RHÔNE-ALPES",
+"implantation": "Périurbaine",
+"influence": "Industrielle",
 "zas": "ZAG LYON"
 },
 "FR20037": {
@@ -1806,6 +1925,13 @@
 "influence": "Fond",
 "zas": "ZR PROVENCE-ALPES-COTE-D-AZUR"
 },
+"FR24021": {
+"nom": "PEILLON",
+"organisme": "ATMO SUD",
+"implantation": "Périurbaine",
+"influence": "Industrielle",
+"zas": "ZAG NICE"
+},
 "FR24033": {
 "nom": "GAP COMMANDERIE",
 "organisme": "ATMO SUD",
@@ -1847,6 +1973,13 @@
 "implantation": "Rurale régionale",
 "influence": "Fond",
 "zas": "ZR PROVENCE-ALPES-COTE-D-AZUR"
+},
+"FR25035": {
+"nom": "Gd Couronne Mairie",
+"organisme": "ATMO NORMANDIE",
+"implantation": "Urbaine",
+"influence": "Industrielle",
+"zas": "ZAG ROUEN"
 },
 "FR25039": {
 "nom": "Evreux Centre",
@@ -2023,6 +2156,13 @@
 "influence": "Fond",
 "zas": "ZAG BLDV"
 },
+"FR28033": {
+"nom": "Noeux-les-Mines",
+"organisme": "ATMO HAUTS DE FRANCE",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAG BLDV"
+},
 "FR29424": {
 "nom": "SAINT ETIENNE SUD",
 "organisme": "ATMO AUVERGNE-RHÔNE-ALPES",
@@ -2058,11 +2198,25 @@
 "influence": "Fond",
 "zas": "ZR GRAND-EST"
 },
+"FR30021": {
+"nom": "Fléville",
+"organisme": "ATMO GRAND EST",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAG NANCY"
+},
 "FR30026": {
 "nom": "Luneville",
 "organisme": "ATMO GRAND EST",
 "implantation": "Urbaine",
 "influence": "Trafic",
+"zas": "ZR GRAND-EST"
+},
+"FR30027": {
+"nom": "Frolois",
+"organisme": "ATMO GRAND EST",
+"implantation": "Urbaine",
+"influence": "Industrielle",
 "zas": "ZR GRAND-EST"
 },
 "FR30028": {
@@ -2071,6 +2225,13 @@
 "implantation": "Rurale près des villes",
 "influence": "Fond",
 "zas": "ZR GRAND-EST"
+},
+"FR30030": {
+"nom": "Neuves-Maisons",
+"organisme": "ATMO GRAND EST",
+"implantation": "Urbaine",
+"influence": "Industrielle",
+"zas": "ZAG NANCY"
 },
 "FR30032": {
 "nom": "Heming",
@@ -2174,6 +2335,13 @@
 "nom": "MOURENX",
 "organisme": "ATMO NOUVELLE-AQUITAINE",
 "implantation": "Rurale près des villes",
+"influence": "Industrielle",
+"zas": "ZR NOUVELLE-AQUITAINE"
+},
+"FR31026": {
+"nom": "TARTAS Pelletrin",
+"organisme": "ATMO NOUVELLE-AQUITAINE",
+"implantation": "Périurbaine",
 "influence": "Industrielle",
 "zas": "ZR NOUVELLE-AQUITAINE"
 },
@@ -2308,6 +2476,13 @@
 "organisme": "ATMO AUVERGNE-RHÔNE-ALPES",
 "implantation": "Urbaine",
 "influence": "Fond",
+"zas": "ZAR VALLEE-DE-LA-TARANTAISE"
+},
+"FR33122": {
+"nom": "La Léchère",
+"organisme": "ATMO AUVERGNE-RHÔNE-ALPES",
+"implantation": "Rurale près des villes",
+"influence": "Industrielle",
 "zas": "ZAR VALLEE-DE-LA-TARANTAISE"
 },
 "FR33201": {
@@ -2709,6 +2884,13 @@
 "influence": "Fond",
 "zas": "ZAR VOLCAN"
 },
+"FR38017": {
+"nom": "Grand Coude",
+"organisme": "ATMO REUNION",
+"implantation": "Rurale régionale",
+"influence": "Fond",
+"zas": "ZAR VOLCAN"
+},
 "FR38018": {
 "nom": "Centre Penitencier",
 "organisme": "ATMO REUNION",
@@ -2728,6 +2910,13 @@
 "organisme": "ATMO REUNION",
 "implantation": "Périurbaine",
 "influence": "Fond",
+"zas": "ZAR SAINT-DENIS"
+},
+"FR38022": {
+"nom": "Chaussée Royale",
+"organisme": "ATMO REUNION",
+"implantation": "Urbaine",
+"influence": "Trafic",
 "zas": "ZAR SAINT-DENIS"
 },
 "FR38023": {
@@ -2758,6 +2947,13 @@
 "influence": "Trafic",
 "zas": "ZAR VOLCAN"
 },
+"FR39008": {
+"nom": "Ville de Schoelcher",
+"organisme": "MADININAIR",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAR FORT-DE-FRANCE"
+},
 "FR39009": {
 "nom": "Lamentin",
 "organisme": "MADININAIR",
@@ -2786,6 +2982,13 @@
 "influence": "Fond",
 "zas": "ZR MARTINIQUE"
 },
+"FR39015": {
+"nom": "Fort-de-France - Hôtel de ville",
+"organisme": "MADININAIR",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAR FORT-DE-FRANCE"
+},
 "FR39016": {
 "nom": "Robert Bourg",
 "organisme": "MADININAIR",
@@ -2812,6 +3015,13 @@
 "organisme": "ATMO GUYANE",
 "implantation": "Périurbaine",
 "influence": "Fond",
+"zas": "ZAR ILE-DE-CAYENNE"
+},
+"FR40009": {
+"nom": "Cayenne-Bouchon",
+"organisme": "ATMO GUYANE",
+"implantation": "Urbaine",
+"influence": "Trafic",
 "zas": "ZAR ILE-DE-CAYENNE"
 },
 "FR40010": {
@@ -2903,6 +3113,13 @@
 "organisme": "HAWA MAYOTTE",
 "implantation": "Urbaine",
 "influence": "Fond",
+"zas": "ZR MAYOTTE"
+},
+"FR43099": {
+"nom": "Kawéni Nord",
+"organisme": "HAWA MAYOTTE",
+"implantation": "Périurbaine",
+"influence": "Trafic",
 "zas": "ZR MAYOTTE"
 },
 "FR47131": {
@@ -3038,6 +3255,13 @@
 "influence": "Industrielle",
 "zas": "ZR BOURGOGNE-FRANCHE-COMTE"
 },
+"FR82043": {
+"nom": "Châtenois",
+"organisme": "ATMO BOURGOGNE-FRANCHE-COMTE",
+"implantation": "Périurbaine",
+"influence": "Industrielle",
+"zas": "ZR BOURGOGNE-FRANCHE-COMTE"
+},
 "FR82050": {
 "nom": "Lons-le-Saunier CV",
 "organisme": "ATMO BOURGOGNE-FRANCHE-COMTE",
@@ -3059,5 +3283,47 @@
 "influence": "Trafic",
 "zas": "ZR BOURGOGNE-FRANCHE-COMTE"
 }
-}
+},
+"version": 2,
+"remplacer": [
+"2026-10-21",
+"2026-10-22",
+"2026-10-23",
+"2026-10-24",
+"2026-10-25",
+"2026-10-26",
+"2026-10-27",
+"2026-10-28",
+"2026-10-29",
+"2026-10-30",
+"2026-10-31",
+"2026-11-01",
+"2026-11-02",
+"2026-11-03",
+"2026-11-04",
+"2026-11-05",
+"2026-11-06",
+"2026-11-07",
+"2026-11-08",
+"2026-11-09",
+"2026-11-10",
+"2026-11-11",
+"2026-11-12",
+"2026-11-13",
+"2026-11-14",
+"2026-11-15",
+"2026-11-16",
+"2026-11-17",
+"2026-11-18",
+"2026-11-19",
+"2026-11-20",
+"2026-11-21"
+],
+"polluants": [
+"NO",
+"NO2",
+"NOX",
+"O3",
+"PM10"
+]
 }
