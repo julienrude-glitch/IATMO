@@ -6,9 +6,10 @@
 # Un point par groupe de stations trafic distantes de moins de 2 km (89 points), heures en temps universel.
 # Résultat : branche « historique » du dépôt, dossiers meteo/ (AROME) et meteo_era5/ (ERA5), un fichier compressé par point.
 # Quotas gratuits d'Open-Meteo (600 appels par minute, 5 000 par heure, 10 000 par jour ; une requête de plus de deux semaines
-# compte pour plusieurs appels, soit environ 100 par point pour 2023-2026) : la tâche espace les requêtes (une toutes les
-# 80 secondes, environ deux heures pour les 89 points), publie sa progression tous les 10 points et reprend là où elle s'est
-# arrêtée si on la relance. À lancer à la main : onglet Actions, « Météo historique (Open-Meteo) », « Run workflow ».
+# compte pour plusieurs appels, soit environ 100 par point pour 2023-2026) : la tâche espace les requêtes selon leur poids (80 secondes
+# pour une série complète, environ deux heures pour les 89 points), publie sa progression tous les 10 points et reprend là où elle
+# s'est arrêtée si on la relance. Une relance ne demande que les jours qui manquent à la fin des séries existantes (une minute et
+# 89 appels environ pour quelques jours) ; « Retélécharger les points déjà présents » refait les séries complètes. À lancer à la main : onglet Actions, « Météo historique (Open-Meteo) », « Run workflow ».
 # À enregistrer dans le dépôt sous le nom .github/workflows/meteo_historique.yml
 name: Météo historique (Open-Meteo)
 
@@ -67,7 +68,7 @@ jobs:
           set -euo pipefail
           cd h
           python3 - <<'PY'
-          import json, os, gzip, time, subprocess, urllib.request, urllib.parse, urllib.error, datetime as dt
+          import json, os, gzip, time, math, subprocess, urllib.request, urllib.parse, urllib.error, datetime as dt
           POINTS = [
             {"id":"FR01064","lon":6.18122,"lat":49.12508,"drom":False,"stations":["FR01064"]},
             {"id":"FR01065","lon":5.38746,"lat":49.16778,"drom":False,"stations":["FR01065"]},
@@ -165,7 +166,11 @@ jobs:
                   ["temperature_2m", "relative_humidity_2m", "precipitation", "wind_speed_10m", "wind_direction_10m", "shortwave_radiation", "cloud_cover", "boundary_layer_height"])
           debut = os.environ.get("DEBUT") or "2023-01-01"
           fin = os.environ.get("FIN") or (dt.datetime.now(dt.timezone.utc).date() - dt.timedelta(days=6 if ERA5 else 2)).isoformat()   # ERA5 : environ 5 jours de délai
-          refaire = os.environ.get("REFAIRE") == "true"; PAS = float(os.environ.get("PAS") or 80)
+          refaire = os.environ.get("REFAIRE") == "true"
+          # Rythme : Open-Meteo décompte une requête de n jours et v variables comme ⌈n / 14⌉ × ⌈v / 10⌉ appels ; 0,8 s par appel décompté
+          # garde sous 5 000 appels par heure (environ 80 s pour une série complète 2023-2026, 1 s pour un complément de quelques jours).
+          SEC = float(os.environ.get("SEC_APPEL") or 0.8)
+          def poids(d1, d2, nv): return math.ceil(((dt.date.fromisoformat(d2) - dt.date.fromisoformat(d1)).days + 1) / 14) * math.ceil(nv / 10)
           json.dump({"debut": debut, "fin": fin, "variables": VARS, "points": POINTS}, open(f"{DOS}/points.json", "w", encoding="utf-8"), ensure_ascii=False, indent=0)
           def publier(msg):
               subprocess.run(["git", "add", "-A"], check=True)
@@ -175,48 +180,69 @@ jobs:
                   if subprocess.run(["git", "push", "-q", "origin", "HEAD:refs/heads/historique"]).returncode == 0: print("publié :", msg); return
                   time.sleep(10)
               raise SystemExit("échec de la publication")
-          def obtenir(p, variables):
-              q = {"latitude": p["lat"], "longitude": p["lon"], "start_date": debut, "end_date": fin, "hourly": ",".join(variables),
+          def obtenir(p, variables, d1):
+              q = {"latitude": p["lat"], "longitude": p["lon"], "start_date": d1, "end_date": fin, "hourly": ",".join(variables),
                    "timezone": "GMT", "wind_speed_unit": "ms"}
               if not p["drom"] and not ERA5: q["models"] = "meteofrance_arome_france_hd"
               req = urllib.request.Request(API + "?" + urllib.parse.urlencode(q), headers={"User-Agent": "IATMO"})
               with urllib.request.urlopen(req, timeout=180) as r: return json.loads(r.read())
-          faits = 0; dernier = 0.0; arret = None; echecs = []; sans = {False: set(), True: set()}          # variables refusées, métropole / DROM
-          for i, p in enumerate(POINTS):
-              f = f"{DOS}/{p['id']}.json.gz"
-              if not refaire and os.path.exists(f):
-                  try:
-                      with gzip.open(f, "rt", encoding="utf-8") as g: o = json.load(g)
-                      if o.get("debut") == debut and o.get("fin", "") >= fin: continue
-                  except Exception: pass
-              variables = [v for v in VARS if v not in sans[p["drom"]]]; essais = 0; erreur = None; code = None
+          etat = {"dernier": 0.0, "pause": 0.0}
+          def telecharger(p, variables, d1):                                  # rend (réponse, erreur, code HTTP)
+              essais = 0
               while True:
-                  attente = PAS - (time.time() - dernier)
+                  attente = etat["pause"] - (time.time() - etat["dernier"])
                   if attente > 0: time.sleep(attente)
-                  dernier = time.time()
-                  try: j = obtenir(p, variables); break
+                  etat["dernier"] = time.time(); etat["pause"] = SEC * poids(d1, fin, len(variables))
+                  try: return obtenir(p, variables, d1), None, None
                   except urllib.error.HTTPError as e:
                       corps = e.read().decode("utf-8", "replace")[:300]
                       if e.code == 400 and "boundary_layer_height" in variables:
                           print(p["id"], ": couche limite indisponible pour ce modèle, abandonnée"); variables.remove("boundary_layer_height"); sans[p["drom"]].add("boundary_layer_height"); continue
                       if e.code == 429 and essais < 3: essais += 1; print(p["id"], ": quota atteint, pause de 10 minutes (", corps, ")"); time.sleep(600); continue
                       if e.code >= 500 and essais < 4: essais += 1; print(p["id"], f": erreur passagère du serveur (HTTP {e.code}), nouvel essai dans {60 * essais} s"); time.sleep(60 * essais); continue
-                      erreur = f"HTTP {e.code} {corps[:120]}"; code = e.code; break
+                      return None, f"HTTP {e.code} {corps[:120]}", e.code
                   except Exception as e:
                       if essais < 4: essais += 1; print(p["id"], ": erreur", str(e)[:120], f", nouvel essai dans {60 * essais} s"); time.sleep(60 * essais); continue
-                      erreur = str(e)[:200]; break
+                      return None, str(e)[:200], None
+          faits = 0; arret = None; echecs = []; sans = {False: set(), True: set()}          # variables refusées, métropole / DROM
+          for i, p in enumerate(POINTS):
+              f = f"{DOS}/{p['id']}.json.gz"; anc = None; d1 = debut
+              if not refaire and os.path.exists(f):
+                  try:
+                      with gzip.open(f, "rt", encoding="utf-8") as g: o = json.load(g)
+                      if o.get("debut") == debut:
+                          if o.get("fin", "") >= fin: continue
+                          # Complément : seuls les jours après la fin de la série existante sont demandés, puis ajoutés (raccord vérifié à l'heure près)
+                          if o.get("t0") and o.get("heures"): anc = o; d1 = (dt.date.fromisoformat(o["fin"]) + dt.timedelta(days=1)).isoformat()
+                  except Exception: pass
+              variables = [v for v in VARS if v not in sans[p["drom"]]]
+              if anc: variables = [v for v in variables if v in anc["valeurs"]] or variables     # mêmes variables que la série existante
+              j, erreur, code = telecharger(p, variables, d1)
+              if not erreur and anc:
+                  t = j.get("hourly", {}).get("time", [])
+                  suite = (dt.datetime.fromisoformat(anc["t0"].replace("Z", "")) + dt.timedelta(hours=anc["heures"])).strftime("%Y-%m-%dT%H:%M")
+                  if not t or t[0] != suite:
+                      print(p["id"], ": raccord impossible (", t[0] if t else "réponse vide", "au lieu de", suite, "), série complète retéléchargée")
+                      anc = None; d1 = debut; variables = [v for v in VARS if v not in sans[p["drom"]]]
+                      j, erreur, code = telecharger(p, variables, d1)
               if erreur:                                                              # point sauté : la relance le reprendra
                   echecs.append(p["id"]); print(p["id"], ": abandonné pour ce passage (", erreur, ")")
                   if code == 429: arret = f"quota épuisé à {p['id']}"; break
                   continue
               h = j.get("hourly", {}); t = h.get("time", [])
               val = {v: [None if x is None else round(x, 2) for x in h.get(v, [])] for v in variables if v in h}
+              if anc:                                                                 # série existante + complément, variable par variable
+                  na, nb = anc["heures"], len(t)
+                  val = {v: (anc["valeurs"].get(v) or [None] * na) + (val.get(v) or [None] * nb) for v in set(anc["valeurs"]) | set(val)}
+                  t0, nh = anc["t0"], na + nb
+              else: t0, nh = ((t[0] + "Z") if t else None), len(t)
               val = {v: x for v, x in val.items() if any(y is not None for y in x)}       # variables entièrement vides écartées
               sortie = {"id": p["id"], "lon": p["lon"], "lat": p["lat"], "stations": p["stations"], "drom": p["drom"],
-                        "modele": "era5 (archive best_match)" if ERA5 else ("meteofrance_arome_france_hd" if not p["drom"] else "best_match"), "grille": [j.get("longitude"), j.get("latitude"), j.get("elevation")],
-                        "debut": debut, "fin": fin, "t0": (t[0] + "Z") if t else None, "heures": len(t), "unites": j.get("hourly_units", {}), "valeurs": val}
+                        "modele": "era5 (archive best_match)" if ERA5 else ("meteofrance_arome_france_hd" if not p["drom"] else "best_match"),
+                        "grille": anc["grille"] if anc else [j.get("longitude"), j.get("latitude"), j.get("elevation")],
+                        "debut": debut, "fin": fin, "t0": t0, "heures": nh, "unites": j.get("hourly_units", {}) or (anc or {}).get("unites", {}), "valeurs": val}
               with gzip.open(f, "wt", encoding="utf-8") as g: json.dump(sortie, g, separators=(",", ":"))
-              faits += 1; print(f"{i + 1}/{len(POINTS)} {p['id']} ({', '.join(p['stations'])}) : {len(t)} heures, {len(val)} variables")
+              faits += 1; print(f"{i + 1}/{len(POINTS)} {p['id']} ({', '.join(p['stations'])}) : {nh} heures" + (f" (dont {len(t)} ajoutées)" if anc else "") + f", {len(val)} variables")
               if faits % 10 == 0: publier(f"Météo historique ({DOS}) : {faits} points de plus")
           open("LISEZMOI.txt", "w", encoding="utf-8").write(
               "Données historiques pour l'apprentissage et l'évaluation d'IATMO (tâche .github/workflows/meteo_historique.yml).\n"
