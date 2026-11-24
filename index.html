@@ -99,8 +99,13 @@
   button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
   .note{font-size:11.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:10px;margin:0}
   #ia-banner{top:14px;left:calc(50% + 150px);transform:translateX(-50%);padding:8px 14px;font-size:12.5px;
-    border-color:rgba(255,157,60,.6);display:none;text-align:center;max-width:min(680px,calc(100% - 460px))}
+    border-color:rgba(255,157,60,.6);display:none;text-align:center;max-width:calc(100% - 450px);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   #ia-banner b{color:#ffb469}
+  #ia-banner.vert{border-color:var(--accent)}
+  #ia-banner b.nm{color:var(--txt);letter-spacing:.02em}
+  #ia-banner b.nm span{color:var(--accent)}
+  body.nopan #ia-banner{left:50%;max-width:calc(100% - 140px)}
   .maplibregl-popup-content{background:#0d1b24;color:var(--txt);border:1px solid var(--line);
     border-radius:9px;padding:12px 14px;font:13px/1.45 "Segoe UI",system-ui,sans-serif;min-width:230px}
   .maplibregl-popup-tip{border-top-color:#0d1b24!important;border-bottom-color:#0d1b24!important}
@@ -356,7 +361,7 @@
 <p>La molette fait passer la carte par quatre niveaux ; seul le dernier sort de la donnée officielle.</p>
 <table><thead><tr><th>Niveau</th><th>Zoom carte</th><th>Ce qui est coloré</th><th>Origine de la couleur</th></tr></thead><tbody><tr><td>Vue nationale</td><td>jusqu'à 7</td><td>Chaque commune, sans contour</td><td>Indice ATMO officiel</td></tr><tr><td>Vue régionale</td><td>7 à 9,5</td><td>Chaque commune, limites départementales</td><td>Indice ATMO officiel</td></tr><tr><td>Commune</td><td>9,5 à 12</td><td>Chaque commune, avec contours et noms</td><td>Indice ATMO officiel</td></tr><tr><td>Quartier</td><td>au-delà de 12</td><td>Rendu lissé ou mailles carrées, d'une résolution d'environ 280 m affinée jusqu'à 20 m</td><td>Estimation IATMO</td></tr></tbody></table>
 <p>Règles d'interface :</p>
-<ul><li>Un clic sur une commune donne l'indice, les cinq sous-indices (NO₂, O₃, PM₁₀, PM₂,₅, SO₂) et l'AASQA productrice. La fiche est hiérarchisée : la classe en tête, puis le polluant responsable, les sous-indices et l'estimation au point, enfin un volet replié « Détails du calcul » (méthode, station la plus proche, incertitude), qui reste ouvert d'un clic à l'autre une fois ouvert.</li><li>Au niveau quartier, un bandeau permanent signale qu'il s'agit d'une estimation et non de l'indice officiel. Le contour de la commune reste visible.</li><li>La transition commune → quartier est un fondu, pour que l'on voie de quelle valeur communale part l'estimation.</li><li>L'estimation peut être désactivée : la carte reste alors à la commune à tous les zooms.</li></ul>
+<ul><li>Un clic sur une commune donne l'indice, les cinq sous-indices (NO₂, O₃, PM₁₀, PM₂,₅, SO₂) et l'AASQA productrice. La fiche est hiérarchisée : la classe en tête, puis le polluant responsable, les sous-indices et l'estimation au point, enfin un volet replié « Détails du calcul » (méthode, station la plus proche, incertitude), qui reste ouvert d'un clic à l'autre une fois ouvert.</li><li>En haut de la carte, un bandeau d'une ligne rappelle ce qui est affiché : contour vert pour l'indice officiel des AASQA (onglet Indice actuel) et pour le fond krigé (onglet IATMO), contour orange pour les rendus simulés ou fictifs. Au niveau quartier, il signale qu'il s'agit d'une estimation et non de l'indice officiel ; le contour de la commune reste visible.</li><li>La transition commune → quartier est un fondu, pour que l'on voie de quelle valeur communale part l'estimation.</li><li>L'estimation peut être désactivée : la carte reste alors à la commune à tous les zooms.</li></ul>
 <p>Commandes d'IATMO :</p>
 <ul><li><b>Recherche</b> d'une commune ou d'une adresse, qui centre la carte sur le lieu.</li><li><b>Aujourd'hui ou demain</b> : les deux échéances du flux Atmo Data ; le choix est masqué dans l'onglet IATMO, qui ne contient que les mesures du jour.</li><li><b>Indice actuel ou aperçu 2027</b> (onglet Aperçu 2027 masqué depuis le 24 novembre ; son calcul est conservé) : l'aperçu ajoute un curseur horaire, une animation des 24 heures, ou la pire heure de la journée, et classe des concentrations simulées avec la grille européenne révisée en 2025.</li><li><b>Onglet IATMO</b> (nommé « Geod'air » jusqu'au 24 novembre, d'après la source de ses mesures) : carte des concentrations de fond krigées à partir des mesures horaires des stations de fond, classées avec la grille européenne, avec animation des heures et estimation de l'incertitude (§ 7).</li><li><b>Indice ou polluant</b> : NO₂, O₃, PM₁₀ ou PM₂,₅, à la commune comme au quartier.</li><li><b>Vignettes des DROM</b> en vue nationale, avec la mention « Indice non diffusé » quand le flux ne couvre pas le territoire.</li><li><b>Rendu lissé ou en mailles</b> au niveau quartier.</li><li><b>Options</b> (menu replié par défaut) : estimation sous la commune, règle de cohérence avec l'indice communal (case à cocher, puis percentile 90 ou maximum des mailles ; décochée, aucune contrainte), rendu lissé, axes routiers (avec les points de comptage du trafic : blancs pour Bison Futé, jaune orangé pour les capteurs de la Ville de Paris), effet routier modulé et trafic réel (§ 5 et § 6).</li><li><b>Méthodologie</b> : ce cahier des charges, suivi de la note méthodologique détaillant les sources, les calculs et les règles de cohérence. Elle se termine par un lien de téléchargement de la note méthodologique de synthèse, au format PDF.</li><li><b>Évaluation</b> : indicateurs de qualité des calculs, sur les mesures du jour et, pour 7 et 30 jours, sur l'historique (§ 8).</li>
 <li><b>Sources</b> : producteur, licence, branchement et fréquence d'actualisation de chaque donnée, avec l'état de lecture depuis l'ouverture de la page.</li><li><b>Légende</b> : quand un polluant est sélectionné, bornes de chaque classe en µg/m³ (grille 2020 pour l'indice actuel, grille européenne pour l'aperçu 2027 et l'onglet IATMO). À l'échelle du quartier, une seconde légende nomme les points de comptage du trafic présents à l'écran.</li><li><b>Copier le lien de cette vue</b> : adresse qui rouvre la vue affichée (lieu, zoom, onglet, polluant, heure). Fond satellite et opacité de la couche d'indice fixes (60 %) ; le panneau n'a plus de rubriques « Échelle affichée » ni « Réglages » depuis le 18 novembre. Le bouton ◀ masque le panneau pour montrer la carte en plein écran.</li><li><b>Smartphone</b> : sur un écran tactile étroit (téléphone, en vertical comme en horizontal), la page passe d'elle-même en affichage smartphone : barre du haut avec la recherche et l'état du flux, carte en plein écran, légende en bas, fiche au clic remontée au-dessus du point, bandeau d'avertissement abrégé ; le panneau devient un tiroir ouvert par le bouton « Menu », qui se referme au choix d'une ville ou d'un onglet, et au passage à l'onglet IATMO (ou à l'Aperçu 2027, masqué) ; dans ces vues, le curseur horaire, le bouton de lecture de l'animation et sa vitesse sont posés sur une barre au-dessus de la légende, pour voir la carte s'animer ; Méthodologie, Évaluation et Sources s'ouvrent en plein écran, tableaux défilant à l'horizontale. Les vignettes des DROM laissent la place aux boutons « Outre-mer ». C'est la même page : rien à déposer en plus. Un lien en bas du tiroir rouvre la version ordinateur ; sur ordinateur, l'adresse terminée par <code>?vue=mobile</code> montre l'affichage smartphone (et <code>?vue=ordinateur</code> l'inverse).</li><li><b>Barre de chargement</b> au centre de la carte à l'ouverture : lecture de l'indice ATMO des AASQA du jour, puis des prévisions Prev'air.</li></ul>
@@ -3460,10 +3465,19 @@ function updateScale(){
   if(lvl===3) msg.push("<b>Estimation IATMO simulée</b> — le rendu fin illustre le principe de la descente d'échelle ; ce n'est pas l'indice ATMO officiel.");
   if(state.mode==="cas") msg.push("<b>Cas typique fictif</b> — "+esc(CAS[state.cas].nom)+" : concentrations construites autour des seuils réglementaires, sans lien avec une situation observée.");
   if(state.view==="2027") msg.push("<b>Aperçu 2027 simulé</b> — concentrations horaires fictives, déduites de l'indice du jour et classées avec la grille européenne.");
-  if(ge) msg = ["<b>IATMO</b> — fond krigé à partir des stations urbaines et périurbaines de fond et des stations rurales"+
-    (GEO.sim ? " ; <b>stations fictives</b>, faute de fichiers lus." : " ; mesures temps réel non validées.")+" Ce n'est pas l'indice ATMO."];
-  if(MOBILE){ msg = []; if(ge) msg.push("<b>IATMO</b> · "+(GEO.sim ? "stations fictives" : "mesures non validées")); else if(lvl===3) msg.push("<b>Estimation simulée</b> sous la commune"); if(state.view==="2027" && !ge) msg.push("<b>Aperçu 2027 simulé</b>"); if(state.mode==="cas") msg.push("<b>Cas fictif</b>"); }
-  ban.innerHTML = msg.join(MOBILE?" · ":"<br>"); ban.style.display = msg.length ? "block" : "none";
+  // Bandeau d'une ligne, à contour vert pour l'onglet IATMO et pour l'indice officiel ; orange pour les rendus simulés ou fictifs
+  var vert = false, court = "", NOM = '<b class="nm"><span>IA</span>TMO</b>';            // court : version abrégée si la fenêtre est étroite
+  if(state.mode==="simulation" && !ge) msg.push("<b>Valeurs fictives</b> — le flux Atmo Data n'a pas pu être lu ; ce n'est pas l'indice ATMO.");
+  if(!msg.length && !ge && state.view==="actuel" && state.mode==="reel"){ vert = true;
+    msg.push('<b class="nm">Indice ATMO</b> — '+(state.day ? "prévision officielle des AASQA pour demain, pour chaque commune, affichée sans recalcul."
+      : "indice journalier officiel publié par les AASQA pour chaque commune, affiché sans recalcul."));
+    court = '<b class="nm">Indice ATMO</b> — '+(state.day ? "prévision officielle des AASQA, sans recalcul." : "indice officiel des AASQA, sans recalcul."); }
+  if(ge){ vert = true; msg = [NOM+" — fond krigé à partir des stations de fond urbaines, périurbaines et rurales ; "+
+    (GEO.sim ? "<b>stations fictives</b>, faute de fichiers lus." : "mesures temps réel.")+" Ce n'est pas l'indice ATMO."];
+    court = NOM+" — fond krigé"+(GEO.sim ? ", <b>stations fictives</b>" : ", mesures temps réel")+". Ce n'est pas l'indice ATMO."; }
+  if(MOBILE){ msg = []; vert = ge; court = ""; if(ge) msg.push(NOM+" · "+(GEO.sim ? "<b>stations fictives</b>" : "mesures temps réel")); else if(lvl===3) msg.push("<b>Estimation simulée</b> sous la commune"); if(state.view==="2027" && !ge) msg.push("<b>Aperçu 2027 simulé</b>"); if(state.mode==="cas") msg.push("<b>Cas fictif</b>"); }
+  ban.innerHTML = msg.join(MOBILE?" · ":"<br>"); ban.classList.toggle("vert",vert); ban.style.display = msg.length ? "block" : "none";
+  if(msg.length) bandeauAjuste(ban, msg.length===1 ? court : "");
   document.getElementById("insets").className = z<7 ? "" : "off";
   document.getElementById("geoBox").style.display = ge ? "block" : "none";
   document.getElementById("segDay").style.display = ge ? "none" : "";          // Geod'air : mesures du jour seulement
@@ -3481,6 +3495,15 @@ function updateScale(){
     ? "Indice horaire, grille européenne révisée en 2025. Libellés officiels français à arbitrer."
     : "Indice journalier en vigueur (arrêté du 10 juillet 2020).";
 }
+/* Le bandeau tient sur une ligne : la police descend par demi-points (jusqu'à 10,5 px) si le texte dépasse la largeur disponible */
+function bandeauAjuste(ban,court){
+  if(court!==undefined){ ban.__long = ban.innerHTML; ban.__court = court || ""; } else if(ban.__long!=null) ban.innerHTML = ban.__long;
+  var f = MOBILE ? 11.5 : 12.5, trop = function(){ return ban.scrollWidth > ban.clientWidth + 1; }; ban.style.fontSize = "";
+  while(trop() && f > 10.5){ f -= 0.5; ban.style.fontSize = f+"px"; }
+  if(trop() && ban.__court){ ban.innerHTML = ban.__court; f = MOBILE ? 11.5 : 12.5; ban.style.fontSize = "";   // fenêtre étroite : version abrégée
+    while(trop() && f > 10.5){ f -= 0.5; ban.style.fontSize = f+"px"; } }
+}
+window.addEventListener("resize",function(){ var b = document.getElementById("ia-banner"); if(b && b.style.display!=="none") bandeauAjuste(b); });
 function sw(q){ return '<span class="mini" style="background:'+(CLASSES[q]?CLASSES[q].col:"#667")+'"></span>'; }
 /* Fiche au clic, en trois niveaux : la classe et le polluant responsable, les sous-indices, puis un volet replié
    « Détails du calcul ». Le volet reste ouvert d'un clic à l'autre si l'utilisateur l'a ouvert. */
