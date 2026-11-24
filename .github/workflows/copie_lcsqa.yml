@@ -172,6 +172,8 @@ jobs:
                   e = aj.setdefault(h, {"t": t, "n": 0, "tn": t, "org": {}})
                   if len(d["st"]) > e["n"]: e["n"] = len(d["st"]); e["tn"] = t
                   for o in d["org"]: e["org"].setdefault(o, t)
+          # Jours écartés : le 23/11/2026, la branche de données recréée vers 16 h 30 a enregistré à 16 h 33 toutes les heures déjà publiées
+          for jx in ("2026-11-23",): arr.pop(jx, None)
           arr = {j: arr[j] for j in sorted(arr)[-30:]}
           json.dump(arr, open(fa, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
           print("suivi LCSQA :", len(arr.get(jour, {})), "heures vues aujourd'hui")
