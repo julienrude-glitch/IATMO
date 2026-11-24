@@ -1,0 +1,3351 @@
+{
+"source": "exports Geod'air (moyennes horaires validées, valeurs brutes valides pour les derniers jours), réduits par IATMO ; lignes invalides écartées ; version 3 (24/11/2026) : PM10 et PM2,5 ajoutées",
+"jours": [
+"2026-10-21",
+"2026-10-22",
+"2026-10-23",
+"2026-10-24",
+"2026-10-25",
+"2026-10-26",
+"2026-10-27",
+"2026-10-28",
+"2026-10-29",
+"2026-10-30",
+"2026-10-31",
+"2026-11-01",
+"2026-11-02",
+"2026-11-03",
+"2026-11-04",
+"2026-11-05",
+"2026-11-06",
+"2026-11-07",
+"2026-11-08",
+"2026-11-09",
+"2026-11-10",
+"2026-11-11",
+"2026-11-12",
+"2026-11-13",
+"2026-11-14",
+"2026-11-15",
+"2026-11-16",
+"2026-11-17",
+"2026-11-18",
+"2026-11-19",
+"2026-11-20",
+"2026-11-21"
+],
+"stations": {
+"FR01011": {
+"nom": "Metz-Centre",
+"organisme": "ATMO GRAND EST",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG METZ"
+},
+"FR01012": {
+"nom": "Metz-Borny",
+"organisme": "ATMO GRAND EST",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG METZ"
+},
+"FR01014": {
+"nom": "Pont-à-Mousson",
+"organisme": "ATMO GRAND EST",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZR GRAND-EST"
+},
+"FR01016": {
+"nom": "Atton",
+"organisme": "ATMO GRAND EST",
+"implantation": "Rurale près des villes",
+"influence": "Industrielle",
+"zas": "ZR GRAND-EST"
+},
+"FR01018": {
+"nom": "Scy-Chazelles",
+"organisme": "ATMO GRAND EST",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAG METZ"
+},
+"FR01020": {
+"nom": "Thionville-Centre",
+"organisme": "ATMO GRAND EST",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG METZ"
+},
+"FR01021": {
+"nom": "Thionville-Garche",
+"organisme": "ATMO GRAND EST",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAG METZ"
+},
+"FR01059": {
+"nom": "HAYANGE-MARSPICH",
+"organisme": "ATMO GRAND EST",
+"implantation": "Périurbaine",
+"influence": "Industrielle",
+"zas": "ZAG METZ"
+},
+"FR01064": {
+"nom": "Metz- Pont Grilles",
+"organisme": "ATMO GRAND EST",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZAG METZ"
+},
+"FR01065": {
+"nom": "Belleville sur Meuse",
+"organisme": "ATMO GRAND EST",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZR GRAND-EST"
+},
+"FR02001": {
+"nom": "Berre l'Etang",
+"organisme": "ATMO SUD",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAG MARSEILLE-AIX"
+},
+"FR02004": {
+"nom": "Martigues P. Central",
+"organisme": "ATMO SUD",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG MARSEILLE-AIX"
+},
+"FR02008": {
+"nom": "Port de Bouc Leque",
+"organisme": "ATMO SUD",
+"implantation": "Urbaine",
+"influence": "Industrielle",
+"zas": "ZAG MARSEILLE-AIX"
+},
+"FR02013": {
+"nom": "Fos Les Carabins",
+"organisme": "ATMO SUD",
+"implantation": "Périurbaine",
+"influence": "Industrielle",
+"zas": "ZAG MARSEILLE-AIX"
+},
+"FR02020": {
+"nom": "Rognac les Brets",
+"organisme": "ATMO SUD",
+"implantation": "Périurbaine",
+"influence": "Industrielle",
+"zas": "ZAG MARSEILLE-AIX"
+},
+"FR02021": {
+"nom": "Sausset les Pins",
+"organisme": "ATMO SUD",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAG MARSEILLE-AIX"
+},
+"FR02022": {
+"nom": "Arles",
+"organisme": "ATMO SUD",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZR PROVENCE-ALPES-COTE-D-AZUR"
+},
+"FR02041": {
+"nom": "SALON",
+"organisme": "ATMO SUD",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG MARSEILLE-AIX"
+},
+"FR02043": {
+"nom": "Marignane",
+"organisme": "ATMO SUD",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG MARSEILLE-AIX"
+},
+"FR03014": {
+"nom": "MARSEILLE ST LOUIS",
+"organisme": "ATMO SUD",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG MARSEILLE-AIX"
+},
+"FR03021": {
+"nom": "AIX ROY RENE",
+"organisme": "ATMO SUD",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZAG MARSEILLE-AIX"
+},
+"FR03027": {
+"nom": "PLAN AUPS/STE  BAUME",
+"organisme": "ATMO SUD",
+"implantation": "Rurale près des villes",
+"influence": "Fond",
+"zas": "ZR PROVENCE-ALPES-COTE-D-AZUR"
+},
+"FR03029": {
+"nom": "AIX CENTRE ECOLE ART",
+"organisme": "ATMO SUD",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG MARSEILLE-AIX"
+},
+"FR03030": {
+"nom": "GARDANNE",
+"organisme": "ATMO SUD",
+"implantation": "Périurbaine",
+"influence": "Industrielle",
+"zas": "ZAG MARSEILLE-AIX"
+},
+"FR03037": {
+"nom": "VALLEE HUVEAUNE",
+"organisme": "ATMO SUD",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAG MARSEILLE-AIX"
+},
+"FR03043": {
+"nom": "MARSEILLE 5 AVENUES",
+"organisme": "ATMO SUD",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG MARSEILLE-AIX"
+},
+"FR03044": {
+"nom": "MARSEILLE PLOMBIERES 2",
+"organisme": "ATMO SUD",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZAG MARSEILLE-AIX"
+},
+"FR03048": {
+"nom": "AIX PLATANES",
+"organisme": "ATMO SUD",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAG MARSEILLE-AIX"
+},
+"FR03064": {
+"nom": "LA VALETTE/LA GARDE",
+"organisme": "ATMO SUD",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAG TOULON"
+},
+"FR03068": {
+"nom": "TOULON FOCH",
+"organisme": "ATMO SUD",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZAG TOULON"
+},
+"FR03070": {
+"nom": "ESTEREL",
+"organisme": "ATMO SUD",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZR PROVENCE-ALPES-COTE-D-AZUR"
+},
+"FR03071": {
+"nom": "TOULON CLARET",
+"organisme": "ATMO SUD",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG TOULON"
+},
+"FR03080": {
+"nom": "AVIGNON   MAIRIE",
+"organisme": "ATMO SUD",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG AVIGNON"
+},
+"FR03084": {
+"nom": "LE PONTET",
+"organisme": "ATMO SUD",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAG AVIGNON"
+},
+"FR03086": {
+"nom": "APT",
+"organisme": "ATMO SUD",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZR PROVENCE-ALPES-COTE-D-AZUR"
+},
+"FR03088": {
+"nom": "CARPENTRAS",
+"organisme": "ATMO SUD",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAG AVIGNON"
+},
+"FR03091": {
+"nom": "Avignon Rocade De Gaulle",
+"organisme": "ATMO SUD",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZAG AVIGNON"
+},
+"FR04002": {
+"nom": "GENNEVILLIERS",
+"organisme": "AIRPARIF",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG PARIS"
+},
+"FR04004": {
+"nom": "PARIS 18eme",
+"organisme": "AIRPARIF",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG PARIS"
+},
+"FR04012": {
+"nom": "Place Victor Basch",
+"organisme": "AIRPARIF",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZAG PARIS"
+},
+"FR04014": {
+"nom": "PARIS 12eme",
+"organisme": "AIRPARIF",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG PARIS"
+},
+"FR04017": {
+"nom": "NEUILLY-SUR-SEINE",
+"organisme": "AIRPARIF",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG PARIS"
+},
+"FR04018": {
+"nom": "AUBERVILLIERS",
+"organisme": "AIRPARIF",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG PARIS"
+},
+"FR04023": {
+"nom": "CERGY-PONTOISE",
+"organisme": "AIRPARIF",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG PARIS"
+},
+"FR04024": {
+"nom": "GONESSE",
+"organisme": "AIRPARIF",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAG PARIS"
+},
+"FR04029": {
+"nom": "VERSAILLES",
+"organisme": "AIRPARIF",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAG PARIS"
+},
+"FR04031": {
+"nom": "Av Champs Elysees",
+"organisme": "AIRPARIF",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZAG PARIS"
+},
+"FR04034": {
+"nom": "VITRY-SUR-SEINE",
+"organisme": "AIRPARIF",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG PARIS"
+},
+"FR04037": {
+"nom": "PARIS 13eme",
+"organisme": "AIRPARIF",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG PARIS"
+},
+"FR04038": {
+"nom": "Zone Rurale SO",
+"organisme": "AIRPARIF",
+"implantation": "Rurale régionale",
+"influence": "Fond",
+"zas": "ZR ILE-DE-FRANCE"
+},
+"FR04048": {
+"nom": "Zone Rurale Nord",
+"organisme": "AIRPARIF",
+"implantation": "Rurale régionale",
+"influence": "Fond",
+"zas": "ZR ILE-DE-FRANCE"
+},
+"FR04049": {
+"nom": "LES ULIS",
+"organisme": "AIRPARIF",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAG PARIS"
+},
+"FR04051": {
+"nom": "ARGENTEUIL",
+"organisme": "AIRPARIF",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG PARIS"
+},
+"FR04055": {
+"nom": "PARIS 1er Les Halles",
+"organisme": "AIRPARIF",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG PARIS"
+},
+"FR04058": {
+"nom": "Auto A1 -Saint-Denis",
+"organisme": "AIRPARIF",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZAG PARIS"
+},
+"FR04059": {
+"nom": "SAINT-DENIS",
+"organisme": "AIRPARIF",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG PARIS"
+},
+"FR04060": {
+"nom": "PARIS 7eme",
+"organisme": "AIRPARIF",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG PARIS"
+},
+"FR04063": {
+"nom": "MANTES-LA-JOLIE",
+"organisme": "AIRPARIF",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAG PARIS"
+},
+"FR04066": {
+"nom": "Zone rurale Sud",
+"organisme": "AIRPARIF",
+"implantation": "Rurale régionale",
+"influence": "Fond",
+"zas": "ZR ILE-DE-FRANCE"
+},
+"FR04069": {
+"nom": "MELUN",
+"organisme": "AIRPARIF",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAG PARIS"
+},
+"FR04071": {
+"nom": "Rue Bonaparte",
+"organisme": "AIRPARIF",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZAG PARIS"
+},
+"FR04098": {
+"nom": "LOGNES",
+"organisme": "AIRPARIF",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG PARIS"
+},
+"FR04099": {
+"nom": "NOGENT-SUR-MARNE",
+"organisme": "AIRPARIF",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG PARIS"
+},
+"FR04100": {
+"nom": "VILLEMOMBLE",
+"organisme": "AIRPARIF",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG PARIS"
+},
+"FR04101": {
+"nom": "CHAMPIGNY-SUR-MARNE",
+"organisme": "AIRPARIF",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG PARIS"
+},
+"FR04118": {
+"nom": "Place de l'Opéra",
+"organisme": "AIRPARIF",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZAG PARIS"
+},
+"FR04131": {
+"nom": "Boulevard Haussmann",
+"organisme": "AIRPARIF",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZAG PARIS"
+},
+"FR04141": {
+"nom": "Quai des Celestins",
+"organisme": "AIRPARIF",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZAG PARIS"
+},
+"FR04142": {
+"nom": "Zone Rurale Nord-Est",
+"organisme": "AIRPARIF",
+"implantation": "Rurale régionale",
+"influence": "Fond",
+"zas": "ZR ILE-DE-FRANCE"
+},
+"FR04149": {
+"nom": "MONTGERON",
+"organisme": "AIRPARIF",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG PARIS"
+},
+"FR04150": {
+"nom": "LA DEFENSE",
+"organisme": "AIRPARIF",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG PARIS"
+},
+"FR04156": {
+"nom": "BOBIGNY",
+"organisme": "AIRPARIF",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG PARIS"
+},
+"FR04158": {
+"nom": "Zone Rurale NO",
+"organisme": "AIRPARIF",
+"implantation": "Rurale régionale",
+"influence": "Fond",
+"zas": "ZR ILE-DE-FRANCE"
+},
+"FR04173": {
+"nom": "RD934 Coulommiers",
+"organisme": "AIRPARIF",
+"implantation": "Périurbaine",
+"influence": "Trafic",
+"zas": "ZR ILE-DE-FRANCE"
+},
+"FR04179": {
+"nom": "PARIS Stade Lenglen",
+"organisme": "AIRPARIF",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG PARIS"
+},
+"FR04180": {
+"nom": "RN20 - MONTLHERY",
+"organisme": "AIRPARIF",
+"implantation": "Périurbaine",
+"influence": "Trafic",
+"zas": "ZAG PARIS"
+},
+"FR04181": {
+"nom": "RAMBOUILLET",
+"organisme": "AIRPARIF",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZR ILE-DE-FRANCE"
+},
+"FR04319": {
+"nom": "TREMBLAY-EN-FRANCE",
+"organisme": "AIRPARIF",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAG PARIS"
+},
+"FR04323": {
+"nom": "EVRY",
+"organisme": "AIRPARIF",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG PARIS"
+},
+"FR04324": {
+"nom": "Zone Rurale Est",
+"organisme": "AIRPARIF",
+"implantation": "Rurale régionale",
+"influence": "Fond",
+"zas": "ZR ILE-DE-FRANCE"
+},
+"FR04328": {
+"nom": "Zone Rurale SE",
+"organisme": "AIRPARIF",
+"implantation": "Rurale régionale",
+"influence": "Fond",
+"zas": "ZR ILE-DE-FRANCE"
+},
+"FR04329": {
+"nom": "Bld peripherique Est",
+"organisme": "AIRPARIF",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZAG PARIS"
+},
+"FR05040": {
+"nom": "Honfleur Sce Tech.",
+"organisme": "ATMO NORMANDIE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZR NORMANDIE"
+},
+"FR05080": {
+"nom": "Rogerville Mairie",
+"organisme": "ATMO NORMANDIE",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAR LE-HAVRE"
+},
+"FR05082": {
+"nom": "Touques",
+"organisme": "ATMO NORMANDIE",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZR NORMANDIE"
+},
+"FR05083": {
+"nom": "Gonfreville l Orcher",
+"organisme": "ATMO NORMANDIE",
+"implantation": "Urbaine",
+"influence": "Industrielle",
+"zas": "ZAR LE-HAVRE"
+},
+"FR05084": {
+"nom": "NDGravenchon Pasteur",
+"organisme": "ATMO NORMANDIE",
+"implantation": "Urbaine",
+"influence": "Industrielle",
+"zas": "ZAR LE-HAVRE"
+},
+"FR05087": {
+"nom": "Maison Parc Brotonne",
+"organisme": "ATMO NORMANDIE",
+"implantation": "Rurale régionale",
+"influence": "Fond",
+"zas": "ZR NORMANDIE"
+},
+"FR05089": {
+"nom": "Le Havre Lafaurie-montant",
+"organisme": "ATMO NORMANDIE",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZAR LE-HAVRE"
+},
+"FR05090": {
+"nom": "Le Havre ville-haute",
+"organisme": "ATMO NORMANDIE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAR LE-HAVRE"
+},
+"FR06001": {
+"nom": "Valenciennes Acacias",
+"organisme": "ATMO HAUTS DE FRANCE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG BLDV"
+},
+"FR06003": {
+"nom": "Douai Theuriet",
+"organisme": "ATMO HAUTS DE FRANCE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG BLDV"
+},
+"FR06006": {
+"nom": "Valenciennes Wallon",
+"organisme": "ATMO HAUTS DE FRANCE",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZAG BLDV"
+},
+"FR06011": {
+"nom": "Denain Villars",
+"organisme": "ATMO HAUTS DE FRANCE",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAG BLDV"
+},
+"FR06133": {
+"nom": "Cartignies",
+"organisme": "ATMO HAUTS DE FRANCE",
+"implantation": "Rurale près des villes",
+"influence": "Fond",
+"zas": "ZR HAUTS-DE-FRANCE"
+},
+"FR07004": {
+"nom": "Montferrand",
+"organisme": "ATMO AUVERGNE-RHÔNE-ALPES",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG CLERMONT-FERRAND"
+},
+"FR07022": {
+"nom": "Paray le Fresil",
+"organisme": "ATMO AUVERGNE-RHÔNE-ALPES",
+"implantation": "Rurale régionale",
+"influence": "Fond",
+"zas": "ZR AUVERGNE-RHONE-ALPES"
+},
+"FR07031": {
+"nom": "Rageade",
+"organisme": "ATMO AUVERGNE-RHÔNE-ALPES",
+"implantation": "Rurale régionale",
+"influence": "Fond",
+"zas": "ZR AUVERGNE-RHONE-ALPES"
+},
+"FR07051": {
+"nom": "Beaulieu",
+"organisme": "ATMO AUVERGNE-RHÔNE-ALPES",
+"implantation": "Périurbaine",
+"influence": "Industrielle",
+"zas": "ZAG CLERMONT-FERRAND"
+},
+"FR07052": {
+"nom": "Aurillac-Lagarde",
+"organisme": "ATMO AUVERGNE-RHÔNE-ALPES",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZR AUVERGNE-RHONE-ALPES"
+},
+"FR07053": {
+"nom": "Edouard Michelin",
+"organisme": "ATMO AUVERGNE-RHÔNE-ALPES",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZAG CLERMONT-FERRAND"
+},
+"FR07054": {
+"nom": "Le Puy-Causans",
+"organisme": "ATMO AUVERGNE-RHÔNE-ALPES",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZR AUVERGNE-RHONE-ALPES"
+},
+"FR07056": {
+"nom": "Pays du Mezenc",
+"organisme": "ATMO AUVERGNE-RHÔNE-ALPES",
+"implantation": "Rurale régionale",
+"influence": "Fond",
+"zas": "ZR AUVERGNE-RHONE-ALPES"
+},
+"FR07057": {
+"nom": "Moulins Centre",
+"organisme": "ATMO AUVERGNE-RHÔNE-ALPES",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZR AUVERGNE-RHONE-ALPES"
+},
+"FR07058": {
+"nom": "Montluçon",
+"organisme": "ATMO AUVERGNE-RHÔNE-ALPES",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZR AUVERGNE-RHONE-ALPES"
+},
+"FR07059": {
+"nom": "Vichy",
+"organisme": "ATMO AUVERGNE-RHÔNE-ALPES",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZR AUVERGNE-RHONE-ALPES"
+},
+"FR07060": {
+"nom": "Royat Périurbaine",
+"organisme": "ATMO AUVERGNE-RHÔNE-ALPES",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAG CLERMONT-FERRAND"
+},
+"FR07061": {
+"nom": "Riom Périurbaine",
+"organisme": "ATMO AUVERGNE-RHÔNE-ALPES",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAG CLERMONT-FERRAND"
+},
+"FR08003": {
+"nom": "Montpellier Chaptal",
+"organisme": "ATMO OCCITANIE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG MONTPELLIER"
+},
+"FR08016": {
+"nom": "Montpellier Prés d'Arènes",
+"organisme": "ATMO OCCITANIE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG MONTPELLIER"
+},
+"FR08017": {
+"nom": "Montpellier Périurbaine Sud (Lattes)",
+"organisme": "ATMO OCCITANIE",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAG MONTPELLIER"
+},
+"FR08018": {
+"nom": "Montpellier St Gely",
+"organisme": "ATMO OCCITANIE",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAG MONTPELLIER"
+},
+"FR08020": {
+"nom": "Lunel Viel",
+"organisme": "ATMO OCCITANIE",
+"implantation": "Périurbaine",
+"influence": "Industrielle",
+"zas": "ZR OCCITANIE"
+},
+"FR08022": {
+"nom": "Agathois-piscénois",
+"organisme": "ATMO OCCITANIE",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZR OCCITANIE"
+},
+"FR08023": {
+"nom": "Biterrois-Narbonnais",
+"organisme": "ATMO OCCITANIE",
+"implantation": "Rurale régionale",
+"influence": "Fond",
+"zas": "ZR OCCITANIE"
+},
+"FR08209": {
+"nom": "Gard Rhodanien2",
+"organisme": "ATMO OCCITANIE",
+"implantation": "Rurale près des villes",
+"influence": "Fond",
+"zas": "ZR OCCITANIE"
+},
+"FR08614": {
+"nom": "Nimes Gauzy",
+"organisme": "ATMO OCCITANIE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAR NIMES"
+},
+"FR08617": {
+"nom": "Nimes La Calmette",
+"organisme": "ATMO OCCITANIE",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAR NIMES"
+},
+"FR08712": {
+"nom": "Perpignan St Esteve",
+"organisme": "ATMO OCCITANIE",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAR PERPIGNAN"
+},
+"FR08714": {
+"nom": "Perpignan Les Carmes",
+"organisme": "ATMO OCCITANIE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAR PERPIGNAN"
+},
+"FR09003": {
+"nom": "place de VERDUN",
+"organisme": "ATMO NOUVELLE-AQUITAINE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZR NOUVELLE-AQUITAINE"
+},
+"FR09008": {
+"nom": "Aytré",
+"organisme": "ATMO NOUVELLE-AQUITAINE",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZR NOUVELLE-AQUITAINE"
+},
+"FR09015": {
+"nom": "Les Couronneries",
+"organisme": "ATMO NOUVELLE-AQUITAINE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZR NOUVELLE-AQUITAINE"
+},
+"FR09103": {
+"nom": "Square Pablo Casals",
+"organisme": "ATMO NOUVELLE-AQUITAINE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZR NOUVELLE-AQUITAINE"
+},
+"FR09106": {
+"nom": "ANGOULEME-GAMBETTA",
+"organisme": "ATMO NOUVELLE-AQUITAINE",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZR NOUVELLE-AQUITAINE"
+},
+"FR09203": {
+"nom": "La Pallice3 LR",
+"organisme": "ATMO NOUVELLE-AQUITAINE",
+"implantation": "Urbaine",
+"influence": "Industrielle",
+"zas": "ZR NOUVELLE-AQUITAINE"
+},
+"FR09302": {
+"nom": "Zoodyssée Chizé",
+"organisme": "ATMO NOUVELLE-AQUITAINE",
+"implantation": "Rurale régionale",
+"influence": "Fond",
+"zas": "ZR NOUVELLE-AQUITAINE"
+},
+"FR09303": {
+"nom": "Niort Venise",
+"organisme": "ATMO NOUVELLE-AQUITAINE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZR NOUVELLE-AQUITAINE"
+},
+"FR09304": {
+"nom": "AIRVAULT - Stade Laillé",
+"organisme": "ATMO NOUVELLE-AQUITAINE",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZR NOUVELLE-AQUITAINE"
+},
+"FR09305": {
+"nom": "Niort - Tassigny",
+"organisme": "ATMO NOUVELLE-AQUITAINE",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZR NOUVELLE-AQUITAINE"
+},
+"FR09403": {
+"nom": "Poitiers-Le Nain",
+"organisme": "ATMO NOUVELLE-AQUITAINE",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZR NOUVELLE-AQUITAINE"
+},
+"FR09404": {
+"nom": "Poitiers Centre  Augouard",
+"organisme": "ATMO NOUVELLE-AQUITAINE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZR NOUVELLE-AQUITAINE"
+},
+"FR10004": {
+"nom": "Malo-les-Bains",
+"organisme": "ATMO HAUTS DE FRANCE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAR COTE-D-OPALE"
+},
+"FR10012": {
+"nom": "Mardyck",
+"organisme": "ATMO HAUTS DE FRANCE",
+"implantation": "Périurbaine",
+"influence": "Industrielle",
+"zas": "ZAR COTE-D-OPALE"
+},
+"FR10016": {
+"nom": "Calais Berthelot",
+"organisme": "ATMO HAUTS DE FRANCE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAR COTE-D-OPALE"
+},
+"FR10017": {
+"nom": "St Pol mer - cheminots",
+"organisme": "ATMO HAUTS DE FRANCE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAR COTE-D-OPALE"
+},
+"FR10025": {
+"nom": "Sangatte",
+"organisme": "ATMO HAUTS DE FRANCE",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAR COTE-D-OPALE"
+},
+"FR10029": {
+"nom": "Cappelle la Grande",
+"organisme": "ATMO HAUTS DE FRANCE",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAR COTE-D-OPALE"
+},
+"FR10030": {
+"nom": "Boulogne Diderot",
+"organisme": "ATMO HAUTS DE FRANCE",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZAR COTE-D-OPALE"
+},
+"FR10032": {
+"nom": "Outreau",
+"organisme": "ATMO HAUTS DE FRANCE",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAR COTE-D-OPALE"
+},
+"FR10034": {
+"nom": "Grande-synthe",
+"organisme": "ATMO HAUTS DE FRANCE",
+"implantation": "Urbaine",
+"influence": "Industrielle",
+"zas": "ZAR COTE-D-OPALE"
+},
+"FR10041": {
+"nom": "St Omer Ribot",
+"organisme": "ATMO HAUTS DE FRANCE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAR COTE-D-OPALE"
+},
+"FR10132": {
+"nom": "Campagne les B.",
+"organisme": "ATMO HAUTS DE FRANCE",
+"implantation": "Rurale régionale",
+"influence": "Fond",
+"zas": "ZR HAUTS-DE-FRANCE"
+},
+"FR11026": {
+"nom": "Halluin stade",
+"organisme": "ATMO HAUTS DE FRANCE",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAG LILLE"
+},
+"FR11034": {
+"nom": "Roubaix Serres",
+"organisme": "ATMO HAUTS DE FRANCE",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZAG LILLE"
+},
+"FR11038": {
+"nom": "Tourcoing Houpline",
+"organisme": "ATMO HAUTS DE FRANCE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG LILLE"
+},
+"FR11114": {
+"nom": "Wattignies",
+"organisme": "ATMO HAUTS DE FRANCE",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAG LILLE"
+},
+"FR12004": {
+"nom": "Toulouse école m. Jacquier",
+"organisme": "ATMO OCCITANIE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG TOULOUSE"
+},
+"FR12020": {
+"nom": "Peyrusse Vieille",
+"organisme": "ATMO OCCITANIE",
+"implantation": "Rurale nationale",
+"influence": "Fond",
+"zas": "ZR OCCITANIE"
+},
+"FR12021": {
+"nom": "Toulouse Mazades",
+"organisme": "ATMO OCCITANIE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG TOULOUSE"
+},
+"FR12026": {
+"nom": "Albi Delmas",
+"organisme": "ATMO OCCITANIE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZR OCCITANIE"
+},
+"FR12029": {
+"nom": "GAUDONVILLE",
+"organisme": "ATMO OCCITANIE",
+"implantation": "Rurale régionale",
+"influence": "Fond",
+"zas": "ZR OCCITANIE"
+},
+"FR12030": {
+"nom": "Toulouse Berthelot",
+"organisme": "ATMO OCCITANIE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG TOULOUSE"
+},
+"FR12031": {
+"nom": "BELESTA EN LAURAGAIS",
+"organisme": "ATMO OCCITANIE",
+"implantation": "Rurale régionale",
+"influence": "Fond",
+"zas": "ZR OCCITANIE"
+},
+"FR12039": {
+"nom": "EISENHOWER SETMI",
+"organisme": "ATMO OCCITANIE",
+"implantation": "Urbaine",
+"influence": "Industrielle",
+"zas": "ZAG TOULOUSE"
+},
+"FR12040": {
+"nom": "CHAPITRE SETMI",
+"organisme": "ATMO OCCITANIE",
+"implantation": "Urbaine",
+"influence": "Industrielle",
+"zas": "ZAG TOULOUSE"
+},
+"FR12041": {
+"nom": "SICOVAL",
+"organisme": "ATMO OCCITANIE",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAG TOULOUSE"
+},
+"FR12042": {
+"nom": "Lourdes Lapaca",
+"organisme": "ATMO OCCITANIE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZR OCCITANIE"
+},
+"FR12044": {
+"nom": "Toulouse - Aéroport Blagnac côté trafic",
+"organisme": "ATMO OCCITANIE",
+"implantation": "Urbaine",
+"influence": "Industrielle",
+"zas": "ZAG TOULOUSE"
+},
+"FR12047": {
+"nom": "BESSIERES ECONOTRE",
+"organisme": "ATMO OCCITANIE",
+"implantation": "Rurale près des villes",
+"influence": "Industrielle",
+"zas": "ZR OCCITANIE"
+},
+"FR12052": {
+"nom": "Tarbes lycée Dupuy",
+"organisme": "ATMO OCCITANIE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZR OCCITANIE"
+},
+"FR12053": {
+"nom": "Castres stadeTravet",
+"organisme": "ATMO OCCITANIE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZR OCCITANIE"
+},
+"FR12054": {
+"nom": "Toulouse Rte Albi",
+"organisme": "ATMO OCCITANIE",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZAG TOULOUSE"
+},
+"FR12085": {
+"nom": "Toulouse Port de l'Embouchure",
+"organisme": "ATMO OCCITANIE",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZAG TOULOUSE"
+},
+"FR12095": {
+"nom": "Rodez Camonil",
+"organisme": "ATMO OCCITANIE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZR OCCITANIE"
+},
+"FR14008": {
+"nom": "REVIN",
+"organisme": "ATMO GRAND EST",
+"implantation": "Rurale nationale",
+"influence": "Fond",
+"zas": "ZR GRAND-EST"
+},
+"FR14010": {
+"nom": "BETHENY",
+"organisme": "ATMO GRAND EST",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAR REIMS"
+},
+"FR14011": {
+"nom": "DOUMER",
+"organisme": "ATMO GRAND EST",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZAR REIMS"
+},
+"FR14012": {
+"nom": "Jean d Aulan",
+"organisme": "ATMO GRAND EST",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAR REIMS"
+},
+"FR14022": {
+"nom": "CHALONS",
+"organisme": "ATMO GRAND EST",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZR GRAND-EST"
+},
+"FR14028": {
+"nom": "Rempart Perrier",
+"organisme": "ATMO GRAND EST",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZR GRAND-EST"
+},
+"FR14031": {
+"nom": "Troyes La Tour ",
+"organisme": "ATMO GRAND EST",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZR GRAND-EST"
+},
+"FR14032": {
+"nom": "ST PARRES AUX TERTRE",
+"organisme": "ATMO GRAND EST",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZR GRAND-EST"
+},
+"FR14033": {
+"nom": "STE SAVINE",
+"organisme": "ATMO GRAND EST",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZR GRAND-EST"
+},
+"FR14042": {
+"nom": "St DIZIER L. Michel",
+"organisme": "ATMO GRAND EST",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZR GRAND-EST"
+},
+"FR14051": {
+"nom": "CHARLEVILLE",
+"organisme": "ATMO GRAND EST",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZR GRAND-EST"
+},
+"FR15013": {
+"nom": "Champ sur Drac",
+"organisme": "ATMO AUVERGNE-RHÔNE-ALPES",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAG GRENOBLE"
+},
+"FR15018": {
+"nom": "Voiron Urbain",
+"organisme": "ATMO AUVERGNE-RHÔNE-ALPES",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG GRENOBLE"
+},
+"FR15031": {
+"nom": "Le Casset2",
+"organisme": "ATMO AUVERGNE-RHÔNE-ALPES",
+"implantation": "Rurale nationale",
+"influence": "Fond",
+"zas": "ZR PROVENCE-ALPES-COTE-D-AZUR"
+},
+"FR15038": {
+"nom": "St Martin d'Heres",
+"organisme": "ATMO AUVERGNE-RHÔNE-ALPES",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG GRENOBLE"
+},
+"FR15043": {
+"nom": "Grenoble Les Frenes",
+"organisme": "ATMO AUVERGNE-RHÔNE-ALPES",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG GRENOBLE"
+},
+"FR15045": {
+"nom": "Grenoble PeriurbSud",
+"organisme": "ATMO AUVERGNE-RHÔNE-ALPES",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAG GRENOBLE"
+},
+"FR15046": {
+"nom": "Grenoble Boulevards",
+"organisme": "ATMO AUVERGNE-RHÔNE-ALPES",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZAG GRENOBLE"
+},
+"FR15048": {
+"nom": "Gresivaudan Periurb",
+"organisme": "ATMO AUVERGNE-RHÔNE-ALPES",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAG GRENOBLE"
+},
+"FR15053": {
+"nom": "Rocade Sud Eybens",
+"organisme": "ATMO AUVERGNE-RHÔNE-ALPES",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZAG GRENOBLE"
+},
+"FR16017": {
+"nom": "Nord-Est Alsace",
+"organisme": "ATMO GRAND EST",
+"implantation": "Rurale régionale",
+"influence": "Fond",
+"zas": "ZR GRAND-EST"
+},
+"FR16029": {
+"nom": "Strasbourg Nord",
+"organisme": "ATMO GRAND EST",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG STRASBOURG"
+},
+"FR16031": {
+"nom": "Vosges du Nord",
+"organisme": "ATMO GRAND EST",
+"implantation": "Rurale régionale",
+"influence": "Fond",
+"zas": "ZR GRAND-EST"
+},
+"FR16034": {
+"nom": "Strasbourg Clemenceau",
+"organisme": "ATMO GRAND EST",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZAG STRASBOURG"
+},
+"FR16041": {
+"nom": "Strasbourg Sud 2",
+"organisme": "ATMO GRAND EST",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAG STRASBOURG"
+},
+"FR16054": {
+"nom": "Colmar Centre",
+"organisme": "ATMO GRAND EST",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZR GRAND-EST"
+},
+"FR16060": {
+"nom": "C.C.3 Frontières",
+"organisme": "ATMO GRAND EST",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZR GRAND-EST"
+},
+"FR16064": {
+"nom": "Colmar Sud",
+"organisme": "ATMO GRAND EST",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZR GRAND-EST"
+},
+"FR16065": {
+"nom": "Mulhouse Est",
+"organisme": "ATMO GRAND EST",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZR GRAND-EST"
+},
+"FR16066": {
+"nom": "Mulhouse Sud 2",
+"organisme": "ATMO GRAND EST",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZR GRAND-EST"
+},
+"FR16069": {
+"nom": "Mulhouse-Briand",
+"organisme": "ATMO GRAND EST",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZR GRAND-EST"
+},
+"FR16215": {
+"nom": "Strasbourg A35 Remparts",
+"organisme": "ATMO GRAND EST",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZAG STRASBOURG"
+},
+"FR16302": {
+"nom": "Donon Vosges Moyennes 2",
+"organisme": "ATMO GRAND EST",
+"implantation": "Rurale nationale",
+"influence": "Fond",
+"zas": "ZR GRAND-EST"
+},
+"FR18035": {
+"nom": "Salouel",
+"organisme": "ATMO HAUTS DE FRANCE",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAR AMIENS"
+},
+"FR18039": {
+"nom": "Arrest",
+"organisme": "ATMO HAUTS DE FRANCE",
+"implantation": "Rurale régionale",
+"influence": "Fond",
+"zas": "ZR HAUTS-DE-FRANCE"
+},
+"FR18042": {
+"nom": "P. Roth St Quentin",
+"organisme": "ATMO HAUTS DE FRANCE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZR HAUTS-DE-FRANCE"
+},
+"FR18043": {
+"nom": "Faiencerie Creil",
+"organisme": "ATMO HAUTS DE FRANCE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAR CREIL"
+},
+"FR18053": {
+"nom": "St Pierre Amiens",
+"organisme": "ATMO HAUTS DE FRANCE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAR AMIENS"
+},
+"FR18057": {
+"nom": "Neuilly-Saint-Front",
+"organisme": "ATMO HAUTS DE FRANCE",
+"implantation": "Rurale régionale",
+"influence": "Fond",
+"zas": "ZR HAUTS-DE-FRANCE"
+},
+"FR18058": {
+"nom": "Gaudechart",
+"organisme": "ATMO HAUTS DE FRANCE",
+"implantation": "Rurale régionale",
+"influence": "Fond",
+"zas": "ZR HAUTS-DE-FRANCE"
+},
+"FR18079": {
+"nom": "TRAFIC AMIENS",
+"organisme": "ATMO HAUTS DE FRANCE",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZAR AMIENS"
+},
+"FR18080": {
+"nom": "TRAF Saint Quent 14",
+"organisme": "ATMO HAUTS DE FRANCE",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZR HAUTS-DE-FRANCE"
+},
+"FR18089": {
+"nom": "Trafic Beauvais 1",
+"organisme": "ATMO HAUTS DE FRANCE",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZR HAUTS-DE-FRANCE"
+},
+"FR19002": {
+"nom": "Rennes Laennec",
+"organisme": "AIR BREIZH",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZAG RENNES"
+},
+"FR19007": {
+"nom": "Rennes Les Halles",
+"organisme": "AIR BREIZH",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZAG RENNES"
+},
+"FR19012": {
+"nom": "Brest Mace",
+"organisme": "AIR BREIZH",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAR BREST"
+},
+"FR19016": {
+"nom": "BREST Plouzané",
+"organisme": "AIR BREIZH",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAR BREST"
+},
+"FR19018": {
+"nom": "MORDELLES BELLAIS",
+"organisme": "AIR BREIZH",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAG RENNES"
+},
+"FR19020": {
+"nom": "Kergoff",
+"organisme": "AIR BREIZH",
+"implantation": "Rurale nationale",
+"influence": "Fond",
+"zas": "ZR BRETAGNE"
+},
+"FR19032": {
+"nom": "Lorient B. Bissonnet",
+"organisme": "AIR BREIZH",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZR BRETAGNE"
+},
+"FR19033": {
+"nom": "Vannes UTA",
+"organisme": "AIR BREIZH",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZR BRETAGNE"
+},
+"FR19037": {
+"nom": "Lorient Normandie",
+"organisme": "AIR BREIZH",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZR BRETAGNE"
+},
+"FR19039": {
+"nom": "Rennes Thabor",
+"organisme": "AIR BREIZH",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG RENNES"
+},
+"FR19053": {
+"nom": "Quimper Zola",
+"organisme": "AIR BREIZH",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZR BRETAGNE"
+},
+"FR19082": {
+"nom": "StMalo Rocabey",
+"organisme": "AIR BREIZH",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZR BRETAGNE"
+},
+"FR20013": {
+"nom": "A7 SUD LYONNAIS",
+"organisme": "ATMO AUVERGNE-RHÔNE-ALPES",
+"implantation": "Périurbaine",
+"influence": "Trafic",
+"zas": "ZAG LYON"
+},
+"FR20017": {
+"nom": "GERLAND",
+"organisme": "ATMO AUVERGNE-RHÔNE-ALPES",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG LYON"
+},
+"FR20029": {
+"nom": "FEYZIN STADE",
+"organisme": "ATMO AUVERGNE-RHÔNE-ALPES",
+"implantation": "Périurbaine",
+"influence": "Industrielle",
+"zas": "ZAG LYON"
+},
+"FR20037": {
+"nom": "TERNAY",
+"organisme": "ATMO AUVERGNE-RHÔNE-ALPES",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAG LYON"
+},
+"FR20046": {
+"nom": "VAULX EN VELIN",
+"organisme": "ATMO AUVERGNE-RHÔNE-ALPES",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG LYON"
+},
+"FR20047": {
+"nom": "COTIERE AIN",
+"organisme": "ATMO AUVERGNE-RHÔNE-ALPES",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAG LYON"
+},
+"FR20048": {
+"nom": "SAINT EXUPERY",
+"organisme": "ATMO AUVERGNE-RHÔNE-ALPES",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAG LYON"
+},
+"FR20049": {
+"nom": "HAUT BEAUJOLAIS",
+"organisme": "ATMO AUVERGNE-RHÔNE-ALPES",
+"implantation": "Rurale près des villes",
+"influence": "Fond",
+"zas": "ZR AUVERGNE-RHONE-ALPES"
+},
+"FR20062": {
+"nom": "LYON Centre",
+"organisme": "ATMO AUVERGNE-RHÔNE-ALPES",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG LYON"
+},
+"FR20069": {
+"nom": "Lyon Périphérique",
+"organisme": "ATMO AUVERGNE-RHÔNE-ALPES",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZAG LYON"
+},
+"FR20070": {
+"nom": "LYON TRAFIC JAURES",
+"organisme": "ATMO AUVERGNE-RHÔNE-ALPES",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZAG LYON"
+},
+"FR20077": {
+"nom": "Villefranche Centre ",
+"organisme": "ATMO AUVERGNE-RHÔNE-ALPES",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG LYON"
+},
+"FR21001": {
+"nom": "Caen Chemin-Vert",
+"organisme": "ATMO NORMANDIE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAR CAEN"
+},
+"FR21019": {
+"nom": "IFS Caen sud",
+"organisme": "ATMO NORMANDIE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAR CAEN"
+},
+"FR21031": {
+"nom": "Alençon Météo-France",
+"organisme": "ATMO NORMANDIE",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZR NORMANDIE"
+},
+"FR21038": {
+"nom": "Cherbourg Hotel de Ville",
+"organisme": "ATMO NORMANDIE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZR NORMANDIE"
+},
+"FR21039": {
+"nom": "Cherbourg PMF",
+"organisme": "ATMO NORMANDIE",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZR NORMANDIE"
+},
+"FR21040": {
+"nom": "Saint-Lô Eglise",
+"organisme": "ATMO NORMANDIE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZR NORMANDIE"
+},
+"FR21041": {
+"nom": "Ouistreham Baie de l Orne",
+"organisme": "ATMO NORMANDIE",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAR CAEN"
+},
+"FR21042": {
+"nom": "Caen Fleury ",
+"organisme": "ATMO NORMANDIE",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZAR CAEN"
+},
+"FR21050": {
+"nom": "La Coulonche MERA",
+"organisme": "ATMO NORMANDIE",
+"implantation": "Rurale nationale",
+"influence": "Fond",
+"zas": "ZR NORMANDIE"
+},
+"FR22009": {
+"nom": "Ecole de Carling(9)",
+"organisme": "ATMO GRAND EST",
+"implantation": "Périurbaine",
+"influence": "Industrielle",
+"zas": "ZR GRAND-EST"
+},
+"FR22054": {
+"nom": "Station de FORBACH",
+"organisme": "ATMO GRAND EST",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZR GRAND-EST"
+},
+"FR23003": {
+"nom": "LA MEGRETAIS",
+"organisme": "AIR PAYS DE LA LOIRE",
+"implantation": "Périurbaine",
+"influence": "Industrielle",
+"zas": "ZAG NANTES-SAINT-NAZAIRE"
+},
+"FR23068": {
+"nom": "FROSSAY",
+"organisme": "AIR PAYS DE LA LOIRE",
+"implantation": "Rurale près des villes",
+"influence": "Fond",
+"zas": "ZR PAYS-DE-LA-LOIRE"
+},
+"FR23070": {
+"nom": "S ETIENNE DE MONTLUC",
+"organisme": "AIR PAYS DE LA LOIRE",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAG NANTES-SAINT-NAZAIRE"
+},
+"FR23075": {
+"nom": "JULES VERNE",
+"organisme": "AIR PAYS DE LA LOIRE",
+"implantation": "Périurbaine",
+"influence": "Industrielle",
+"zas": "ZAG NANTES-SAINT-NAZAIRE"
+},
+"FR23078": {
+"nom": "SAINT EXUPERY",
+"organisme": "AIR PAYS DE LA LOIRE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZR PAYS-DE-LA-LOIRE"
+},
+"FR23110": {
+"nom": "LEON BLUM",
+"organisme": "AIR PAYS DE LA LOIRE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG NANTES-SAINT-NAZAIRE"
+},
+"FR23120": {
+"nom": "BEAUX ARTS",
+"organisme": "AIR PAYS DE LA LOIRE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAR ANGERS-LOIRE"
+},
+"FR23123": {
+"nom": "MAZAGRAN",
+"organisme": "AIR PAYS DE LA LOIRE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAR LAVAL"
+},
+"FR23124": {
+"nom": "LA TARDIERE",
+"organisme": "AIR PAYS DE LA LOIRE",
+"implantation": "Rurale nationale",
+"influence": "Fond",
+"zas": "ZR PAYS-DE-LA-LOIRE"
+},
+"FR23150": {
+"nom": "APPENTIS",
+"organisme": "AIR PAYS DE LA LOIRE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAR ANGERS-LOIRE"
+},
+"FR23152": {
+"nom": "DELACROIX",
+"organisme": "AIR PAYS DE LA LOIRE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZR PAYS-DE-LA-LOIRE"
+},
+"FR23157": {
+"nom": "EPINETTES",
+"organisme": "AIR PAYS DE LA LOIRE",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAG NANTES-SAINT-NAZAIRE"
+},
+"FR23163": {
+"nom": "Fillé",
+"organisme": "AIR PAYS DE LA LOIRE",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZR PAYS-DE-LA-LOIRE"
+},
+"FR23174": {
+"nom": "GUEDOU",
+"organisme": "AIR PAYS DE LA LOIRE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAR LE-MANS"
+},
+"FR23175": {
+"nom": "CLOS DES BEAUVAIS",
+"organisme": "AIR PAYS DE LA LOIRE",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAR ANGERS-LOIRE"
+},
+"FR23177": {
+"nom": "SAINT-DENIS D'ANJOU",
+"organisme": "AIR PAYS DE LA LOIRE",
+"implantation": "Rurale régionale",
+"influence": "Fond",
+"zas": "ZR PAYS-DE-LA-LOIRE"
+},
+"FR23178": {
+"nom": "PARSCAU DU PLESSIS",
+"organisme": "AIR PAYS DE LA LOIRE",
+"implantation": "Périurbaine",
+"influence": "Industrielle",
+"zas": "ZAG NANTES-SAINT-NAZAIRE"
+},
+"FR23181": {
+"nom": "PARC PAYSAGER",
+"organisme": "AIR PAYS DE LA LOIRE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG NANTES-SAINT-NAZAIRE"
+},
+"FR23182": {
+"nom": "SOURCES",
+"organisme": "AIR PAYS DE LA LOIRE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAR LE-MANS"
+},
+"FR23188": {
+"nom": "CIM BOUTEILLERIE",
+"organisme": "AIR PAYS DE LA LOIRE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG NANTES-SAINT-NAZAIRE"
+},
+"FR23230": {
+"nom": "GASPARD",
+"organisme": "AIR PAYS DE LA LOIRE",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAG NANTES-SAINT-NAZAIRE"
+},
+"FR23239": {
+"nom": "LA CHABOSSIERE",
+"organisme": "AIR PAYS DE LA LOIRE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG NANTES-SAINT-NAZAIRE"
+},
+"FR23242": {
+"nom": "BD DU ROI RENE",
+"organisme": "AIR PAYS DE LA LOIRE",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZAR ANGERS-LOIRE"
+},
+"FR23249": {
+"nom": "LA CAME",
+"organisme": "AIR PAYS DE LA LOIRE",
+"implantation": "Périurbaine",
+"influence": "Industrielle",
+"zas": "ZAG NANTES-SAINT-NAZAIRE"
+},
+"FR23251": {
+"nom": "FRERES GONCOURT",
+"organisme": "AIR PAYS DE LA LOIRE",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZAG NANTES-SAINT-NAZAIRE"
+},
+"FR23252": {
+"nom": "LA PAIX",
+"organisme": "AIR PAYS DE LA LOIRE",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZAR LAVAL"
+},
+"FR24007": {
+"nom": "ANTIBES JEAN MOULIN",
+"organisme": "ATMO SUD",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAG NICE"
+},
+"FR24009": {
+"nom": "CANNES BROUSSAILLES",
+"organisme": "ATMO SUD",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG NICE"
+},
+"FR24011": {
+"nom": "NICE OUEST BOTANIQUE",
+"organisme": "ATMO SUD",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAG NICE"
+},
+"FR24014": {
+"nom": "CIANS",
+"organisme": "ATMO SUD",
+"implantation": "Rurale régionale",
+"influence": "Fond",
+"zas": "ZR PROVENCE-ALPES-COTE-D-AZUR"
+},
+"FR24021": {
+"nom": "PEILLON",
+"organisme": "ATMO SUD",
+"implantation": "Périurbaine",
+"influence": "Industrielle",
+"zas": "ZAG NICE"
+},
+"FR24033": {
+"nom": "GAP COMMANDERIE",
+"organisme": "ATMO SUD",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZR PROVENCE-ALPES-COTE-D-AZUR"
+},
+"FR24035": {
+"nom": "NICE PROMENADE",
+"organisme": "ATMO SUD",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZAG NICE"
+},
+"FR24036": {
+"nom": "NICE ARSON",
+"organisme": "ATMO SUD",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG NICE"
+},
+"FR24038": {
+"nom": "GAP JEAN JAURES",
+"organisme": "ATMO SUD",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZR PROVENCE-ALPES-COTE-D-AZUR"
+},
+"FR24039": {
+"nom": "Obs Haute-Provence",
+"organisme": "ATMO SUD",
+"implantation": "Rurale près des villes",
+"influence": "Fond",
+"zas": "ZR PROVENCE-ALPES-COTE-D-AZUR"
+},
+"FR24040": {
+"nom": "Cheiron",
+"organisme": "ATMO SUD",
+"implantation": "Rurale régionale",
+"influence": "Fond",
+"zas": "ZR PROVENCE-ALPES-COTE-D-AZUR"
+},
+"FR25035": {
+"nom": "Gd Couronne Mairie",
+"organisme": "ATMO NORMANDIE",
+"implantation": "Urbaine",
+"influence": "Industrielle",
+"zas": "ZAG ROUEN"
+},
+"FR25039": {
+"nom": "Evreux Centre",
+"organisme": "ATMO NORMANDIE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZR NORMANDIE"
+},
+"FR25040": {
+"nom": "Mesnil Esnard",
+"organisme": "ATMO NORMANDIE",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAG ROUEN"
+},
+"FR25043": {
+"nom": "Centre Hospitalier",
+"organisme": "ATMO NORMANDIE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG ROUEN"
+},
+"FR25048": {
+"nom": "Petit Quevilly",
+"organisme": "ATMO NORMANDIE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG ROUEN"
+},
+"FR25049": {
+"nom": "Base loisirs Poses",
+"organisme": "ATMO NORMANDIE",
+"implantation": "Rurale près des villes",
+"influence": "Fond",
+"zas": "ZR NORMANDIE"
+},
+"FR25050": {
+"nom": "Bures-en-bray",
+"organisme": "ATMO NORMANDIE",
+"implantation": "Rurale régionale",
+"influence": "Fond",
+"zas": "ZR NORMANDIE"
+},
+"FR25051": {
+"nom": "Dieppe prox-auto",
+"organisme": "ATMO NORMANDIE",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZR NORMANDIE"
+},
+"FR25053": {
+"nom": "Rouen Proxi Quai de Paris",
+"organisme": "ATMO NORMANDIE",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZAG ROUEN"
+},
+"FR25055": {
+"nom": "Dieppe Golf",
+"organisme": "ATMO NORMANDIE",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZR NORMANDIE"
+},
+"FR26005": {
+"nom": "Dijon Péjoces",
+"organisme": "ATMO BOURGOGNE-FRANCHE-COMTE",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAR DIJON"
+},
+"FR26012": {
+"nom": "Morvan",
+"organisme": "ATMO BOURGOGNE-FRANCHE-COMTE",
+"implantation": "Rurale nationale",
+"influence": "Fond",
+"zas": "ZR BOURGOGNE-FRANCHE-COMTE"
+},
+"FR26014": {
+"nom": "Dijon Trémouille",
+"organisme": "ATMO BOURGOGNE-FRANCHE-COMTE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAR DIJON"
+},
+"FR26016": {
+"nom": "Sens",
+"organisme": "ATMO BOURGOGNE-FRANCHE-COMTE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZR BOURGOGNE-FRANCHE-COMTE"
+},
+"FR26017": {
+"nom": "Nevers",
+"organisme": "ATMO BOURGOGNE-FRANCHE-COMTE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZR BOURGOGNE-FRANCHE-COMTE"
+},
+"FR26019": {
+"nom": "Auxerre",
+"organisme": "ATMO BOURGOGNE-FRANCHE-COMTE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZR BOURGOGNE-FRANCHE-COMTE"
+},
+"FR26094": {
+"nom": "Dijon Ardennes",
+"organisme": "ATMO BOURGOGNE-FRANCHE-COMTE",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZAR DIJON"
+},
+"FR27002": {
+"nom": "ROUSSILLON",
+"organisme": "ATMO AUVERGNE-RHÔNE-ALPES",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAR VALLEE-DU-RHONE"
+},
+"FR27003": {
+"nom": "ROCHES DE CONDRIEU",
+"organisme": "ATMO AUVERGNE-RHÔNE-ALPES",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZR AUVERGNE-RHONE-ALPES"
+},
+"FR27005": {
+"nom": "Sablons",
+"organisme": "ATMO AUVERGNE-RHÔNE-ALPES",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAR VALLEE-DU-RHONE"
+},
+"FR27007": {
+"nom": "Bourgoin-Jallieu",
+"organisme": "ATMO AUVERGNE-RHÔNE-ALPES",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG LYON"
+},
+"FR27010": {
+"nom": "Plateau de Bonnevaux",
+"organisme": "ATMO AUVERGNE-RHÔNE-ALPES",
+"implantation": "Rurale régionale",
+"influence": "Fond",
+"zas": "ZR AUVERGNE-RHONE-ALPES"
+},
+"FR27011": {
+"nom": "A7 Salaise Ouest",
+"organisme": "ATMO AUVERGNE-RHÔNE-ALPES",
+"implantation": "Périurbaine",
+"influence": "Trafic",
+"zas": "ZAR VALLEE-DU-RHONE"
+},
+"FR28010": {
+"nom": "Harnes Serres",
+"organisme": "ATMO HAUTS DE FRANCE",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAG BLDV"
+},
+"FR28022": {
+"nom": "St-Laurent-Blangy",
+"organisme": "ATMO HAUTS DE FRANCE",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAR ARRAS"
+},
+"FR28028": {
+"nom": "Bethune Stade",
+"organisme": "ATMO HAUTS DE FRANCE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG BLDV"
+},
+"FR28033": {
+"nom": "Noeux-les-Mines",
+"organisme": "ATMO HAUTS DE FRANCE",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAG BLDV"
+},
+"FR29424": {
+"nom": "SAINT ETIENNE SUD",
+"organisme": "ATMO AUVERGNE-RHÔNE-ALPES",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG SAINT-ETIENNE"
+},
+"FR29426": {
+"nom": "SAINT-CHAMOND",
+"organisme": "ATMO AUVERGNE-RHÔNE-ALPES",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG SAINT-ETIENNE"
+},
+"FR29439": {
+"nom": "LA TALAUDIERE",
+"organisme": "ATMO AUVERGNE-RHÔNE-ALPES",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAG SAINT-ETIENNE"
+},
+"FR29441": {
+"nom": "ST ETIENNE BD URBAIN ",
+"organisme": "ATMO AUVERGNE-RHÔNE-ALPES",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZAG SAINT-ETIENNE"
+},
+"FR30019": {
+"nom": "Epinal",
+"organisme": "ATMO GRAND EST",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZR GRAND-EST"
+},
+"FR30021": {
+"nom": "Fléville",
+"organisme": "ATMO GRAND EST",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAG NANCY"
+},
+"FR30026": {
+"nom": "Luneville",
+"organisme": "ATMO GRAND EST",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZR GRAND-EST"
+},
+"FR30027": {
+"nom": "Frolois",
+"organisme": "ATMO GRAND EST",
+"implantation": "Urbaine",
+"influence": "Industrielle",
+"zas": "ZR GRAND-EST"
+},
+"FR30028": {
+"nom": "Schlucht",
+"organisme": "ATMO GRAND EST",
+"implantation": "Rurale près des villes",
+"influence": "Fond",
+"zas": "ZR GRAND-EST"
+},
+"FR30030": {
+"nom": "Neuves-Maisons",
+"organisme": "ATMO GRAND EST",
+"implantation": "Urbaine",
+"influence": "Industrielle",
+"zas": "ZAG NANCY"
+},
+"FR30032": {
+"nom": "Heming",
+"organisme": "ATMO GRAND EST",
+"implantation": "Rurale près des villes",
+"influence": "Industrielle",
+"zas": "ZR GRAND-EST"
+},
+"FR30033": {
+"nom": "Jonville en Woevre",
+"organisme": "ATMO GRAND EST",
+"implantation": "Rurale régionale",
+"influence": "Fond",
+"zas": "ZR GRAND-EST"
+},
+"FR30034": {
+"nom": "Nancy-Charles III",
+"organisme": "ATMO GRAND EST",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG NANCY"
+},
+"FR30036": {
+"nom": "Nancy-Libération",
+"organisme": "ATMO GRAND EST",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZAG NANCY"
+},
+"FR30037": {
+"nom": "Nancy-Brabois 2",
+"organisme": "ATMO GRAND EST",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAG NANCY"
+},
+"FR31001": {
+"nom": "GRAND PARC",
+"organisme": "ATMO NOUVELLE-AQUITAINE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG BORDEAUX"
+},
+"FR31002": {
+"nom": "TALENCE",
+"organisme": "ATMO NOUVELLE-AQUITAINE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG BORDEAUX"
+},
+"FR31007": {
+"nom": "BASSENS",
+"organisme": "ATMO NOUVELLE-AQUITAINE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG BORDEAUX"
+},
+"FR31010": {
+"nom": "AMBES",
+"organisme": "ATMO NOUVELLE-AQUITAINE",
+"implantation": "Périurbaine",
+"influence": "Industrielle",
+"zas": "ZAG BORDEAUX"
+},
+"FR31013": {
+"nom": "BILLERE",
+"organisme": "ATMO NOUVELLE-AQUITAINE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZR NOUVELLE-AQUITAINE"
+},
+"FR31016": {
+"nom": "SAINT-CROUTS",
+"organisme": "ATMO NOUVELLE-AQUITAINE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG BAYONNE"
+},
+"FR31017": {
+"nom": "ANGLET",
+"organisme": "ATMO NOUVELLE-AQUITAINE",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZAG BAYONNE"
+},
+"FR31020": {
+"nom": "LACQ",
+"organisme": "ATMO NOUVELLE-AQUITAINE",
+"implantation": "Rurale près des villes",
+"influence": "Industrielle",
+"zas": "ZR NOUVELLE-AQUITAINE"
+},
+"FR31021": {
+"nom": "LABASTIDE CEZERACQ",
+"organisme": "ATMO NOUVELLE-AQUITAINE",
+"implantation": "Rurale près des villes",
+"influence": "Fond",
+"zas": "ZR NOUVELLE-AQUITAINE"
+},
+"FR31024": {
+"nom": "MOURENX",
+"organisme": "ATMO NOUVELLE-AQUITAINE",
+"implantation": "Rurale près des villes",
+"influence": "Industrielle",
+"zas": "ZR NOUVELLE-AQUITAINE"
+},
+"FR31026": {
+"nom": "TARTAS Pelletrin",
+"organisme": "ATMO NOUVELLE-AQUITAINE",
+"implantation": "Périurbaine",
+"influence": "Industrielle",
+"zas": "ZR NOUVELLE-AQUITAINE"
+},
+"FR31033": {
+"nom": "PERIGUEUX",
+"organisme": "ATMO NOUVELLE-AQUITAINE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZR NOUVELLE-AQUITAINE"
+},
+"FR31039": {
+"nom": "PAU TOURASSE",
+"organisme": "ATMO NOUVELLE-AQUITAINE",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZR NOUVELLE-AQUITAINE"
+},
+"FR31040": {
+"nom": "MARMANDE",
+"organisme": "ATMO NOUVELLE-AQUITAINE",
+"implantation": "Périurbaine",
+"influence": "Trafic",
+"zas": "ZR NOUVELLE-AQUITAINE"
+},
+"FR31043": {
+"nom": "Biarritz-hippodrome",
+"organisme": "ATMO NOUVELLE-AQUITAINE",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAG BAYONNE"
+},
+"FR31045": {
+"nom": "Bordeaux_GAUTIER",
+"organisme": "ATMO NOUVELLE-AQUITAINE",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZAG BORDEAUX"
+},
+"FR31055": {
+"nom": "MONT-DE-MARSAN - MIDOUZE",
+"organisme": "ATMO NOUVELLE-AQUITAINE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZR NOUVELLE-AQUITAINE"
+},
+"FR31057": {
+"nom": "Floirac Branne",
+"organisme": "ATMO NOUVELLE-AQUITAINE",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZAG BORDEAUX"
+},
+"FR31067": {
+"nom": "Mérignac - Magudas",
+"organisme": "ATMO NOUVELLE-AQUITAINE",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZAG BORDEAUX"
+},
+"FR31069": {
+"nom": "ZI Estuaire Adour",
+"organisme": "ATMO NOUVELLE-AQUITAINE",
+"implantation": "Périurbaine",
+"influence": "Industrielle",
+"zas": "ZAG BAYONNE"
+},
+"FR32001": {
+"nom": "Chalon Centre",
+"organisme": "ATMO BOURGOGNE-FRANCHE-COMTE",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZAR CHALON"
+},
+"FR32002": {
+"nom": "Champforgueil",
+"organisme": "ATMO BOURGOGNE-FRANCHE-COMTE",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAR CHALON"
+},
+"FR32005": {
+"nom": "Montceau-les-Mines 9e Ecluse ",
+"organisme": "ATMO BOURGOGNE-FRANCHE-COMTE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZR BOURGOGNE-FRANCHE-COMTE"
+},
+"FR32006": {
+"nom": "Mâcon Paul Bert",
+"organisme": "ATMO BOURGOGNE-FRANCHE-COMTE",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZR BOURGOGNE-FRANCHE-COMTE"
+},
+"FR33101": {
+"nom": "PASTEUR",
+"organisme": "ATMO AUVERGNE-RHÔNE-ALPES",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAR PAYS-DE-SAVOIE"
+},
+"FR33102": {
+"nom": "CHAMBERY LE HAUT",
+"organisme": "ATMO AUVERGNE-RHÔNE-ALPES",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAR PAYS-DE-SAVOIE"
+},
+"FR33105": {
+"nom": "Chambéry Trafic",
+"organisme": "ATMO AUVERGNE-RHÔNE-ALPES",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZAR PAYS-DE-SAVOIE"
+},
+"FR33113": {
+"nom": "Maurienne Trafic",
+"organisme": "ATMO AUVERGNE-RHÔNE-ALPES",
+"implantation": "Périurbaine",
+"influence": "Trafic",
+"zas": "ZR AUVERGNE-RHONE-ALPES"
+},
+"FR33120": {
+"nom": "CHAMONIX",
+"organisme": "ATMO AUVERGNE-RHÔNE-ALPES",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAR VALLEE-DE-L-ARVE"
+},
+"FR33121": {
+"nom": "Albertville",
+"organisme": "ATMO AUVERGNE-RHÔNE-ALPES",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAR VALLEE-DE-LA-TARANTAISE"
+},
+"FR33122": {
+"nom": "La Léchère",
+"organisme": "ATMO AUVERGNE-RHÔNE-ALPES",
+"implantation": "Rurale près des villes",
+"influence": "Industrielle",
+"zas": "ZAR VALLEE-DE-LA-TARANTAISE"
+},
+"FR33201": {
+"nom": "LOVERCHY",
+"organisme": "ATMO AUVERGNE-RHÔNE-ALPES",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAR PAYS-DE-SAVOIE"
+},
+"FR33203": {
+"nom": "ANNECY Rocade",
+"organisme": "ATMO AUVERGNE-RHÔNE-ALPES",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZAR PAYS-DE-SAVOIE"
+},
+"FR33211": {
+"nom": "ANNEMASSE",
+"organisme": "ATMO AUVERGNE-RHÔNE-ALPES",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAR PAYS-DE-SAVOIE"
+},
+"FR33212": {
+"nom": "GAILLARD",
+"organisme": "ATMO AUVERGNE-RHÔNE-ALPES",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAR PAYS-DE-SAVOIE"
+},
+"FR33220": {
+"nom": "PASSY",
+"organisme": "ATMO AUVERGNE-RHÔNE-ALPES",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAR VALLEE-DE-L-ARVE"
+},
+"FR33232": {
+"nom": "BOSSONS",
+"organisme": "ATMO AUVERGNE-RHÔNE-ALPES",
+"implantation": "Périurbaine",
+"influence": "Trafic",
+"zas": "ZAR VALLEE-DE-L-ARVE"
+},
+"FR33302": {
+"nom": "St Germain/Rhône",
+"organisme": "ATMO AUVERGNE-RHÔNE-ALPES",
+"implantation": "Rurale près des villes",
+"influence": "Fond",
+"zas": "ZR AUVERGNE-RHONE-ALPES"
+},
+"FR33305": {
+"nom": "Bourg-en-Bresse",
+"organisme": "ATMO AUVERGNE-RHÔNE-ALPES",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZR AUVERGNE-RHONE-ALPES"
+},
+"FR34013": {
+"nom": "Gambetta",
+"organisme": "LIG'AIR",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZAG ORLEANS"
+},
+"FR34017": {
+"nom": "Marigny-les-usages",
+"organisme": "LIG'AIR",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAG ORLEANS"
+},
+"FR34024": {
+"nom": "Joué lès Tours",
+"organisme": "LIG'AIR",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG TOURS"
+},
+"FR34025": {
+"nom": "La Bruyère",
+"organisme": "LIG'AIR",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG TOURS"
+},
+"FR34026": {
+"nom": "Tours péri-urbaine",
+"organisme": "LIG'AIR",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAG TOURS"
+},
+"FR34028": {
+"nom": "Pompidou",
+"organisme": "LIG'AIR",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZAG TOURS"
+},
+"FR34029": {
+"nom": "La_Source-CNRS",
+"organisme": "LIG'AIR",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG ORLEANS"
+},
+"FR34030": {
+"nom": "Bourges-Baffier",
+"organisme": "LIG'AIR",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZR CENTRE-VAL-DE-LOIRE"
+},
+"FR34032": {
+"nom": "Leblanc",
+"organisme": "LIG'AIR",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZR CENTRE-VAL-DE-LOIRE"
+},
+"FR34038": {
+"nom": "Verneuil",
+"organisme": "LIG'AIR",
+"implantation": "Rurale nationale",
+"influence": "Fond",
+"zas": "ZR CENTRE-VAL-DE-LOIRE"
+},
+"FR34041": {
+"nom": "Fulbert",
+"organisme": "LIG'AIR",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZR CENTRE-VAL-DE-LOIRE"
+},
+"FR34043": {
+"nom": "Oysonville",
+"organisme": "LIG'AIR",
+"implantation": "Rurale régionale",
+"influence": "Fond",
+"zas": "ZR CENTRE-VAL-DE-LOIRE"
+},
+"FR34046": {
+"nom": "Dreux Centre",
+"organisme": "LIG'AIR",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZR CENTRE-VAL-DE-LOIRE"
+},
+"FR34047": {
+"nom": "Saint-Remy",
+"organisme": "LIG'AIR",
+"implantation": "Périurbaine",
+"influence": "Trafic",
+"zas": "ZR CENTRE-VAL-DE-LOIRE"
+},
+"FR34048": {
+"nom": "Chartres_trafic",
+"organisme": "LIG'AIR",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZR CENTRE-VAL-DE-LOIRE"
+},
+"FR34051": {
+"nom": "Chateauroux Sud",
+"organisme": "LIG'AIR",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZR CENTRE-VAL-DE-LOIRE"
+},
+"FR34054": {
+"nom": "Faverolles",
+"organisme": "LIG'AIR",
+"implantation": "Rurale régionale",
+"influence": "Fond",
+"zas": "ZR CENTRE-VAL-DE-LOIRE"
+},
+"FR34056": {
+"nom": "Montierchaume",
+"organisme": "LIG'AIR",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZR CENTRE-VAL-DE-LOIRE"
+},
+"FR34061": {
+"nom": "Blois nord",
+"organisme": "LIG'AIR",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAR BLOIS"
+},
+"FR34063": {
+"nom": "Blois_trafic",
+"organisme": "LIG'AIR",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZAR BLOIS"
+},
+"FR34064": {
+"nom": "Montargis_trafic",
+"organisme": "LIG'AIR",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZR CENTRE-VAL-DE-LOIRE"
+},
+"FR34066": {
+"nom": "Montargis Les Cites",
+"organisme": "LIG'AIR",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZR CENTRE-VAL-DE-LOIRE"
+},
+"FR34067": {
+"nom": "St Jean de la Ruelle",
+"organisme": "LIG'AIR",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG ORLEANS"
+},
+"FR35002": {
+"nom": "ST JUNIEN - Fontaine",
+"organisme": "ATMO NOUVELLE-AQUITAINE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZR NOUVELLE-AQUITAINE"
+},
+"FR35004": {
+"nom": "BRIVE - Dalton",
+"organisme": "ATMO NOUVELLE-AQUITAINE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZR NOUVELLE-AQUITAINE"
+},
+"FR35006": {
+"nom": "TULLE - Hugo",
+"organisme": "ATMO NOUVELLE-AQUITAINE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZR NOUVELLE-AQUITAINE"
+},
+"FR35007": {
+"nom": "PALAIS S/ V.- Garros",
+"organisme": "ATMO NOUVELLE-AQUITAINE",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAR LIMOGES"
+},
+"FR35010": {
+"nom": "LIMOGES - Aine",
+"organisme": "ATMO NOUVELLE-AQUITAINE",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZAR LIMOGES"
+},
+"FR35012": {
+"nom": "LA NOUAILLE - MERA",
+"organisme": "ATMO NOUVELLE-AQUITAINE",
+"implantation": "Rurale nationale",
+"influence": "Fond",
+"zas": "ZR NOUVELLE-AQUITAINE"
+},
+"FR35019": {
+"nom": "SAILLAT - Ipaper",
+"organisme": "ATMO NOUVELLE-AQUITAINE",
+"implantation": "Rurale près des villes",
+"influence": "Industrielle",
+"zas": "ZR NOUVELLE-AQUITAINE"
+},
+"FR35027": {
+"nom": "LIMOGES - BERLAND",
+"organisme": "ATMO NOUVELLE-AQUITAINE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAR LIMOGES"
+},
+"FR35031": {
+"nom": "Guéret - Brésard",
+"organisme": "ATMO NOUVELLE-AQUITAINE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZR NOUVELLE-AQUITAINE"
+},
+"FR36001": {
+"nom": "Valence Périurb. Sud",
+"organisme": "ATMO AUVERGNE-RHÔNE-ALPES",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAR VALLEE-DU-RHONE"
+},
+"FR36002": {
+"nom": "Valence Urb. Centre",
+"organisme": "ATMO AUVERGNE-RHÔNE-ALPES",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAR VALLEE-DU-RHONE"
+},
+"FR36019": {
+"nom": "Romans-sur-Isère",
+"organisme": "ATMO AUVERGNE-RHÔNE-ALPES",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAR VALLEE-DU-RHONE"
+},
+"FR36021": {
+"nom": "Drôme Rurale Sud-SND",
+"organisme": "ATMO AUVERGNE-RHÔNE-ALPES",
+"implantation": "Rurale nationale",
+"influence": "Fond",
+"zas": "ZR AUVERGNE-RHONE-ALPES"
+},
+"FR36032": {
+"nom": "A7 Valence Est",
+"organisme": "ATMO AUVERGNE-RHÔNE-ALPES",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZAR VALLEE-DU-RHONE"
+},
+"FR37001": {
+"nom": "ST de Baie mahault",
+"organisme": "GWAD'AIR",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAG POINTE-A-PITRE"
+},
+"FR37006": {
+"nom": "PTP-VICTOIRE",
+"organisme": "GWAD'AIR",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG POINTE-A-PITRE"
+},
+"FR37010": {
+"nom": "BT_PICHON",
+"organisme": "GWAD'AIR",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZR GUADELOUPE"
+},
+"FR37040": {
+"nom": "ABYMES RN1",
+"organisme": "GWAD'AIR",
+"implantation": "Périurbaine",
+"influence": "Trafic",
+"zas": "ZAG POINTE-A-PITRE"
+},
+"FR37041": {
+"nom": "Anse-Bertrand Campêche",
+"organisme": "GWAD'AIR",
+"implantation": "Rurale régionale",
+"influence": "Fond",
+"zas": "ZR GUADELOUPE"
+},
+"FR37095": {
+"nom": "SXM CONCORDIA",
+"organisme": "GWAD'AIR",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZR GUADELOUPE"
+},
+"FR38001": {
+"nom": "LYC. LISLET GEOFFROY",
+"organisme": "ATMO REUNION",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAR SAINT-DENIS"
+},
+"FR38002": {
+"nom": "MONTGAILLARD",
+"organisme": "ATMO REUNION",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAR SAINT-DENIS"
+},
+"FR38009": {
+"nom": "Ecole La Marine",
+"organisme": "ATMO REUNION",
+"implantation": "Périurbaine",
+"influence": "Trafic",
+"zas": "ZAR SAINT-DENIS"
+},
+"FR38011": {
+"nom": "Station Luther King",
+"organisme": "ATMO REUNION",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAR VOLCAN"
+},
+"FR38014": {
+"nom": "Ligne Paradis",
+"organisme": "ATMO REUNION",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAR VOLCAN"
+},
+"FR38016": {
+"nom": "Station Bourg-Murat",
+"organisme": "ATMO REUNION",
+"implantation": "Rurale régionale",
+"influence": "Fond",
+"zas": "ZAR VOLCAN"
+},
+"FR38017": {
+"nom": "Grand Coude",
+"organisme": "ATMO REUNION",
+"implantation": "Rurale régionale",
+"influence": "Fond",
+"zas": "ZAR VOLCAN"
+},
+"FR38018": {
+"nom": "Centre Penitencier",
+"organisme": "ATMO REUNION",
+"implantation": "Périurbaine",
+"influence": "Trafic",
+"zas": "ZAR SAINT-DENIS"
+},
+"FR38020": {
+"nom": "Plateau Caillou",
+"organisme": "ATMO REUNION",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAR SAINT-DENIS"
+},
+"FR38021": {
+"nom": "Grand Fond",
+"organisme": "ATMO REUNION",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAR SAINT-DENIS"
+},
+"FR38022": {
+"nom": "Chaussée Royale",
+"organisme": "ATMO REUNION",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZAR SAINT-DENIS"
+},
+"FR38023": {
+"nom": "BD BANKS",
+"organisme": "ATMO REUNION",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZAR VOLCAN"
+},
+"FR38024": {
+"nom": "RDT SAINT-LEU",
+"organisme": "ATMO REUNION",
+"implantation": "Rurale près des villes",
+"influence": "Trafic",
+"zas": "ZR LA REUNION"
+},
+"FR38091": {
+"nom": "Terrain de Sel",
+"organisme": "ATMO REUNION",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZAR SAINT-DENIS"
+},
+"FR38098": {
+"nom": "Sarda Garriga",
+"organisme": "ATMO REUNION",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZAR VOLCAN"
+},
+"FR39008": {
+"nom": "Ville de Schoelcher",
+"organisme": "MADININAIR",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAR FORT-DE-FRANCE"
+},
+"FR39009": {
+"nom": "Lamentin",
+"organisme": "MADININAIR",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAR FORT-DE-FRANCE"
+},
+"FR39010": {
+"nom": "Concorde",
+"organisme": "MADININAIR",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZAR FORT-DE-FRANCE"
+},
+"FR39011": {
+"nom": "Reneville",
+"organisme": "MADININAIR",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZAR FORT-DE-FRANCE"
+},
+"FR39014": {
+"nom": "Sainte_Luce",
+"organisme": "MADININAIR",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZR MARTINIQUE"
+},
+"FR39015": {
+"nom": "Fort-de-France - Hôtel de ville",
+"organisme": "MADININAIR",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAR FORT-DE-FRANCE"
+},
+"FR39016": {
+"nom": "Robert Bourg",
+"organisme": "MADININAIR",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAR FORT-DE-FRANCE"
+},
+"FR39017": {
+"nom": "Bellevue",
+"organisme": "MADININAIR",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAR FORT-DE-FRANCE"
+},
+"FR40006": {
+"nom": "Kourou Gaston Monnerville Brady",
+"organisme": "ATMO GUYANE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZR GUYANE"
+},
+"FR40007": {
+"nom": "Kalou",
+"organisme": "ATMO GUYANE",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAR ILE-DE-CAYENNE"
+},
+"FR40009": {
+"nom": "Cayenne-Bouchon",
+"organisme": "ATMO GUYANE",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZAR ILE-DE-CAYENNE"
+},
+"FR40010": {
+"nom": "Matiti",
+"organisme": "ATMO GUYANE",
+"implantation": "Rurale près des villes",
+"influence": "Fond",
+"zas": "ZR GUYANE"
+},
+"FR41001": {
+"nom": "AJACCIO CANETTO",
+"organisme": "QUALITAIR CORSE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAR AJACCIO"
+},
+"FR41002": {
+"nom": "BASTIA GIRAUD",
+"organisme": "QUALITAIR CORSE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAR BASTIA"
+},
+"FR41004": {
+"nom": "BASTIA LA MARANA",
+"organisme": "QUALITAIR CORSE",
+"implantation": "Périurbaine",
+"influence": "Industrielle",
+"zas": "ZAR BASTIA"
+},
+"FR41017": {
+"nom": "BASTIA MONTESORO",
+"organisme": "QUALITAIR CORSE",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAR BASTIA"
+},
+"FR41024": {
+"nom": "VENACO",
+"organisme": "QUALITAIR CORSE",
+"implantation": "Rurale régionale",
+"influence": "Fond",
+"zas": "ZR CORSE"
+},
+"FR41060": {
+"nom": "BASTIA FANGO",
+"organisme": "QUALITAIR CORSE",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZAR BASTIA"
+},
+"FR41063": {
+"nom": "AJACCIO CONFINA 2",
+"organisme": "QUALITAIR CORSE",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAR AJACCIO"
+},
+"FR41073": {
+"nom": "AJACCIO NAPOLEON",
+"organisme": "QUALITAIR CORSE",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZAR AJACCIO"
+},
+"FR42010": {
+"nom": "Strasbourg Neudorf Ecoquartier Danube",
+"organisme": "ATMO GRAND EST",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAG STRASBOURG"
+},
+"FR42011": {
+"nom": "Haguenau-Place marché aux bestiaux",
+"organisme": "ATMO GRAND EST",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZR GRAND-EST"
+},
+"FR43001": {
+"nom": "Kawéni Village",
+"organisme": "HAWA MAYOTTE",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZR MAYOTTE"
+},
+"FR43002": {
+"nom": "Convalescence",
+"organisme": "HAWA MAYOTTE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZR MAYOTTE"
+},
+"FR43099": {
+"nom": "Kawéni Nord",
+"organisme": "HAWA MAYOTTE",
+"implantation": "Périurbaine",
+"influence": "Trafic",
+"zas": "ZR MAYOTTE"
+},
+"FR47131": {
+"nom": "Tarentaise-Aigueblanche",
+"organisme": "ATMO AUVERGNE-RHÔNE-ALPES",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAR VALLEE-DE-LA-TARANTAISE"
+},
+"FR47157": {
+"nom": "Annecy P?riurbaine Nord",
+"organisme": "ATMO AUVERGNE-RHÔNE-ALPES",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAR PAYS-DE-SAVOIE"
+},
+"FR50060": {
+"nom": "Montauban - Ramierou",
+"organisme": "ATMO OCCITANIE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZR OCCITANIE"
+},
+"FR50064": {
+"nom": "Toulouse Arcole",
+"organisme": "ATMO OCCITANIE",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZAG TOULOUSE"
+},
+"FR50224": {
+"nom": "Perpignan bd Pyrénées",
+"organisme": "ATMO OCCITANIE",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZAR PERPIGNAN"
+},
+"FR50225": {
+"nom": "Montpellier Liberté",
+"organisme": "ATMO OCCITANIE",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZAG MONTPELLIER"
+},
+"FR50227": {
+"nom": "Montpellier Antigone",
+"organisme": "ATMO OCCITANIE",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZAG MONTPELLIER"
+},
+"FR50232": {
+"nom": "Nimes Allende",
+"organisme": "ATMO OCCITANIE",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZAR NIMES"
+},
+"FR82001": {
+"nom": "Besançon Mégevand",
+"organisme": "ATMO BOURGOGNE-FRANCHE-COMTE",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZAR BESANCON"
+},
+"FR82005": {
+"nom": "Montfaucon",
+"organisme": "ATMO BOURGOGNE-FRANCHE-COMTE",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAR BESANCON"
+},
+"FR82006": {
+"nom": "Besançon Prévoyance",
+"organisme": "ATMO BOURGOGNE-FRANCHE-COMTE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAR BESANCON"
+},
+"FR82010": {
+"nom": "Montbéliard Centre",
+"organisme": "ATMO BOURGOGNE-FRANCHE-COMTE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAR BELFORT-MONTBELIARD"
+},
+"FR82012": {
+"nom": "Dambenois Citoyen",
+"organisme": "ATMO BOURGOGNE-FRANCHE-COMTE",
+"implantation": "Périurbaine",
+"influence": "Fond",
+"zas": "ZAR BELFORT-MONTBELIARD"
+},
+"FR82020": {
+"nom": "Belfort Octroi",
+"organisme": "ATMO BOURGOGNE-FRANCHE-COMTE",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZAR BELFORT-MONTBELIARD"
+},
+"FR82021": {
+"nom": "Belfort Centre",
+"organisme": "ATMO BOURGOGNE-FRANCHE-COMTE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZAR BELFORT-MONTBELIARD"
+},
+"FR82030": {
+"nom": "Montandon Baresans",
+"organisme": "ATMO BOURGOGNE-FRANCHE-COMTE",
+"implantation": "Rurale nationale",
+"influence": "Fond",
+"zas": "ZR BOURGOGNE-FRANCHE-COMTE"
+},
+"FR82040": {
+"nom": "Dole Centre",
+"organisme": "ATMO BOURGOGNE-FRANCHE-COMTE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZR BOURGOGNE-FRANCHE-COMTE"
+},
+"FR82041": {
+"nom": "Tavaux",
+"organisme": "ATMO BOURGOGNE-FRANCHE-COMTE",
+"implantation": "Périurbaine",
+"influence": "Industrielle",
+"zas": "ZR BOURGOGNE-FRANCHE-COMTE"
+},
+"FR82042": {
+"nom": "Damparis",
+"organisme": "ATMO BOURGOGNE-FRANCHE-COMTE",
+"implantation": "Périurbaine",
+"influence": "Industrielle",
+"zas": "ZR BOURGOGNE-FRANCHE-COMTE"
+},
+"FR82043": {
+"nom": "Châtenois",
+"organisme": "ATMO BOURGOGNE-FRANCHE-COMTE",
+"implantation": "Périurbaine",
+"influence": "Industrielle",
+"zas": "ZR BOURGOGNE-FRANCHE-COMTE"
+},
+"FR82050": {
+"nom": "Lons-le-Saunier CV",
+"organisme": "ATMO BOURGOGNE-FRANCHE-COMTE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZR BOURGOGNE-FRANCHE-COMTE"
+},
+"FR82060": {
+"nom": "Vesoul Près Caillet",
+"organisme": "ATMO BOURGOGNE-FRANCHE-COMTE",
+"implantation": "Urbaine",
+"influence": "Fond",
+"zas": "ZR BOURGOGNE-FRANCHE-COMTE"
+},
+"FR82070": {
+"nom": "Baume-les-Dames",
+"organisme": "ATMO BOURGOGNE-FRANCHE-COMTE",
+"implantation": "Urbaine",
+"influence": "Trafic",
+"zas": "ZR BOURGOGNE-FRANCHE-COMTE"
+}
+},
+"version": 3,
+"remplacer": [
+"2026-10-21",
+"2026-10-22",
+"2026-10-23",
+"2026-10-24",
+"2026-10-25",
+"2026-10-26",
+"2026-10-27",
+"2026-10-28",
+"2026-10-29",
+"2026-10-30",
+"2026-10-31",
+"2026-11-01",
+"2026-11-02",
+"2026-11-03",
+"2026-11-04",
+"2026-11-05",
+"2026-11-06",
+"2026-11-07",
+"2026-11-08",
+"2026-11-09",
+"2026-11-10",
+"2026-11-11",
+"2026-11-12",
+"2026-11-13",
+"2026-11-14",
+"2026-11-15",
+"2026-11-16",
+"2026-11-17",
+"2026-11-18",
+"2026-11-19",
+"2026-11-20",
+"2026-11-21"
+],
+"polluants": [
+"NO",
+"NO2",
+"NOX",
+"O3",
+"PM10",
+"PM25"
+]
+}
