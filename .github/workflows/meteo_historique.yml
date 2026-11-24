@@ -158,20 +158,274 @@ jobs:
             {"id":"FR50232","lon":4.37792,"lat":43.8291,"drom":False,"stations":["FR50232"]},
             {"id":"FR82001","lon":6.02361,"lat":47.23597,"drom":False,"stations":["FR82001"]},
             {"id":"FR82020","lon":6.85928,"lat":47.64067,"drom":False,"stations":["FR82020"]},
-            {"id":"FR82070","lon":6.35972,"lat":47.35129,"drom":False,"stations":["FR82070"]}
+            {"id":"FR82070","lon":6.35972,"lat":47.35129,"drom":False,"stations":["FR82070"]},
+            # Stations de fond de métropole à plus de 3 km des points ci-dessus (regroupées à 2 km), pour la prévision horaire (24/11/2026) :
+            # AROME HD seulement, depuis le 1er janvier 2024 (pas de pluie en 2023 dans l'archive AROME HD, et un quart d'appels en moins).
+            {"id":"FR01012","lon":6.22334,"lat":49.11028,"drom":False,"stations":["FR01012"],"type":"fond"},
+            {"id":"FR01014","lon":6.05834,"lat":48.915,"drom":False,"stations":["FR01014"],"type":"fond"},
+            {"id":"FR01018","lon":6.12277,"lat":49.1075,"drom":False,"stations":["FR01018"],"type":"fond"},
+            {"id":"FR01020","lon":6.15694,"lat":49.35834,"drom":False,"stations":["FR01020"],"type":"fond"},
+            {"id":"FR01021","lon":6.20139,"lat":49.39444,"drom":False,"stations":["FR01021"],"type":"fond"},
+            {"id":"FR02001","lon":5.17194,"lat":43.48623,"drom":False,"stations":["FR02001"],"type":"fond"},
+            {"id":"FR02004","lon":5.04273,"lat":43.41666,"drom":False,"stations":["FR02004"],"type":"fond"},
+            {"id":"FR02021","lon":5.1177,"lat":43.33125,"drom":False,"stations":["FR02021"],"type":"fond"},
+            {"id":"FR02022","lon":4.62921,"lat":43.67511,"drom":False,"stations":["FR02022"],"type":"fond"},
+            {"id":"FR02041","lon":5.1011,"lat":43.639,"drom":False,"stations":["FR02041"],"type":"fond"},
+            {"id":"FR02043","lon":5.22228,"lat":43.41653,"drom":False,"stations":["FR02043"],"type":"fond"},
+            {"id":"FR03014","lon":5.36012,"lat":43.34805,"drom":False,"stations":["FR03014"],"type":"fond"},
+            {"id":"FR03027","lon":5.72736,"lat":43.3352,"drom":False,"stations":["FR03027"],"type":"fond"},
+            {"id":"FR03037","lon":5.51138,"lat":43.28334,"drom":False,"stations":["FR03037"],"type":"fond"},
+            {"id":"FR03048","lon":5.46123,"lat":43.55578,"drom":False,"stations":["FR03048"],"type":"fond"},
+            {"id":"FR03064","lon":6.01151,"lat":43.1359,"drom":False,"stations":["FR03064"],"type":"fond"},
+            {"id":"FR03070","lon":6.76839,"lat":43.43787,"drom":False,"stations":["FR03070"],"type":"fond"},
+            {"id":"FR03084","lon":4.85673,"lat":43.96014,"drom":False,"stations":["FR03084"],"type":"fond"},
+            {"id":"FR03086","lon":5.36204,"lat":43.88012,"drom":False,"stations":["FR03086"],"type":"fond"},
+            {"id":"FR03088","lon":5.06741,"lat":44.06035,"drom":False,"stations":["FR03088"],"type":"fond"},
+            {"id":"FR04002","lon":2.29435,"lat":48.93032,"drom":False,"stations":["FR04002"],"type":"fond"},
+            {"id":"FR04004","lon":2.34667,"lat":48.89167,"drom":False,"stations":["FR04004"],"type":"fond"},
+            {"id":"FR04018","lon":2.3847,"lat":48.9039,"drom":False,"stations":["FR04018"],"type":"fond"},
+            {"id":"FR04023","lon":2.04306,"lat":49.04639,"drom":False,"stations":["FR04023"],"type":"fond"},
+            {"id":"FR04024","lon":2.44472,"lat":48.99083,"drom":False,"stations":["FR04024"],"type":"fond"},
+            {"id":"FR04029","lon":2.13056,"lat":48.79917,"drom":False,"stations":["FR04029"],"type":"fond"},
+            {"id":"FR04034","lon":2.37579,"lat":48.7759,"drom":False,"stations":["FR04034"],"type":"fond"},
+            {"id":"FR04038","lon":1.88333,"lat":48.58194,"drom":False,"stations":["FR04038"],"type":"fond"},
+            {"id":"FR04048","lon":2.34389,"lat":49.10028,"drom":False,"stations":["FR04048"],"type":"fond"},
+            {"id":"FR04049","lon":2.16556,"lat":48.67944,"drom":False,"stations":["FR04049"],"type":"fond"},
+            {"id":"FR04051","lon":2.22361,"lat":48.95139,"drom":False,"stations":["FR04051"],"type":"fond"},
+            {"id":"FR04063","lon":1.7033,"lat":48.9964,"drom":False,"stations":["FR04063"],"type":"fond"},
+            {"id":"FR04066","lon":2.23694,"lat":48.36417,"drom":False,"stations":["FR04066"],"type":"fond"},
+            {"id":"FR04098","lon":2.63528,"lat":48.84028,"drom":False,"stations":["FR04098"],"type":"fond"},
+            {"id":"FR04099","lon":2.48444,"lat":48.84056,"drom":False,"stations":["FR04099"],"type":"fond"},
+            {"id":"FR04100","lon":2.50722,"lat":48.88195,"drom":False,"stations":["FR04100"],"type":"fond"},
+            {"id":"FR04101","lon":2.5175,"lat":48.81639,"drom":False,"stations":["FR04101"],"type":"fond"},
+            {"id":"FR04142","lon":2.75028,"lat":49.02806,"drom":False,"stations":["FR04142"],"type":"fond"},
+            {"id":"FR04149","lon":2.4572,"lat":48.7067,"drom":False,"stations":["FR04149"],"type":"fond"},
+            {"id":"FR04150","lon":2.24056,"lat":48.89139,"drom":False,"stations":["FR04150"],"type":"fond"},
+            {"id":"FR04156","lon":2.4525,"lat":48.9025,"drom":False,"stations":["FR04156"],"type":"fond"},
+            {"id":"FR04158","lon":1.86638,"lat":49.06309,"drom":False,"stations":["FR04158"],"type":"fond"},
+            {"id":"FR04179","lon":2.26989,"lat":48.83039,"drom":False,"stations":["FR04179"],"type":"fond"},
+            {"id":"FR04181","lon":1.83053,"lat":48.63373,"drom":False,"stations":["FR04181"],"type":"fond"},
+            {"id":"FR04319","lon":2.57528,"lat":48.95555,"drom":False,"stations":["FR04319"],"type":"fond"},
+            {"id":"FR04323","lon":2.42917,"lat":48.62722,"drom":False,"stations":["FR04323"],"type":"fond"},
+            {"id":"FR04324","lon":3.05833,"lat":48.76167,"drom":False,"stations":["FR04324"],"type":"fond"},
+            {"id":"FR04328","lon":2.6453,"lat":48.3547,"drom":False,"stations":["FR04328"],"type":"fond"},
+            {"id":"FR05040","lon":0.2437,"lat":49.41511,"drom":False,"stations":["FR05040"],"type":"fond"},
+            {"id":"FR05080","lon":0.26687,"lat":49.50362,"drom":False,"stations":["FR05080"],"type":"fond"},
+            {"id":"FR05082","lon":0.10925,"lat":49.348,"drom":False,"stations":["FR05082"],"type":"fond"},
+            {"id":"FR05087","lon":0.7587,"lat":49.49842,"drom":False,"stations":["FR05087"],"type":"fond"},
+            {"id":"FR06003","lon":3.06586,"lat":50.37822,"drom":False,"stations":["FR06003"],"type":"fond"},
+            {"id":"FR06011","lon":3.39593,"lat":50.32276,"drom":False,"stations":["FR06011"],"type":"fond"},
+            {"id":"FR06133","lon":3.85003,"lat":50.09225,"drom":False,"stations":["FR06133"],"type":"fond"},
+            {"id":"FR07022","lon":3.60067,"lat":46.65267,"drom":False,"stations":["FR07022"],"type":"fond"},
+            {"id":"FR07031","lon":3.27736,"lat":45.10472,"drom":False,"stations":["FR07031"],"type":"fond"},
+            {"id":"FR07052","lon":2.44108,"lat":44.92008,"drom":False,"stations":["FR07052"],"type":"fond"},
+            {"id":"FR07054","lon":3.887,"lat":45.039,"drom":False,"stations":["FR07054"],"type":"fond"},
+            {"id":"FR07056","lon":4.22601,"lat":44.98377,"drom":False,"stations":["FR07056"],"type":"fond"},
+            {"id":"FR07057","lon":3.34064,"lat":46.56197,"drom":False,"stations":["FR07057"],"type":"fond"},
+            {"id":"FR07058","lon":2.59395,"lat":46.34072,"drom":False,"stations":["FR07058"],"type":"fond"},
+            {"id":"FR07059","lon":3.42569,"lat":46.13043,"drom":False,"stations":["FR07059"],"type":"fond"},
+            {"id":"FR07060","lon":3.04611,"lat":45.76411,"drom":False,"stations":["FR07060"],"type":"fond"},
+            {"id":"FR07061","lon":3.12225,"lat":45.89674,"drom":False,"stations":["FR07061"],"type":"fond"},
+            {"id":"FR08017","lon":3.9118,"lat":43.5705,"drom":False,"stations":["FR08017"],"type":"fond"},
+            {"id":"FR08018","lon":3.80021,"lat":43.6926,"drom":False,"stations":["FR08018"],"type":"fond"},
+            {"id":"FR08022","lon":3.50484,"lat":43.2875,"drom":False,"stations":["FR08022"],"type":"fond"},
+            {"id":"FR08023","lon":3.18878,"lat":43.4068,"drom":False,"stations":["FR08023"],"type":"fond"},
+            {"id":"FR08209","lon":4.67958,"lat":43.9426,"drom":False,"stations":["FR08209"],"type":"fond"},
+            {"id":"FR08617","lon":4.26581,"lat":43.9254,"drom":False,"stations":["FR08617"],"type":"fond"},
+            {"id":"FR08712","lon":2.83988,"lat":42.7198,"drom":False,"stations":["FR08712"],"type":"fond"},
+            {"id":"FR09003","lon":-1.15368,"lat":46.16265,"drom":False,"stations":["FR09003"],"type":"fond"},
+            {"id":"FR09008","lon":-1.11709,"lat":46.13513,"drom":False,"stations":["FR09008"],"type":"fond"},
+            {"id":"FR09302","lon":-0.39591,"lat":46.14323,"drom":False,"stations":["FR09302"],"type":"fond"},
+            {"id":"FR09304","lon":-0.13563,"lat":46.8238,"drom":False,"stations":["FR09304"],"type":"fond"},
+            {"id":"FR10004","lon":2.42004,"lat":51.04858,"drom":False,"stations":["FR10004"],"type":"fond"},
+            {"id":"FR10016","lon":1.84308,"lat":50.94729,"drom":False,"stations":["FR10016"],"type":"fond"},
+            {"id":"FR10017","lon":2.33236,"lat":51.03276,"drom":False,"stations":["FR10017"],"type":"fond"},
+            {"id":"FR10025","lon":1.76917,"lat":50.94989,"drom":False,"stations":["FR10025"],"type":"fond"},
+            {"id":"FR10029","lon":2.36627,"lat":50.99594,"drom":False,"stations":["FR10029"],"type":"fond"},
+            {"id":"FR10032","lon":1.57657,"lat":50.69435,"drom":False,"stations":["FR10032"],"type":"fond"},
+            {"id":"FR10041","lon":2.25978,"lat":50.74823,"drom":False,"stations":["FR10041"],"type":"fond"},
+            {"id":"FR10132","lon":1.99145,"lat":50.61048,"drom":False,"stations":["FR10132"],"type":"fond"},
+            {"id":"FR11026","lon":3.12568,"lat":50.77548,"drom":False,"stations":["FR11026"],"type":"fond"},
+            {"id":"FR11038","lon":3.17361,"lat":50.73333,"drom":False,"stations":["FR11038"],"type":"fond"},
+            {"id":"FR11114","lon":3.04946,"lat":50.59774,"drom":False,"stations":["FR11114"],"type":"fond"},
+            {"id":"FR12004","lon":1.41806,"lat":43.57569,"drom":False,"stations":["FR12004"],"type":"fond"},
+            {"id":"FR12020","lon":0.17907,"lat":43.6287,"drom":False,"stations":["FR12020"],"type":"fond"},
+            {"id":"FR12026","lon":2.1459,"lat":43.92777,"drom":False,"stations":["FR12026"],"type":"fond"},
+            {"id":"FR12029","lon":0.84562,"lat":43.88393,"drom":False,"stations":["FR12029"],"type":"fond"},
+            {"id":"FR12030","lon":1.444,"lat":43.58734,"drom":False,"stations":["FR12030"],"type":"fond"},
+            {"id":"FR12031","lon":1.82194,"lat":43.44139,"drom":False,"stations":["FR12031"],"type":"fond"},
+            {"id":"FR12041","lon":1.57147,"lat":43.45731,"drom":False,"stations":["FR12041"],"type":"fond"},
+            {"id":"FR12042","lon":-0.0405,"lat":43.09625,"drom":False,"stations":["FR12042"],"type":"fond"},
+            {"id":"FR12052","lon":0.06234,"lat":43.2303,"drom":False,"stations":["FR12052"],"type":"fond"},
+            {"id":"FR12053","lon":2.23015,"lat":43.6105,"drom":False,"stations":["FR12053"],"type":"fond"},
+            {"id":"FR12095","lon":2.5707,"lat":44.35699,"drom":False,"stations":["FR12095"],"type":"fond"},
+            {"id":"FR14008","lon":4.63,"lat":49.90778,"drom":False,"stations":["FR14008"],"type":"fond"},
+            {"id":"FR14010","lon":4.05111,"lat":49.28222,"drom":False,"stations":["FR14010"],"type":"fond"},
+            {"id":"FR14022","lon":4.36,"lat":48.96222,"drom":False,"stations":["FR14022"],"type":"fond"},
+            {"id":"FR14031","lon":4.07694,"lat":48.30167,"drom":False,"stations":["FR14031"],"type":"fond"},
+            {"id":"FR14032","lon":4.11722,"lat":48.29917,"drom":False,"stations":["FR14032"],"type":"fond"},
+            {"id":"FR14033","lon":4.05028,"lat":48.295,"drom":False,"stations":["FR14033"],"type":"fond"},
+            {"id":"FR14042","lon":4.96611,"lat":48.64584,"drom":False,"stations":["FR14042"],"type":"fond"},
+            {"id":"FR14051","lon":4.71917,"lat":49.74528,"drom":False,"stations":["FR14051"],"type":"fond"},
+            {"id":"FR15013","lon":5.72865,"lat":45.07954,"drom":False,"stations":["FR15013"],"type":"fond"},
+            {"id":"FR15018","lon":5.58942,"lat":45.36018,"drom":False,"stations":["FR15018"],"type":"fond"},
+            {"id":"FR15031","lon":6.4694,"lat":44.997,"drom":False,"stations":["FR15031"],"type":"fond"},
+            {"id":"FR15045","lon":5.6767,"lat":45.0578,"drom":False,"stations":["FR15045"],"type":"fond"},
+            {"id":"FR15048","lon":5.8822,"lat":45.2797,"drom":False,"stations":["FR15048"],"type":"fond"},
+            {"id":"FR16017","lon":8.15846,"lat":48.91936,"drom":False,"stations":["FR16017"],"type":"fond"},
+            {"id":"FR16029","lon":7.78163,"lat":48.61036,"drom":False,"stations":["FR16029"],"type":"fond"},
+            {"id":"FR16031","lon":7.31417,"lat":48.85731,"drom":False,"stations":["FR16031"],"type":"fond"},
+            {"id":"FR16041","lon":7.68782,"lat":48.5157,"drom":False,"stations":["FR16041"],"type":"fond"},
+            {"id":"FR16054","lon":7.35056,"lat":48.07444,"drom":False,"stations":["FR16054", "FR16064"],"type":"fond"},
+            {"id":"FR16060","lon":7.56818,"lat":47.59491,"drom":False,"stations":["FR16060"],"type":"fond"},
+            {"id":"FR16065","lon":7.3416,"lat":47.72311,"drom":False,"stations":["FR16065"],"type":"fond"},
+            {"id":"FR16302","lon":7.1298,"lat":48.49299,"drom":False,"stations":["FR16302"],"type":"fond"},
+            {"id":"FR18035","lon":2.23981,"lat":49.86889,"drom":False,"stations":["FR18035"],"type":"fond"},
+            {"id":"FR18039","lon":1.61083,"lat":50.12945,"drom":False,"stations":["FR18039"],"type":"fond"},
+            {"id":"FR18042","lon":3.284,"lat":49.85133,"drom":False,"stations":["FR18042"],"type":"fond"},
+            {"id":"FR18043","lon":2.4744,"lat":49.25955,"drom":False,"stations":["FR18043"],"type":"fond"},
+            {"id":"FR18053","lon":2.3046,"lat":49.90167,"drom":False,"stations":["FR18053"],"type":"fond"},
+            {"id":"FR18057","lon":3.26082,"lat":49.17493,"drom":False,"stations":["FR18057"],"type":"fond"},
+            {"id":"FR18058","lon":1.96326,"lat":49.61563,"drom":False,"stations":["FR18058"],"type":"fond"},
+            {"id":"FR19012","lon":-4.4866,"lat":48.38618,"drom":False,"stations":["FR19012"],"type":"fond"},
+            {"id":"FR19016","lon":-4.56806,"lat":48.35944,"drom":False,"stations":["FR19016"],"type":"fond"},
+            {"id":"FR19018","lon":-1.83458,"lat":48.08288,"drom":False,"stations":["FR19018"],"type":"fond"},
+            {"id":"FR19020","lon":-2.94363,"lat":48.26196,"drom":False,"stations":["FR19020"],"type":"fond"},
+            {"id":"FR19033","lon":-2.76399,"lat":47.64892,"drom":False,"stations":["FR19033"],"type":"fond"},
+            {"id":"FR19053","lon":-4.09766,"lat":47.98661,"drom":False,"stations":["FR19053"],"type":"fond"},
+            {"id":"FR19082","lon":-2.00268,"lat":48.65306,"drom":False,"stations":["FR19082"],"type":"fond"},
+            {"id":"FR20037","lon":4.8022,"lat":45.6019,"drom":False,"stations":["FR20037"],"type":"fond"},
+            {"id":"FR20047","lon":4.95396,"lat":45.82322,"drom":False,"stations":["FR20047"],"type":"fond"},
+            {"id":"FR20048","lon":5.0722,"lat":45.7533,"drom":False,"stations":["FR20048"],"type":"fond"},
+            {"id":"FR20049","lon":4.46571,"lat":45.96141,"drom":False,"stations":["FR20049"],"type":"fond"},
+            {"id":"FR20077","lon":4.71557,"lat":45.99011,"drom":False,"stations":["FR20077"],"type":"fond"},
+            {"id":"FR21001","lon":-0.39111,"lat":49.19222,"drom":False,"stations":["FR21001"],"type":"fond"},
+            {"id":"FR21031","lon":0.11083,"lat":48.44555,"drom":False,"stations":["FR21031"],"type":"fond"},
+            {"id":"FR21040","lon":-1.08472,"lat":49.11639,"drom":False,"stations":["FR21040"],"type":"fond"},
+            {"id":"FR21041","lon":-0.24707,"lat":49.27833,"drom":False,"stations":["FR21041"],"type":"fond"},
+            {"id":"FR21050","lon":-0.45833,"lat":48.645,"drom":False,"stations":["FR21050"],"type":"fond"},
+            {"id":"FR22054","lon":6.91087,"lat":49.18742,"drom":False,"stations":["FR22054"],"type":"fond"},
+            {"id":"FR23003","lon":-2.03924,"lat":47.3227,"drom":False,"stations":["FR23003"],"type":"fond"},
+            {"id":"FR23068","lon":-1.93652,"lat":47.24735,"drom":False,"stations":["FR23068"],"type":"fond"},
+            {"id":"FR23070","lon":-1.78308,"lat":47.28313,"drom":False,"stations":["FR23070"],"type":"fond"},
+            {"id":"FR23078","lon":-0.88358,"lat":47.05583,"drom":False,"stations":["FR23078"],"type":"fond"},
+            {"id":"FR23110","lon":-2.25015,"lat":47.26411,"drom":False,"stations":["FR23110"],"type":"fond"},
+            {"id":"FR23124","lon":-0.74338,"lat":46.65662,"drom":False,"stations":["FR23124"],"type":"fond"},
+            {"id":"FR23152","lon":-1.43686,"lat":46.66065,"drom":False,"stations":["FR23152"],"type":"fond"},
+            {"id":"FR23157","lon":-1.69027,"lat":47.14609,"drom":False,"stations":["FR23157"],"type":"fond"},
+            {"id":"FR23163","lon":0.1519,"lat":47.92192,"drom":False,"stations":["FR23163"],"type":"fond"},
+            {"id":"FR23174","lon":0.19605,"lat":47.98895,"drom":False,"stations":["FR23174"],"type":"fond"},
+            {"id":"FR23175","lon":-0.61001,"lat":47.43012,"drom":False,"stations":["FR23175"],"type":"fond"},
+            {"id":"FR23177","lon":-0.44476,"lat":47.78833,"drom":False,"stations":["FR23177"],"type":"fond"},
+            {"id":"FR23178","lon":-2.06688,"lat":47.31889,"drom":False,"stations":["FR23178"],"type":"fond"},
+            {"id":"FR23181","lon":-2.22317,"lat":47.27313,"drom":False,"stations":["FR23181"],"type":"fond"},
+            {"id":"FR23182","lon":0.22136,"lat":47.97114,"drom":False,"stations":["FR23182"],"type":"fond"},
+            {"id":"FR23230","lon":-2.33202,"lat":47.25304,"drom":False,"stations":["FR23230"],"type":"fond"},
+            {"id":"FR23239","lon":-1.5915,"lat":47.18594,"drom":False,"stations":["FR23239"],"type":"fond"},
+            {"id":"FR23249","lon":-2.12734,"lat":47.32113,"drom":False,"stations":["FR23249"],"type":"fond"},
+            {"id":"FR24007","lon":7.09315,"lat":43.5988,"drom":False,"stations":["FR24007"],"type":"fond"},
+            {"id":"FR24009","lon":7.00592,"lat":43.55839,"drom":False,"stations":["FR24009"],"type":"fond"},
+            {"id":"FR24014","lon":6.98898,"lat":44.09469,"drom":False,"stations":["FR24014"],"type":"fond"},
+            {"id":"FR24036","lon":7.28626,"lat":43.70208,"drom":False,"stations":["FR24036"],"type":"fond"},
+            {"id":"FR24039","lon":5.71181,"lat":43.93348,"drom":False,"stations":["FR24039"],"type":"fond"},
+            {"id":"FR24040","lon":7.04828,"lat":43.79191,"drom":False,"stations":["FR24040"],"type":"fond"},
+            {"id":"FR25039","lon":1.14832,"lat":49.02134,"drom":False,"stations":["FR25039"],"type":"fond"},
+            {"id":"FR25040","lon":1.15515,"lat":49.40619,"drom":False,"stations":["FR25040"],"type":"fond"},
+            {"id":"FR25043","lon":1.09904,"lat":49.4005,"drom":False,"stations":["FR25043"],"type":"fond"},
+            {"id":"FR25048","lon":1.05802,"lat":49.42815,"drom":False,"stations":["FR25048"],"type":"fond"},
+            {"id":"FR25049","lon":1.21437,"lat":49.30487,"drom":False,"stations":["FR25049"],"type":"fond"},
+            {"id":"FR25050","lon":1.34508,"lat":49.78122,"drom":False,"stations":["FR25050"],"type":"fond"},
+            {"id":"FR26005","lon":5.06588,"lat":47.30737,"drom":False,"stations":["FR26005"],"type":"fond"},
+            {"id":"FR26012","lon":4.09948,"lat":47.27476,"drom":False,"stations":["FR26012"],"type":"fond"},
+            {"id":"FR26014","lon":5.04106,"lat":47.32574,"drom":False,"stations":["FR26014"],"type":"fond"},
+            {"id":"FR26016","lon":3.2773,"lat":48.20044,"drom":False,"stations":["FR26016"],"type":"fond"},
+            {"id":"FR26017","lon":3.17109,"lat":46.99683,"drom":False,"stations":["FR26017"],"type":"fond"},
+            {"id":"FR26019","lon":3.57619,"lat":47.80058,"drom":False,"stations":["FR26019"],"type":"fond"},
+            {"id":"FR27003","lon":4.76653,"lat":45.45452,"drom":False,"stations":["FR27003"],"type":"fond"},
+            {"id":"FR27005","lon":4.7707,"lat":45.32185,"drom":False,"stations":["FR27005"],"type":"fond"},
+            {"id":"FR27007","lon":5.27087,"lat":45.60822,"drom":False,"stations":["FR27007"],"type":"fond"},
+            {"id":"FR27010","lon":5.18108,"lat":45.4609,"drom":False,"stations":["FR27010"],"type":"fond"},
+            {"id":"FR28010","lon":2.9,"lat":50.44914,"drom":False,"stations":["FR28010"],"type":"fond"},
+            {"id":"FR28022","lon":2.80737,"lat":50.30886,"drom":False,"stations":["FR28022"],"type":"fond"},
+            {"id":"FR28028","lon":2.63569,"lat":50.53538,"drom":False,"stations":["FR28028"],"type":"fond"},
+            {"id":"FR28033","lon":2.66642,"lat":50.48972,"drom":False,"stations":["FR28033"],"type":"fond"},
+            {"id":"FR29424","lon":4.39542,"lat":45.42009,"drom":False,"stations":["FR29424"],"type":"fond"},
+            {"id":"FR29426","lon":4.515,"lat":45.47533,"drom":False,"stations":["FR29426"],"type":"fond"},
+            {"id":"FR29439","lon":4.42967,"lat":45.48178,"drom":False,"stations":["FR29439"],"type":"fond"},
+            {"id":"FR30019","lon":6.45282,"lat":48.17265,"drom":False,"stations":["FR30019"],"type":"fond"},
+            {"id":"FR30021","lon":6.19492,"lat":48.6215,"drom":False,"stations":["FR30021"],"type":"fond"},
+            {"id":"FR30028","lon":7.01111,"lat":48.05112,"drom":False,"stations":["FR30028"],"type":"fond"},
+            {"id":"FR30033","lon":5.78556,"lat":49.06583,"drom":False,"stations":["FR30033"],"type":"fond"},
+            {"id":"FR30037","lon":6.13602,"lat":48.65694,"drom":False,"stations":["FR30037"],"type":"fond"},
+            {"id":"FR31001","lon":-0.58037,"lat":44.86121,"drom":False,"stations":["FR31001"],"type":"fond"},
+            {"id":"FR31002","lon":-0.5894,"lat":44.80046,"drom":False,"stations":["FR31002"],"type":"fond"},
+            {"id":"FR31007","lon":-0.51584,"lat":44.9003,"drom":False,"stations":["FR31007"],"type":"fond"},
+            {"id":"FR31010","lon":-0.53394,"lat":45.01478,"drom":False,"stations":["FR31010"],"type":"fond"},
+            {"id":"FR31013","lon":-0.39154,"lat":43.3108,"drom":False,"stations":["FR31013"],"type":"fond"},
+            {"id":"FR31016","lon":-1.48916,"lat":43.47982,"drom":False,"stations":["FR31016"],"type":"fond"},
+            {"id":"FR31021","lon":-0.53821,"lat":43.37628,"drom":False,"stations":["FR31021"],"type":"fond"},
+            {"id":"FR31033","lon":0.72718,"lat":45.18982,"drom":False,"stations":["FR31033"],"type":"fond"},
+            {"id":"FR31043","lon":-1.55388,"lat":43.47024,"drom":False,"stations":["FR31043"],"type":"fond"},
+            {"id":"FR31055","lon":-0.50703,"lat":43.88897,"drom":False,"stations":["FR31055"],"type":"fond"},
+            {"id":"FR32002","lon":4.83508,"lat":46.82106,"drom":False,"stations":["FR32002"],"type":"fond"},
+            {"id":"FR32005","lon":4.36689,"lat":46.67878,"drom":False,"stations":["FR32005"],"type":"fond"},
+            {"id":"FR32006","lon":4.83999,"lat":46.31617,"drom":False,"stations":["FR32006"],"type":"fond"},
+            {"id":"FR33102","lon":5.91861,"lat":45.59667,"drom":False,"stations":["FR33102"],"type":"fond"},
+            {"id":"FR33121","lon":6.38972,"lat":45.675,"drom":False,"stations":["FR33121"],"type":"fond"},
+            {"id":"FR33211","lon":6.24056,"lat":46.19583,"drom":False,"stations":["FR33211"],"type":"fond"},
+            {"id":"FR33212","lon":6.21453,"lat":46.19364,"drom":False,"stations":["FR33212"],"type":"fond"},
+            {"id":"FR33220","lon":6.71361,"lat":45.92361,"drom":False,"stations":["FR33220"],"type":"fond"},
+            {"id":"FR33302","lon":5.82083,"lat":46.07222,"drom":False,"stations":["FR33302"],"type":"fond"},
+            {"id":"FR33305","lon":5.22639,"lat":46.21167,"drom":False,"stations":["FR33305"],"type":"fond"},
+            {"id":"FR34017","lon":2.00928,"lat":47.95897,"drom":False,"stations":["FR34017"],"type":"fond"},
+            {"id":"FR34024","lon":0.65378,"lat":47.34414,"drom":False,"stations":["FR34024"],"type":"fond"},
+            {"id":"FR34025","lon":0.68294,"lat":47.41908,"drom":False,"stations":["FR34025"],"type":"fond"},
+            {"id":"FR34026","lon":0.71733,"lat":47.46925,"drom":False,"stations":["FR34026"],"type":"fond"},
+            {"id":"FR34029","lon":1.94467,"lat":47.83775,"drom":False,"stations":["FR34029"],"type":"fond"},
+            {"id":"FR34038","lon":2.61007,"lat":46.81469,"drom":False,"stations":["FR34038"],"type":"fond"},
+            {"id":"FR34043","lon":1.95561,"lat":48.39114,"drom":False,"stations":["FR34043"],"type":"fond"},
+            {"id":"FR34046","lon":1.35847,"lat":48.72969,"drom":False,"stations":["FR34046"],"type":"fond"},
+            {"id":"FR34051","lon":1.69314,"lat":46.79828,"drom":False,"stations":["FR34051"],"type":"fond"},
+            {"id":"FR34054","lon":1.40969,"lat":47.17017,"drom":False,"stations":["FR34054"],"type":"fond"},
+            {"id":"FR34056","lon":1.77194,"lat":46.86453,"drom":False,"stations":["FR34056"],"type":"fond"},
+            {"id":"FR35002","lon":0.89843,"lat":45.88485,"drom":False,"stations":["FR35002"],"type":"fond"},
+            {"id":"FR35004","lon":1.53726,"lat":45.15874,"drom":False,"stations":["FR35004"],"type":"fond"},
+            {"id":"FR35006","lon":1.76275,"lat":45.26266,"drom":False,"stations":["FR35006"],"type":"fond"},
+            {"id":"FR35007","lon":1.30792,"lat":45.87331,"drom":False,"stations":["FR35007"],"type":"fond"},
+            {"id":"FR35012","lon":2.06233,"lat":45.80509,"drom":False,"stations":["FR35012"],"type":"fond"},
+            {"id":"FR35031","lon":1.86958,"lat":46.17433,"drom":False,"stations":["FR35031"],"type":"fond"},
+            {"id":"FR36001","lon":4.87629,"lat":44.87024,"drom":False,"stations":["FR36001"],"type":"fond"},
+            {"id":"FR36019","lon":5.0443,"lat":45.0425,"drom":False,"stations":["FR36019"],"type":"fond"},
+            {"id":"FR36021","lon":5.27897,"lat":44.56944,"drom":False,"stations":["FR36021"],"type":"fond"},
+            {"id":"FR41017","lon":9.43464,"lat":42.67133,"drom":False,"stations":["FR41017"],"type":"fond"},
+            {"id":"FR41024","lon":9.19003,"lat":42.23603,"drom":False,"stations":["FR41024"],"type":"fond"},
+            {"id":"FR41063","lon":8.79616,"lat":41.94769,"drom":False,"stations":["FR41063"],"type":"fond"},
+            {"id":"FR42011","lon":7.78641,"lat":48.81835,"drom":False,"stations":["FR42011"],"type":"fond"},
+            {"id":"FR47131","lon":6.51029,"lat":45.5006,"drom":False,"stations":["FR47131"],"type":"fond"},
+            {"id":"FR47157","lon":6.13885,"lat":45.94453,"drom":False,"stations":["FR47157"],"type":"fond"},
+            {"id":"FR50060","lon":1.37531,"lat":44.01286,"drom":False,"stations":["FR50060"],"type":"fond"},
+            {"id":"FR82005","lon":6.07647,"lat":47.23461,"drom":False,"stations":["FR82005"],"type":"fond"},
+            {"id":"FR82010","lon":6.794,"lat":47.51031,"drom":False,"stations":["FR82010"],"type":"fond"},
+            {"id":"FR82012","lon":6.86836,"lat":47.53819,"drom":False,"stations":["FR82012"],"type":"fond"},
+            {"id":"FR82030","lon":6.82586,"lat":47.29464,"drom":False,"stations":["FR82030"],"type":"fond"},
+            {"id":"FR82040","lon":5.49639,"lat":47.09672,"drom":False,"stations":["FR82040"],"type":"fond"},
+            {"id":"FR82050","lon":5.55662,"lat":46.67132,"drom":False,"stations":["FR82050"],"type":"fond"},
+            {"id":"FR82060","lon":6.15764,"lat":47.62002,"drom":False,"stations":["FR82060"],"type":"fond"}
           ]
           ERA5 = os.environ.get("SOURCE") == "era5"; DOS = "meteo_era5" if ERA5 else "meteo"; os.makedirs(DOS, exist_ok=True)
           API = os.environ.get("METEO_API") or ("https://archive-api.open-meteo.com/v1/archive" if ERA5 else "https://historical-forecast-api.open-meteo.com/v1/forecast")
           VARS = (["precipitation", "shortwave_radiation", "cloud_cover", "boundary_layer_height", "temperature_2m", "wind_speed_10m", "wind_direction_10m"] if ERA5 else
                   ["temperature_2m", "relative_humidity_2m", "precipitation", "wind_speed_10m", "wind_direction_10m", "shortwave_radiation", "cloud_cover", "boundary_layer_height"])
           debut = os.environ.get("DEBUT") or "2023-01-01"
+          DEBUT_FOND = max(debut, "2024-01-01")                                  # points « fond » (prévision horaire)
+          if ERA5: POINTS = [p for p in POINTS if p.get("type") != "fond"]        # ERA5 : stations trafic seulement
           fin = os.environ.get("FIN") or (dt.datetime.now(dt.timezone.utc).date() - dt.timedelta(days=6 if ERA5 else 2)).isoformat()   # ERA5 : environ 5 jours de délai
           refaire = os.environ.get("REFAIRE") == "true"
           # Rythme : Open-Meteo décompte une requête de n jours et v variables comme ⌈n / 14⌉ × ⌈v / 10⌉ appels ; 0,8 s par appel décompté
           # garde sous 5 000 appels par heure (environ 80 s pour une série complète 2023-2026, 1 s pour un complément de quelques jours).
           SEC = float(os.environ.get("SEC_APPEL") or 0.8)
           def poids(d1, d2, nv): return math.ceil(((dt.date.fromisoformat(d2) - dt.date.fromisoformat(d1)).days + 1) / 14) * math.ceil(nv / 10)
-          json.dump({"debut": debut, "fin": fin, "variables": VARS, "points": POINTS}, open(f"{DOS}/points.json", "w", encoding="utf-8"), ensure_ascii=False, indent=0)
+          json.dump({"debut": debut, "debut_fond": DEBUT_FOND, "fin": fin, "variables": VARS, "points": POINTS}, open(f"{DOS}/points.json", "w", encoding="utf-8"), ensure_ascii=False, indent=0)
           def publier(msg):
               subprocess.run(["git", "add", "-A"], check=True)
               if subprocess.run(["git", "diff", "--cached", "--quiet"]).returncode == 0: return
@@ -206,11 +460,12 @@ jobs:
                       return None, str(e)[:200], None
           faits = 0; arret = None; echecs = []; sans = {False: set(), True: set()}          # variables refusées, métropole / DROM
           for i, p in enumerate(POINTS):
-              f = f"{DOS}/{p['id']}.json.gz"; anc = None; d1 = debut
+              deb = DEBUT_FOND if p.get("type") == "fond" else debut
+              f = f"{DOS}/{p['id']}.json.gz"; anc = None; d1 = deb
               if not refaire and os.path.exists(f):
                   try:
                       with gzip.open(f, "rt", encoding="utf-8") as g: o = json.load(g)
-                      if o.get("debut") == debut:
+                      if o.get("debut") == deb:
                           if o.get("fin", "") >= fin: continue
                           # Complément : seuls les jours après la fin de la série existante sont demandés, puis ajoutés (raccord vérifié à l'heure près)
                           if o.get("t0") and o.get("heures"): anc = o; d1 = (dt.date.fromisoformat(o["fin"]) + dt.timedelta(days=1)).isoformat()
@@ -223,7 +478,7 @@ jobs:
                   suite = (dt.datetime.fromisoformat(anc["t0"].replace("Z", "")) + dt.timedelta(hours=anc["heures"])).strftime("%Y-%m-%dT%H:%M")
                   if not t or t[0] != suite:
                       print(p["id"], ": raccord impossible (", t[0] if t else "réponse vide", "au lieu de", suite, "), série complète retéléchargée")
-                      anc = None; d1 = debut; variables = [v for v in VARS if v not in sans[p["drom"]]]
+                      anc = None; d1 = deb; variables = [v for v in VARS if v not in sans[p["drom"]]]
                       j, erreur, code = telecharger(p, variables, d1)
               if erreur:                                                              # point sauté : la relance le reprendra
                   echecs.append(p["id"]); print(p["id"], ": abandonné pour ce passage (", erreur, ")")
@@ -240,16 +495,17 @@ jobs:
               sortie = {"id": p["id"], "lon": p["lon"], "lat": p["lat"], "stations": p["stations"], "drom": p["drom"],
                         "modele": "era5 (archive best_match)" if ERA5 else ("meteofrance_arome_france_hd" if not p["drom"] else "best_match"),
                         "grille": anc["grille"] if anc else [j.get("longitude"), j.get("latitude"), j.get("elevation")],
-                        "debut": debut, "fin": fin, "t0": t0, "heures": nh, "unites": j.get("hourly_units", {}) or (anc or {}).get("unites", {}), "valeurs": val}
+                        "debut": deb, "fin": fin, "t0": t0, "heures": nh, "unites": j.get("hourly_units", {}) or (anc or {}).get("unites", {}), "valeurs": val}
               with gzip.open(f, "wt", encoding="utf-8") as g: json.dump(sortie, g, separators=(",", ":"))
               faits += 1; print(f"{i + 1}/{len(POINTS)} {p['id']} ({', '.join(p['stations'])}) : {nh} heures" + (f" (dont {len(t)} ajoutées)" if anc else "") + f", {len(val)} variables")
               if faits % 10 == 0: publier(f"Météo historique ({DOS}) : {faits} points de plus")
           open("LISEZMOI.txt", "w", encoding="utf-8").write(
               "Données historiques pour l'apprentissage et l'évaluation d'IATMO (tâche .github/workflows/meteo_historique.yml).\n"
-              "- meteo/ : météo horaire (temps universel) aux stations trafic, un fichier compressé par point (stations à moins de 2 km regroupées) ;\n"
+              "- meteo/ : météo horaire (temps universel) aux stations trafic depuis 2023 et, depuis 2024, aux stations de fond de métropole\n"
+              "  éloignées de plus de 3 km (prévision horaire), un fichier compressé par point (stations à moins de 2 km regroupées) ;\n"
               "  source : Open-Meteo, API Historical Forecast (licence CC BY 4.0), modèle AROME France HD de Météo-France en métropole,\n"
               "  meilleur modèle disponible dans les DROM ; points.json liste les points, les stations rattachées et la période ;\n"
-              "- meteo_era5/ : mêmes points, réanalyse ERA5 (API d'archive d'Open-Meteo, CC BY 4.0) : pluie (y compris 2023), rayonnement,\n"
+              "- meteo_era5/ : points des stations trafic, réanalyse ERA5 (API d'archive d'Open-Meteo, CC BY 4.0) : pluie (y compris 2023), rayonnement,\n"
               "  nébulosité, hauteur de couche limite, température et vent.\n")
           publier(f"Météo historique ({DOS}) du {debut} au {fin}" + (f" (arrêt : {arret})" if arret else "") + (f" (points à reprendre : {', '.join(echecs)})" if echecs else ""))
           n = sum(1 for p in POINTS if os.path.exists(f"{DOS}/{p['id']}.json.gz"))
