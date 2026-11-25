@@ -140,6 +140,13 @@
   #check b{font-weight:600}
   #insets{position:absolute;z-index:4;left:364px;bottom:14px;display:flex;gap:8px;transition:opacity .25s}
   #insets.off{opacity:0;pointer-events:none}
+  /* Crédits (bouton « i » en bas à droite) : encadré au-dessus du bouton, une source par ligne, devant les vignettes des DROM */
+  #map .maplibregl-ctrl-bottom-right{z-index:5}
+  #map .maplibregl-ctrl-attrib.maplibregl-compact-show{padding:2px 24px 2px 0}
+  #map .maplibregl-ctrl-attrib.maplibregl-compact-show .maplibregl-ctrl-attrib-inner{position:absolute;right:0;bottom:calc(100% + 6px);width:max-content;
+    max-width:min(460px,calc(100vw - 32px));white-space:normal;text-align:left;font-size:11.5px;line-height:1.55;color:var(--txt);
+    background:rgba(12,24,32,.96);border:1px solid var(--line);border-radius:8px;padding:8px 11px;box-shadow:0 6px 18px rgba(0,0,0,.45)}
+  #map .maplibregl-ctrl-attrib.maplibregl-compact-show .maplibregl-ctrl-attrib-inner a{color:var(--accent)}
   .inset{position:relative;width:138px;padding:5px;cursor:pointer}
   .inset:hover{border-color:var(--accent)}
   .inset .mm{height:96px;border-radius:6px;overflow:hidden;position:relative;background:#0d1b24}
@@ -348,7 +355,7 @@
 <div id="insets" class="off"></div>
 <div id="methodo" class="sheet" role="dialog" aria-modal="true" aria-label="Méthodologie"><article><button type="button" class="sheetClose">Fermer ✕</button>
 <h1><span class="ia">IA</span>TMO – Méthodologie</h1>
-<p class="by">Mise à jour : <span id="methMaj">24 novembre 2026</span></p>
+<p class="by">Mise à jour : <span id="methMaj">25 novembre 2026</span></p>
 <div class="enbref"><b>En bref.</b> IATMO affiche l'indice ATMO publié chaque jour par les AASQA, tel quel, à la commune. En dessous, il simule ce que donnerait une descente d'échelle jusqu'au quartier, par des règles explicites dont les paramètres sont appris chaque jour des mesures aux stations trafic, de l'IA au sens large : ce n'est pas l'indice officiel. Deux modèles d'apprentissage automatique (gradient boosting et perceptron) sont mis à l'épreuve pour corriger cette descente d'échelle, sans être encore appliqués. L'Aperçu 2027, masqué depuis le 24 novembre, préfigure le futur indice horaire sur la grille européenne, à partir de concentrations simulées. L'onglet IATMO cartographie les mesures horaires des stations de fond, et l'onglet Évaluation mesure la justesse de ces calculs. Toutes les sources sont ouvertes (onglet Sources) ; IATMO sert à montrer l'interface, pas à informer.</div>
 <nav class="sommaire"><a href="#" data-cible="partieCdc">I. Cahier des charges</a><a href="#" data-cible="partieNote">II. Note méthodologique</a></nav>
 <h2 class="partie" id="partieCdc">I. Cahier des charges</h2>
@@ -1146,7 +1153,8 @@ window.__iatmo = {relire:function(){ GEO_RELU = 0; geoRelire(); },p5:function(){
 map.addControl(new maplibregl.NavigationControl({showCompass:false}),"top-right");
 map.addControl(new maplibregl.ScaleControl({unit:"metric"}),"bottom-right");
 map.addControl(new maplibregl.AttributionControl({compact:true,
-  customAttribution:"Indice : Atmo France / AASQA (ODbL) · Mesures : LCSQA / Geod'air (Licence Ouverte) · Données issues de la plateforme nationale de prévision de la qualité de l'air www.prevair.org · Météo : Météo-France, AROME (Licence Ouverte) · Trafic : Bison Futé (Licence Ouverte) ; Ville de Paris (ODbL) · Fonds : IGN – Géoplateforme"}),"bottom-right");
+  // une source par ligne : le texte s'affiche dans un encadré au-dessus du bouton « i » (styles #map .maplibregl-ctrl-attrib dans index.html)
+  customAttribution:"Indice : Atmo France / AASQA (ODbL)<br>Mesures : LCSQA / Geod'air (Licence Ouverte)<br>Données issues de la plateforme nationale de prévision de la qualité de l'air www.prevair.org<br>Météo : Météo-France, AROME (Licence Ouverte)<br>Trafic : Bison Futé (Licence Ouverte) ; Ville de Paris (ODbL)<br>Fonds : IGN – Géoplateforme"}),"bottom-right");
 function replierInfo(){ var a = document.querySelector("#map .maplibregl-ctrl-attrib"); if(a){ a.classList.add("maplibregl-compact"); a.classList.remove("maplibregl-compact-show"); a.removeAttribute("open"); } }
 replierInfo(); map.once("load",replierInfo);                                   // sources repliées : elles s'ouvrent au clic sur « i »
 map.on("error",function(e){ if(window.console) console.warn("carte :",e && e.error && e.error.message); });
