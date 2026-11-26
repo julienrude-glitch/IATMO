@@ -864,7 +864,8 @@ jobs:
               if mm and mm.group(2) < (lim_om if mm.group(1) else lim): os.remove(f)
           # Prévisions telles qu'émises, pour évaluer honnêtement la prévision horaire de la qualité de l'air : à 8 h, 12 h et 16 h (Paris),
           # au premier passage de l'heure, valeurs AROME aux stations (stations_ref.json de la branche principale) pour les heures locales
-          # de h − 2 à 23 h du jour ; dossier previsions/, 60 jours gardés. Par station : [vitesse m/s, direction °, pluie mm/h, T °C, HR %] par heure.
+          # de h − 2 à 23 h du jour (h) et de 0 à 23 h du lendemain (h1, depuis le 26/11/2026) ; dossier previsions/, 60 jours gardés.
+          # Par station : [vitesse m/s, direction °, pluie mm/h, T °C, HR %] par heure.
           try:
               if maintenant.hour in (8, 12, 16):
                   os.makedirs("previsions", exist_ok=True); fp = f"previsions/{J0}-{maintenant.hour:02d}.json.gz"
@@ -876,13 +877,16 @@ jobs:
                           for b in BOITES:
                               _, tz, lat0, lon0, pb, ni, nj = BOITES[b]
                               if not (0 <= int((lat0 - lat) / pb) < nj and 0 <= int((lon - lon0) / pb) < ni): continue
-                              hl = dt.datetime.now(ZoneInfo(tz)).hour; lignes = []
+                              hl = dt.datetime.now(ZoneInfo(tz)).hour; lignes, lendemain = [], []
                               for h in range(max(0, hl - 2), 24):
                                   q = point(b, J0, lat, lon, h)
                                   lignes.append(None if q is None else [q["vitesse"], q["direction"], q["pluie"], q["temperature"], q["humidite"]])
-                              val[code] = {"boite": b, "de": max(0, hl - 2), "h": lignes}; calc[b] = index[J0 + "|" + b]; break
+                              for h in range(24):                                                # lendemain (depuis le 26/11/2026), pour évaluer la prévision de J+1
+                                  q = point(b, J1, lat, lon, h)
+                                  lendemain.append(None if q is None else [q["vitesse"], q["direction"], q["pluie"], q["temperature"], q["humidite"]])
+                              val[code] = {"boite": b, "de": max(0, hl - 2), "h": lignes, "h1": lendemain}; calc[b] = index[J0 + "|" + b]; calc[b + "|J1"] = index[J1 + "|" + b]; break
                       with gzip.open(fp, "wt", encoding="utf-8") as g:
-                          json.dump({"jour": J0, "heure": maintenant.hour, "emis": maintenant.isoformat(timespec="seconds"), "calculs": calc,
+                          json.dump({"jour": J0, "lendemain": J1, "heure": maintenant.hour, "emis": maintenant.isoformat(timespec="seconds"), "calculs": calc,
                                      "colonnes": ["vitesse", "direction", "pluie", "temperature", "humidite"], "stations": val}, g, ensure_ascii=False, separators=(",", ":"))
                       print("prévisions archivées :", fp, len(val), "stations")
               lp = (maintenant - dt.timedelta(days=60)).strftime("%Y-%m-%d")
