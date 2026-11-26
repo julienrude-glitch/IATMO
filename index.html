@@ -749,7 +749,7 @@ e_i = z_i − ẑ₋ᵢ(x_i) = w_i / Q_ii                 erreur de prévision, 
 <ul>
 <li>Calcul sur une grille d'un nœud tous les douze à vingt-quatre pixels, interpolation bilinéaire des concentrations, puis classement pixel par pixel avec la grille de l'AEE (valeurs horaires) ; l'indice est le plus mauvais sous-indice disponible.</li>
 <li>La carte est découpée au pixel par les contours des départements, avec un bord lissé. Le krigeage est calculé sur tout le rectangle affiché, donc jusqu'au trait de côte et aux frontières ; au-delà de la dernière station, il s'agit d'une extrapolation, qui tend vers la moyenne du domaine.</li>
-<li>Le bouton ▶ placé à côté du curseur d'heure fait défiler les heures : dans l'onglet Indice IATMO, de la première à la dernière heure lue, chacune avec son propre krigeage et son propre calage horaire ; dans l'aperçu 2027, de 0 h à 23 h. Un clic met en pause sur l'heure affichée, le suivant reprend ; vitesse fixe, une heure toutes les 0,45 s (le choix entre trois vitesses a été retiré le 26 novembre). Dans l'onglet Indice IATMO, l'animation est fluide (depuis le 26 novembre) : au premier clic, la page calcule d'avance les grilles des heures à venir pour la vue affichée, par tranches qui laissent la carte utilisable ; la lecture démarre dès que les deux premières heures sont prêtes (le bouton affiche l'avancement) et le calcul se poursuit pendant la lecture. Elle dessine jusqu'à cinq images par heure (trois sur smartphone, moins si l'appareil ne suit pas), les images intermédiaires étant obtenues par interpolation linéaire des concentrations entre deux heures pleines : les limites de classes glissent au lieu de sauter. Ces images intermédiaires ne sont pas des données : l'heure affichée, les fiches et la pause restent calées sur les heures pleines. Déplacer ou zoomer la carte, changer de polluant ou de jour arrête l'animation ; les grilles calculées sont gardées tant que la vue et les données ne changent pas, et la reprise après une pause est immédiate. Tout changement d'onglet ou d'heure l'arrête. À l'ouverture de l'onglet, la carte se place sur la dernière heure renseignée par au moins 40 % des stations de l'heure la plus fournie ; les heures suivantes, publiées par les seuls DROM de l'océan Indien datés à leur heure locale, restent accessibles au curseur. Avec « Demain » (prévision expérimentale du lendemain), la carte s'ouvre sur 0 h. Le lien copié garde l'heure et la date affichées ; un simple rechargement de la page revient à la dernière heure, pour ne pas masquer les heures publiées depuis. Les mesures lues sont aussi gardées par le navigateur pour la journée : elles s'affichent tout de suite à l'ouverture, mais la copie GitHub est relue à chaque fois et les remplace dès qu'elle répond ; la mémoire ne sert seule que si la copie est injoignable, et le bandeau le signale.</li>
+<li>Le bouton ▶ placé à côté du curseur d'heure fait défiler les heures : dans l'onglet Indice IATMO, de la première à la dernière heure lue, chacune avec son propre krigeage et son propre calage horaire ; dans l'aperçu 2027, de 0 h à 23 h. Un clic met en pause sur l'heure affichée, le suivant reprend ; vitesse fixe, une heure toutes les 0,45 s (le choix entre trois vitesses a été retiré le 26 novembre). Dans l'onglet Indice IATMO, l'animation est fluide (depuis le 26 novembre) : au premier clic, la page calcule d'avance les grilles des heures à venir pour la vue affichée, par tranches qui laissent la carte utilisable ; la lecture démarre dès que les deux premières heures sont prêtes (le bouton affiche l'avancement) et le calcul se poursuit pendant la lecture. La lecture suit l'horloge de l'écran : à chaque image (jusqu'à 30 par seconde, 20 sur smartphone, moins si l'appareil ne suit pas), la position dans l'heure fixe l'interpolation linéaire des concentrations entre deux heures pleines, et l'image est dessinée dans un canevas lu directement par la carte, sans passer par une image PNG : les limites de classes glissent au lieu de sauter, au rythme d'une heure toutes les 0,45 s. Les flèches de vent, si l'option est cochée, sont mises à jour jusqu'à 12 fois par seconde. Ces images intermédiaires ne sont pas des données : l'heure affichée, les fiches et la pause restent calées sur les heures pleines. Déplacer ou zoomer la carte, changer de polluant ou de jour arrête l'animation ; les grilles calculées sont gardées tant que la vue et les données ne changent pas, et la reprise après une pause est immédiate. Tout changement d'onglet ou d'heure l'arrête. À l'ouverture de l'onglet, la carte se place sur la dernière heure renseignée par au moins 40 % des stations de l'heure la plus fournie ; les heures suivantes, publiées par les seuls DROM de l'océan Indien datés à leur heure locale, restent accessibles au curseur. Avec « Demain » (prévision expérimentale du lendemain), la carte s'ouvre sur 0 h. Le lien copié garde l'heure et la date affichées ; un simple rechargement de la page revient à la dernière heure, pour ne pas masquer les heures publiées depuis. Les mesures lues sont aussi gardées par le navigateur pour la journée : elles s'affichent tout de suite à l'ouverture, mais la copie GitHub est relue à chaque fois et les remplace dès qu'elle répond ; la mémoire ne sert seule que si la copie est injoignable, et le bandeau le signale.</li>
 <li>Outre-mer, les mesures arrivent avec plusieurs heures de décalage. Quand un territoire n'a aucune mesure de fond à l'heure choisie, la carte y utilise la dernière heure antérieure disponible, dans la limite de vingt-quatre heures, et la fiche l'indique. Les vignettes des DROM montrent le même fond krigé, sans effet de proximité routière.</li>
 <li>Au niveau quartier, le fond krigé reçoit l'incrément routier Δ<sub>p</sub> · T̂ · <i>F</i><sub>p</sub>, et l'ozone sa baisse par titration (§ 5.2, 5.4 et 5.5) : la carte de fond devient une carte avec proximité routière. La fiche donne alors les incréments ; le fond avant effet routier figure dans ses « Détails du calcul ».</li>
 </ul>
@@ -1198,6 +1198,9 @@ map.on("load",function(){
   map.addSource("geo",{type:"image",url:VIDE,coordinates:[[0,0.001],[0.001,0.001],[0.001,0],[0,0]]});
   map.addLayer({id:"geo",type:"raster",source:"geo",layout:{visibility:"none"},
     paint:{"raster-opacity":state.opacity,"raster-fade-duration":0,"raster-resampling":"linear"}});
+  map.addSource("geoA",{type:"canvas",canvas:geoCanvasA,animate:false,coordinates:[[0,0.001],[0.001,0.001],[0.001,0],[0,0]]});   // animation fluide de l'onglet Indice IATMO
+  map.addLayer({id:"geoA",type:"raster",source:"geoA",layout:{visibility:"none"},
+    paint:{"raster-opacity":state.opacity,"raster-fade-duration":0,"raster-resampling":"linear"}});
   map.addSource("vent",{type:"geojson",data:{type:"FeatureCollection",features:[]}});                 // flèches de vent (option, onglet Indice IATMO)
   map.addLayer({id:"vent-halo",type:"line",source:"vent",layout:{"line-cap":"round","line-join":"round"},paint:{"line-color":"rgba(13,27,36,.7)","line-width":3.6}});
   map.addLayer({id:"vent",type:"line",source:"vent",layout:{"line-cap":"round","line-join":"round"},paint:{"line-color":"#ffffff","line-width":1.5}});
@@ -1219,7 +1222,7 @@ map.on("load",function(){
     layout:{"text-field":["get","nom_du_chef_lieu"],"text-font":["Source Sans Pro Regular"],"text-size":12},
     paint:{"text-color":"#fff","text-halo-color":"rgba(13,27,36,.9)","text-halo-width":1.4}});
 
-  map.on("idle",function(){ if(ANIM.t) return; resolveMissing(map); updateFine(false); updateGeo(false); });   // pendant l'animation, chaque image rend la carte « idle »
+  map.on("idle",function(){ if(ANIM.t || ANIM.raf) return; resolveMissing(map); updateFine(false); updateGeo(false); });   // pendant l'animation, chaque image rend la carte « idle »
   map.on("zoom",updateScale);
   map.on("click",onClick);
   map.on("mousemove","commune-fill",function(){ map.getCanvas().style.cursor="pointer"; });
@@ -2900,7 +2903,7 @@ function geoPoint(lon,lat,T,geom){
 }
 
 /* ---------- Rendu ---------- */
-var geoCanvas = document.createElement("canvas");
+var geoCanvas = document.createElement("canvas"), geoCanvasA = document.createElement("canvas"); geoCanvasA.width = geoCanvasA.height = 2;   // image fixe ; canevas de l'animation
 function masque(){
   var out = [], feats = map.querySourceFeatures("admin",{sourceLayer:"departement"});
   feats.forEach(function(f){
@@ -2929,7 +2932,7 @@ function masquePixels(pieces,g,F,W,H){
 var GP_FV = [null,null,null,null,null], GP_OUT = [0,0,0,0,0], GP_INC = [0,0,0,0,0];
 function geoPeindre(canvas,g,pieces){
   var F = 4, nx = g.nx, ny = g.ny, W = (nx-1)*F, H = (ny-1)*F, mk = masquePixels(pieces,g,F,W,H);
-  canvas.width = W; canvas.height = H;
+  if(canvas.width!==W) canvas.width = W; if(canvas.height!==H) canvas.height = H;               // pas de réallocation à chaque image de l'animation
   var ctx = canvas.getContext("2d"), img = ctx.createImageData(W,H), d = img.data, cols = {}, hist = {}, p;
   Object.keys(CLASSES).forEach(function(q){ cols[q] = rgb(CLASSES[q].col); });
   for(var py=0;py<H;py++){
@@ -3087,7 +3090,7 @@ function geoImage(g,pieces){
   var hist = geoPeindre(geoCanvas,g,pieces);
   var w = lonOf(g.X0*g.s), e2 = lonOf((g.X0+g.nx-1)*g.s), so = latOf(g.Y0*g.s), no = latOf((g.Y0+g.ny-1)*g.s);
   map.getSource("geo").updateImage({url:geoCanvas.toDataURL("image/png"),coordinates:[[w,no],[e2,no],[e2,so],[w,so]]});
-  map.setLayoutProperty("geo","visibility","visible");
+  map.setLayoutProperty("geo","visibility",ANIM.canvas ? "none" : "visible");                 // pendant la lecture, c'est le canevas animé qui s'affiche
   return hist;
 }
 // Heure locale d'un territoire d'outre-mer pour une clé horaire de Paris (« AAAA/MM/JJ HH ») : passage par le temps universel
@@ -4904,19 +4907,45 @@ document.getElementById("lienCopie").addEventListener("click",function(){
 var hourRaf = 0;
 var curDeb = 0;
 /* Animation des heures : onglet Indice IATMO (heures lues) et aperçu 2027 (0 h à 23 h), avec pause ; vitesse ×2 fixe.
-   Onglet Indice IATMO : les grilles de toutes les heures à venir sont calculées d'avance pour la vue affichée (par tranches,
-   la carte reste utilisable), puis ANIM_NF images par heure sont dessinées, les intermédiaires par interpolation linéaire
-   des concentrations entre deux heures pleines : les limites de classes glissent au lieu de sauter. L'heure affichée, les
-   fiches et la pause restent calées sur les heures pleines. */
-var ANIM = {t:null, v:1, prep:null, cache:null, i:0, sub:0, nf:5, t0:0, tmp:null}, VITESSES = [[900,"×1"],[450,"×2"],[1800,"×½"]];   // bouton de vitesse masqué depuis le 26 novembre
-var ANIM_NF = MOBILE ? 3 : 5;                                   // images par heure au plus (smartphone : 3), réduites si la machine ne suit pas
-function animActif(){ return !!(ANIM.t || ANIM.prep); }
+   Onglet Indice IATMO : les grilles des heures à venir sont calculées d'avance pour la vue affichée (par tranches courtes, la
+   carte reste utilisable). La lecture suit l'horloge de l'écran (requestAnimationFrame) : à chaque image, la position dans
+   l'heure fixe l'interpolation linéaire des concentrations entre deux heures pleines, et l'image est dessinée dans un canevas
+   lu directement par la carte (source « canvas » de MapLibre, sans passage par une image PNG). Les limites de classes glissent
+   au lieu de sauter ; l'heure affichée, les fiches et la pause restent calées sur les heures pleines. */
+var ANIM = {t:null, raf:0, v:1, prep:null, cache:null, i:0, i0:0, f:0, t0:0, last:0, peint:0, ventT:0, tmp:null, canvas:false}, VITESSES = [[900,"×1"],[450,"×2"],[1800,"×½"]];   // bouton de vitesse masqué depuis le 26 novembre
+var ANIM_DT = MOBILE ? 50 : 33;                                  // intervalle minimal entre deux images (ms) : 30 images/s au plus, 20 sur smartphone
+function animActif(){ return !!(ANIM.t || ANIM.raf || ANIM.prep); }
 function animBouton(txt,titre,on){ var b = document.getElementById("geoAnim"); b.textContent = txt; b.title = titre; b.setAttribute("aria-pressed",on ? "true" : "false"); }
+function animCanevas(on){                                                        // bascule entre l'image fixe (« geo ») et le canevas animé (« geoA »)
+  var src = map.getSource("geoA"); if(!src || !map.getLayer("geoA")) return false;
+  if(on){
+    var g = GEO.grid; if(!g) return false;
+    var w = lonOf(g.X0*g.s), e2 = lonOf((g.X0+g.nx-1)*g.s), so = latOf(g.Y0*g.s), no = latOf((g.Y0+g.ny-1)*g.s);
+    geoPeindre(geoCanvasA,g,ANIM.cache.cad.pieces);
+    src.setCoordinates([[w,no],[e2,no],[e2,so],[w,so]]);
+    map.setLayoutProperty("geoA","visibility","visible"); map.setLayoutProperty("geo","visibility","none");
+    animTexture();
+    ANIM.canvas = true;
+  }
+  else if(ANIM.canvas){
+    ANIM.canvas = false;
+    map.setLayoutProperty("geoA","visibility","none");
+    if(geoOn() && GEO.grid) map.setLayoutProperty("geo","visibility","visible");
+  }
+  return true;
+}
+// Envoie le canevas à la carte : play() puis pause() recopient la texture une fois et demandent un seul rendu
+// (la source reste à l'arrêt entre deux images, sans rendu continu de la carte)
+function animTexture(){ var src = map.getSource("geoA"); if(src && src.play && src.pause){ src.play(); src.pause(); } else if(src) map.triggerRepaint(); }
 function animStop(caler){
   if(ANIM.t){ clearTimeout(ANIM.t); ANIM.t = null; }
+  var lecture = !!ANIM.raf;
+  if(ANIM.raf){ cancelAnimationFrame(ANIM.raf); ANIM.raf = 0; }
   if(ANIM.prep){ clearTimeout(ANIM.prep.t); ANIM.prep = null; }
-  if(caler && ANIM.sub>0 && animCacheOk()) animHeure(ANIM.i);        // pause entre deux heures : retour à l'heure pleine affichée
-  ANIM.sub = 0;
+  if(lecture && caler && animCacheOk()) animHeure(ANIM.i);                       // pause ou fin : heure pleine affichée, image fixe à jour
+  else if(lecture && geoOn()){ updateGeoInsets(); geoStatus(); majAdresse(); }
+  animCanevas(false);
+  ANIM.f = 0;
   animBouton("▶","Animer les heures",false);
 }
 function animMax(){ return geoOn() ? (GEO.hoursUse ? GEO.hoursUse.length-1 : 0) : 23; }
@@ -4935,7 +4964,7 @@ function animPas(){
 // Onglet Indice IATMO
 function animCacheOk(){ var c = ANIM.cache; return !!(c && geoOn() && GEO.cle===c.cle && GEO.cadre===c.cad && GEO.hoursUse===c.hs); }
 function animDyn(i){ var sv = state.geoI; state.geoI = i; var d = dyn(); state.geoI = sv; return d; }
-function animHeure(i){                                                           // heure pleine, depuis les grilles calculées
+function animHeure(i){                                                           // heure pleine, mise à jour complète (pause, fin)
   var c = ANIM.cache, e = c && c.g[i];
   if(popup){ popup.remove(); popup = null; }
   state.geoI = i;
@@ -4947,8 +4976,17 @@ function animHeure(i){                                                          
   GEO.vide = c.cad.pieces.length>0 && !Object.keys(GEO.hist).length;
   updateGeoInsets(); geoStatus(); updateScale(); majAdresse(); ventMaj(0);
 }
-function animEntre(i,f){                                                         // image intermédiaire entre les heures i et i+1
-  var c = ANIM.cache, a = c.g[i], b = c.g[i+1]; if(!a || !b) return;
+function animPasser(i){                                                          // passage d'heure pendant la lecture : mise à jour légère
+  var c = ANIM.cache, e = c.g[i];
+  state.geoI = i; DYN = e.dyn;
+  GEO.grid = geoGrille(c.cad,e.C,e.has,e.U);
+  GEO.key = c.cle+"|"+i+"|"+DYN.m.join();
+  updateScale();
+  setTimeout(function(){ if(ANIM.raf) updateGeoInsets(); },0);                   // vignettes des DROM, après l'image
+}
+function animGrilleEntre(i,f){                                                   // grille interpolée entre les heures i et i+1
+  var c = ANIM.cache, a = c.g[i], b = c.g[i+1];
+  if(!b || f<=0) return {g:geoGrille(c.cad,a.C,a.has,a.U), dyn:a.dyn};
   var N = c.cad.nx*c.cad.ny, C = [], has = [], U = (a.U && b.U) ? [] : null, p, k;
   if(!ANIM.tmp || ANIM.tmp.N!==N) ANIM.tmp = {N:N, C:[0,1,2,3,4].map(function(){ return new Float32Array(N); }), U:[0,1,2,3,4].map(function(){ return new Float32Array(N); })};
   for(p=0;p<5;p++){
@@ -4961,14 +4999,15 @@ function animEntre(i,f){                                                        
       else U[p] = ua || ub || null;
     }
   }
-  var d0 = DYN, da = a.dyn, db = b.dyn;
-  DYN = Object.assign({},f<0.5 ? da : db,{m:da.m.map(function(v,q){ return v+(db.m[q]-v)*f; }),mx:(da.mx!=null && db.mx!=null) ? da.mx+(db.mx-da.mx)*f : (f<0.5 ? da.mx : db.mx)});
-  try{ geoImage(geoGrille(c.cad,C,has,U),c.cad.pieces); } finally{ DYN = d0; }
-  ventMaj(f);
+  var da = a.dyn, db = b.dyn;
+  return {g:geoGrille(c.cad,C,has,U), dyn:Object.assign({},f<0.5 ? da : db,{m:da.m.map(function(v,q){ return v+(db.m[q]-v)*f; }),mx:(da.mx!=null && db.mx!=null) ? da.mx+(db.mx-da.mx)*f : (f<0.5 ? da.mx : db.mx)})};
 }
-// Calcul d'avance des grilles debut..fin, par tranches de 25 ms ; la lecture démarre dès que les deux premières heures
-// sont prêtes et le calcul se poursuit entre les images (la lecture attend si elle le rattrape)
-function animPreparer(debut,fin,pret){
+function animPeindre(i,f){                                                       // image de la position (i, f), dans le canevas animé
+  var r = animGrilleEntre(i,f), d0 = DYN; DYN = r.dyn;
+  try{ geoPeindre(geoCanvasA,r.g,ANIM.cache.cad.pieces); } finally{ DYN = d0; }
+  animTexture();
+}
+function animPreparer(debut,fin,pret){                                           // grilles debut..fin, par tranches ; la lecture démarre dès que les deux premières sont prêtes
   var c = ANIM.cache, todo = [], lance = false;
   for(var i=debut;i<=fin;i++) if(!c.g[i]) todo.push(i);
   var n0 = todo.length, w = null;
@@ -4981,7 +5020,7 @@ function animPreparer(debut,fin,pret){
     ANIM.prep.t = 0;
     if(!animCacheOk()){ animStop(); return; }                                   // vue, polluant ou données changés pendant le calcul
     if(!w) w = grilleTravail(c.cad,c.hs[todo[0]]);
-    if(grilleAvance(w,25)){ c.g[todo[0]] = {C:w.C,has:w.has,U:w.U,dyn:animDyn(todo[0])}; todo.shift(); w = null; }
+    if(grilleAvance(w,ANIM.raf ? 8 : 25)){ c.g[todo[0]] = {C:w.C,has:w.has,U:w.U,dyn:animDyn(todo[0])}; todo.shift(); w = null; }   // tranches de 8 ms pendant la lecture
     if(!lance){
       if(assez()){ lance = true; pret(); }
       else{ var pc = Math.round(100*(n0-todo.length+(w ? w.j/c.cad.ny : 0))/Math.min(n0,2)); animBouton(Math.min(99,pc)+" %","Préparation de l'animation ; cliquer pour annuler",true); }
@@ -4990,24 +5029,25 @@ function animPreparer(debut,fin,pret){
     ANIM.prep.t = setTimeout(tranche,0);
   })();
 }
-function animTick(){
-  ANIM.t = null;
+function animBoucle(){
+  ANIM.raf = 0;
   if(!animCacheOk()){ animStop(); return; }
-  var c = ANIM.cache, V = VITESSES[ANIM.v][0], now = performance.now();
-  if(ANIM.sub===0 && ANIM.i<animMax() && !c.g[ANIM.i+1]){                       // heure suivante pas encore calculée : on l'attend
-    ANIM.attente = ANIM.attendu = true; ANIM.t = setTimeout(animTick,30); return;
+  var c = ANIM.cache, V = VITESSES[ANIM.v][0], now = performance.now(), max = animMax();
+  if(now-ANIM.peint<ANIM_DT){ ANIM.raf = requestAnimationFrame(animBoucle); return; }
+  var pos = (now-ANIM.t0)/V, i = ANIM.i0+Math.floor(pos), f = pos-Math.floor(pos);
+  if(i>=max){ ANIM.i = max; animStop(true); return; }                            // dernière heure atteinte : on s'arrête dessus
+  var avance = ANIM.attente ? 3 : 1, manque = false;                             // après une attente, on repart avec deux heures d'avance
+  for(var a=1;a<=avance && i+a<=max;a++) if(!c.g[i+a]){ manque = true; break; }
+  ANIM.attente = manque;
+  if(!c.g[i] || ANIM.attente){                                                   // heures suivantes pas encore calculées : on attend sur place
+    ANIM.t0 += now-ANIM.last; ANIM.last = now; ANIM.raf = requestAnimationFrame(animBoucle); return;
   }
-  if(ANIM.attente){ ANIM.attente = false; ANIM.t0 = now-V/ANIM.nf; }             // reprise après attente
-  ANIM.sub++;
-  if(ANIM.sub>=ANIM.nf){                                                         // heure pleine suivante
-    // nombre d'images par heure ajusté à la machine : l'heure doit durer V ms (vitesse ×2)
-    var duree = now-ANIM.t0;
-    if(!ANIM.attendu){ if(duree>1.25*V && ANIM.nf>2) ANIM.nf--; else if(duree<1.1*V && ANIM.nf<ANIM_NF) ANIM.nf++; }
-    ANIM.attendu = false; ANIM.sub = 0; ANIM.i++; ANIM.t0 = Math.max(ANIM.t0+V,now-V/ANIM.nf);
-    animHeure(ANIM.i); if(ANIM.i>=animMax()){ animStop(); return; }
-  }
-  else animEntre(ANIM.i,ANIM.sub/ANIM.nf);
-  ANIM.t = setTimeout(animTick,Math.max(0,ANIM.t0+(ANIM.sub+1)*V/ANIM.nf-performance.now()));   // rythme régulier, sans dérive
+  ANIM.last = now;
+  if(i!==ANIM.i) animPasser(i);
+  ANIM.i = i; ANIM.f = f; ANIM.peint = now;
+  animPeindre(i,f);
+  if(state.vent && now-ANIM.ventT>=80){ ANIM.ventT = now; ventMaj(f); }          // flèches de vent : 12 mises à jour par seconde au plus
+  ANIM.raf = requestAnimationFrame(animBoucle);
 }
 document.getElementById("geoAnim").addEventListener("click",function(){
   if(animActif()){ animStop(true); return; }                                    // pause (ou annulation du calcul) : on reste sur l'heure pleine
@@ -5027,13 +5067,14 @@ document.getElementById("geoAnim").addEventListener("click",function(){
     var C0 = GEO.grid.C.map(function(a,p){ return GEO.grid.has[p] ? a : null; });
     c.g[i0] = {C:C0,has:GEO.grid.has,U:GEO.grid.U,dyn:animDyn(i0)};
   }
-  ANIM.i = i0; ANIM.sub = 0; ANIM.attente = ANIM.attendu = false; ANIM.nf = ANIM_NF;
+  if(popup){ popup.remove(); popup = null; }
   animBouton("0 %","Préparation de l'animation ; cliquer pour annuler",true);
   animPreparer(i0,animMax(),function(){
     if(!animCacheOk()){ animStop(); return; }
-    ANIM.t0 = performance.now();
+    ANIM.i0 = ANIM.i = i0; ANIM.f = 0; ANIM.t0 = ANIM.last = performance.now(); ANIM.peint = 0; ANIM.ventT = 0; ANIM.attente = false;
     animBouton("⏸","Mettre en pause",true);
-    ANIM.t = setTimeout(animTick,VITESSES[ANIM.v][0]/ANIM.nf);
+    if(!animCanevas(true)){ animStop(); return; }
+    ANIM.raf = requestAnimationFrame(animBoucle);
   });
 });
 document.getElementById("animVit").addEventListener("click",function(){
