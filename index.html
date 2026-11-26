@@ -3564,8 +3564,8 @@ function updateScale(){
   var vert = false, court = "", NOM = '<b class="nm"><span>IA</span>TMO</b>';            // court : version abrégée si la fenêtre est étroite
   if(state.mode==="simulation" && !ge) msg.push("<b>Valeurs fictives</b> — le flux Atmo Data n'a pas pu être lu ; ce n'est pas l'indice ATMO.");
   if(!msg.length && !ge && state.view==="actuel" && state.mode==="reel"){ vert = true;
-    msg.push('<b class="nm">Indice ATMO</b> — '+(state.day ? "prévision pour demain, " : "")+"par commune, point le plus dégradé dans la modélisation régionale de fond de l'AASQA (météo, inventaire des émissions, mesures de fond).");
-    court = '<b class="nm">Indice ATMO</b> — par commune, modélisation régionale de fond de l\'AASQA.'; }
+    msg.push('<b class="nm">Indice ATMO</b> — classe publiée par l\'AASQA pour chaque commune'+(state.day ? " pour demain" : "")+", calculée par elle sur le point le plus dégradé de sa modélisation régionale de fond.");
+    court = '<b class="nm">Indice ATMO</b> — classe publiée par l\'AASQA pour chaque commune.'; }
   var ghp = ge && estPrev(geoHour()) ? geoHour().slice(11,13)+" h" : "";
   if(ge && ghp){ vert = true; msg = [NOM+" — <b class='nm'>prévision pour "+ghp+"</b> : fond krigé à partir des valeurs prévues aux stations de fond (mesures temps réel et météo AROME). Ce n'est pas l'indice ATMO."];
     court = NOM+" — prévision pour "+ghp+". Ce n'est pas l'indice ATMO."; }
