@@ -133,7 +133,7 @@
   #results li small{display:block;color:var(--muted)}
   #results li.msg{cursor:default;color:var(--muted)}
   #hourRow{display:none}
-  #hourLbl{min-width:34px;text-align:right;font-variant-numeric:tabular-nums}
+  #hourLbl{min-width:34px;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
   select{font:inherit;font-size:12.5px;color:var(--txt);background:#12303c;border:1px solid var(--line);border-radius:6px;padding:4px 6px;flex:1}
   .hint{font-size:11.5px;color:var(--muted);margin:-3px 0 10px}
   #check{font-size:12px;background:rgba(255,255,255,.06);border-radius:7px;padding:7px 9px;margin:0 0 12px;display:none}
@@ -355,7 +355,7 @@
 <div id="insets" class="off"></div>
 <div id="methodo" class="sheet" role="dialog" aria-modal="true" aria-label="Méthodologie"><article><button type="button" class="sheetClose">Fermer ✕</button>
 <h1><span class="ia">IA</span>TMO – Méthodologie</h1>
-<p class="by">Mise à jour : <span id="methMaj">25 novembre 2026</span></p>
+<p class="by">Mise à jour : <span id="methMaj">26 novembre 2026</span></p>
 <div class="enbref"><b>En bref.</b> IATMO affiche l'indice ATMO publié chaque jour par les AASQA, tel quel, à la commune. En dessous, il simule ce que donnerait une descente d'échelle jusqu'au quartier, par des règles explicites dont les paramètres sont appris chaque jour des mesures aux stations trafic, de l'IA au sens large : ce n'est pas l'indice officiel. Deux modèles d'apprentissage automatique (gradient boosting et perceptron) sont mis à l'épreuve pour corriger cette descente d'échelle, sans être encore appliqués. L'Aperçu 2027, masqué depuis le 24 novembre, préfigure le futur indice horaire sur la grille européenne, à partir de concentrations simulées. L'onglet IATMO cartographie les mesures horaires des stations de fond, et l'onglet Évaluation mesure la justesse de ces calculs. Toutes les sources sont ouvertes (onglet Sources) ; IATMO sert à montrer l'interface, pas à informer.</div>
 <nav class="sommaire"><a href="#" data-cible="partieCdc">I. Cahier des charges</a><a href="#" data-cible="partieNote">II. Note méthodologique</a></nav>
 <h2 class="partie" id="partieCdc">I. Cahier des charges</h2>
@@ -370,7 +370,7 @@
 <p>Règles d'interface :</p>
 <ul><li>Un clic sur une commune donne l'indice, les cinq sous-indices (NO₂, O₃, PM₁₀, PM₂,₅, SO₂) et l'AASQA productrice. La fiche est hiérarchisée : la classe en tête, puis le polluant responsable, les sous-indices et l'estimation au point, enfin un volet replié « Détails du calcul » (méthode, station la plus proche, incertitude), qui reste ouvert d'un clic à l'autre une fois ouvert.</li><li>En haut de la carte, un bandeau d'une ligne rappelle ce qui est affiché : contour vert pour l'indice officiel des AASQA (onglet Indice actuel) et pour le fond krigé (onglet IATMO), contour orange pour les rendus simulés ou fictifs. Au niveau quartier, il signale qu'il s'agit d'une estimation et non de l'indice officiel ; le contour de la commune reste visible.</li><li>La transition commune → quartier est un fondu, pour que l'on voie de quelle valeur communale part l'estimation.</li><li>L'estimation peut être désactivée : la carte reste alors à la commune à tous les zooms.</li></ul>
 <p>Commandes d'IATMO :</p>
-<ul><li><b>Recherche</b> d'une commune ou d'une adresse, qui centre la carte sur le lieu.</li><li><b>Aujourd'hui ou demain</b> : les deux échéances du flux Atmo Data ; le choix est masqué dans l'onglet IATMO, qui ne contient que les mesures du jour.</li><li><b>Indice actuel ou aperçu 2027</b> (onglet Aperçu 2027 masqué depuis le 24 novembre ; son calcul est conservé) : l'aperçu ajoute un curseur horaire, une animation des 24 heures, ou la pire heure de la journée, et classe des concentrations simulées avec la grille européenne révisée en 2025.</li><li><b>Onglet IATMO</b> (nommé « Geod'air » jusqu'au 24 novembre, d'après la source de ses mesures) : carte des concentrations de fond krigées à partir des mesures horaires des stations de fond, classées avec la grille européenne, avec animation des heures et estimation de l'incertitude (§ 7).</li><li><b>Indice ou polluant</b> : NO₂, O₃, PM₁₀ ou PM₂,₅, à la commune comme au quartier.</li><li><b>Vignettes des DROM</b> en vue nationale, avec la mention « Indice non diffusé » quand le flux ne couvre pas le territoire.</li><li><b>Rendu lissé ou en mailles</b> au niveau quartier.</li><li><b>Options</b> (menu replié par défaut) : estimation sous la commune, règle de cohérence avec l'indice communal (case à cocher, puis percentile 90 ou maximum des mailles ; décochée, aucune contrainte), rendu lissé, axes routiers (avec les points de comptage du trafic : blancs pour Bison Futé, jaune orangé pour les capteurs de la Ville de Paris), effet routier modulé et trafic réel (§ 5 et § 6).</li><li><b>Méthodologie</b> : ce cahier des charges, suivi de la note méthodologique détaillant les sources, les calculs et les règles de cohérence. Elle se termine par un lien de téléchargement de la note méthodologique de synthèse, au format PDF.</li><li><b>Évaluation</b> : indicateurs de qualité des calculs, sur les mesures du jour et, pour 7 et 30 jours, sur l'historique (§ 8).</li>
+<ul><li><b>Recherche</b> d'une commune ou d'une adresse, qui centre la carte sur le lieu.</li><li><b>Aujourd'hui ou demain</b> : les deux échéances du flux Atmo Data ; le choix est masqué dans l'onglet IATMO, qui ne contient que les mesures du jour.</li><li><b>Indice actuel ou aperçu 2027</b> (onglet Aperçu 2027 masqué depuis le 24 novembre ; son calcul est conservé) : l'aperçu ajoute un curseur horaire, une animation des 24 heures, ou la pire heure de la journée, et classe des concentrations simulées avec la grille européenne révisée en 2025.</li><li><b>Onglet IATMO</b> (nommé « Geod'air » jusqu'au 24 novembre, d'après la source de ses mesures) : carte des concentrations de fond krigées à partir des mesures horaires des stations de fond, classées avec la grille européenne, avec animation des heures et estimation de l'incertitude (§ 7) ; après la dernière heure mesurée, le curseur continue jusqu'à 23 h avec la prévision d'IATMO (§ 7.9).</li><li><b>Indice ou polluant</b> : NO₂, O₃, PM₁₀ ou PM₂,₅, à la commune comme au quartier.</li><li><b>Vignettes des DROM</b> en vue nationale, avec la mention « Indice non diffusé » quand le flux ne couvre pas le territoire.</li><li><b>Rendu lissé ou en mailles</b> au niveau quartier.</li><li><b>Options</b> (menu replié par défaut) : estimation sous la commune, règle de cohérence avec l'indice communal (case à cocher, puis percentile 90 ou maximum des mailles ; décochée, aucune contrainte), rendu lissé, axes routiers (avec les points de comptage du trafic : blancs pour Bison Futé, jaune orangé pour les capteurs de la Ville de Paris), effet routier modulé et trafic réel (§ 5 et § 6).</li><li><b>Méthodologie</b> : ce cahier des charges, suivi de la note méthodologique détaillant les sources, les calculs et les règles de cohérence. Elle se termine par un lien de téléchargement de la note méthodologique de synthèse, au format PDF.</li><li><b>Évaluation</b> : indicateurs de qualité des calculs, sur les mesures du jour et, pour 7 et 30 jours, sur l'historique (§ 8).</li>
 <li><b>Sources</b> : producteur, licence, branchement et fréquence d'actualisation de chaque donnée, avec l'état de lecture depuis l'ouverture de la page.</li><li><b>Légende</b> : quand un polluant est sélectionné, bornes de chaque classe en µg/m³ (grille 2020 pour l'indice actuel, grille européenne pour l'aperçu 2027 et l'onglet IATMO). À l'échelle du quartier, une seconde légende nomme les points de comptage du trafic présents à l'écran.</li><li><b>Copier le lien de cette vue</b> : adresse qui rouvre la vue affichée (lieu, zoom, onglet, polluant, heure). Fond satellite et opacité de la couche d'indice fixes (60 %) ; le panneau n'a plus de rubriques « Échelle affichée » ni « Réglages » depuis le 18 novembre. Le bouton ◀ masque le panneau pour montrer la carte en plein écran.</li><li><b>Smartphone</b> : sur un écran tactile étroit (téléphone, en vertical comme en horizontal), la page passe d'elle-même en affichage smartphone : barre du haut avec la recherche et l'état du flux, carte en plein écran, légende en bas, fiche au clic remontée au-dessus du point, bandeau d'avertissement abrégé ; le panneau devient un tiroir ouvert par le bouton « Menu », qui se referme au choix d'une ville ou d'un onglet, et au passage à l'onglet IATMO (ou à l'Aperçu 2027, masqué) ; dans ces vues, le curseur horaire, le bouton de lecture de l'animation et sa vitesse sont posés sur une barre au-dessus de la légende, pour voir la carte s'animer ; Méthodologie, Évaluation et Sources s'ouvrent en plein écran, tableaux défilant à l'horizontale. Les vignettes des DROM laissent la place aux boutons « Outre-mer ». C'est la même page : rien à déposer en plus. Un lien en bas du tiroir rouvre la version ordinateur ; sur ordinateur, l'adresse terminée par <code>?vue=mobile</code> montre l'affichage smartphone (et <code>?vue=ordinateur</code> l'inverse).</li><li><b>Barre de chargement</b> au centre de la carte à l'ouverture : lecture de l'indice ATMO des AASQA du jour, puis des prévisions Prev'air.</li></ul>
 <h2>Données</h2>
 <p>Toutes les sources d'IATMO sont ouvertes ; seule l'API de Geod'air, utilisée en secours, demande une inscription et une clé personnelle. Leur liste complète (producteur, licence, branchement, fréquence d'actualisation) est dans l'onglet Sources ; leur lecture et leurs limites sont décrites au § 2, leur acheminement jusqu'à la page au § 3.</p>
@@ -397,7 +397,7 @@
 <table><thead><tr><th>Élément affiché</th><th>Statut</th><th>Origine</th></tr></thead><tbody>
 <tr><td>Indice et sous-indices par commune, jour J et J+1</td><td>Réel</td><td>Flux Atmo Data, repris sans recalcul</td></tr>
 <tr><td>Aperçu 2027 (indice horaire)</td><td>Simulé</td><td>Concentrations reconstituées à partir du sous-indice du jour, placées dans la classe par Prev'air quand il est chargé ; seule la grille de classement est réelle</td></tr>
-<tr><td>Onglet IATMO</td><td>Réel si des mesures sont lues, fictif sinon</td><td>Mesures horaires des stations de fond (API Geod'air, fichiers exportés ou fichiers temps réel du LCSQA), spatialisées par krigeage ordinaire, ou avec dérive externe Prev'air si les fichiers sont chargés ; valeurs fictives aux stations pour les polluants non mesurés</td></tr>
+<tr><td>Onglet IATMO</td><td>Réel si des mesures sont lues, fictif sinon</td><td>Mesures horaires des stations de fond (API Geod'air, fichiers exportés ou fichiers temps réel du LCSQA), spatialisées par krigeage ordinaire, ou avec dérive externe Prev'air si les fichiers sont chargés ; heures suivantes jusqu'à 23 h : valeurs prévues aux stations (§ 7.9) ; valeurs fictives aux stations pour les polluants non mesurés</td></tr>
 <tr><td>Estimation sous la commune</td><td>Simulé</td><td>Règles explicites (distance aux axes, bâti, trafic, météorologie), sans modèle d'apprentissage automatique appliqué ni physique de dispersion. Si Prev'air est chargé, la répartition spatiale du polluant concerné est réelle (2 km), le niveau restant celui de l'indice communal</td></tr>
 <tr><td>Modulation de l'effet routier</td><td>Entrées réelles, calage partiel</td><td>Incrément trafic − fond, profil horaire et exposant du vent : calés sur les couples de stations trafic / fond du jour quand Geod'air est lu, et sur les 30 derniers jours d'archive (§ 5.10). Trafic (stations de comptage Bison Futé, capteurs de la Ville de Paris) et confinement par le bâti : calés sur les stations trafic documentées (§ 5.9). Pluie : effet calé sur l'archive dès 7 jours complets. Vent et pluie AROME, bâti du Plan IGN : entrées réelles. Titration de l'ozone et coefficients du modèle de rue : hypothèses non calées</td></tr>
 </tbody></table>
@@ -451,6 +451,7 @@
 <li><b>Pourquoi.</b> Certaines sources ne se lisent pas depuis une page web : files.data.gouv.fr n'envoie pas l'en-tête <code>Access-Control-Allow-Origin</code> (essai du 17 novembre : lecture refusée sur un poste du ministère comme sur un réseau domestique ; son ajout relève de l'équipe data.gouv.fr). D'autres demandent un décodage trop lourd pour le navigateur (GRIB2 d'AROME, DATEX II de Bison Futé) ou un export volumineux (Ville de Paris).</li>
 <li><b>Tâche.</b> Une tâche GitHub Actions du dépôt d'IATMO (<code>.github/workflows/copie_lcsqa.yml</code>) enchaîne : mesures du LCSQA (fichiers du jour et de la veille, en-tête vérifié, fichier d'état <code>etat.json</code>, archive, § 2.3) ; trafic Bison Futé et trafic de la Ville de Paris (§ 5.8) ; vent et pluie AROME (§ 2.5) ; calage sur l'historique et performances quotidiennes, une fois par jour (§ 5.10 et § 8). Elle publie le tout sur la branche <code>donnees</code>, réécrite à chaque passage pour que l'historique du dépôt ne grossisse pas. Mise en service le 17 novembre à 15 h 17 : premier passage en 19 secondes, fichier du jour (6 Mo à cette heure) et de la veille (12,5 Mo).</li>
 <li><b>Déclenchement.</b> Toutes les 10 minutes par un appel de l'API GitHub depuis le service gratuit cron-job.org (<code>api.github.com/repos/julienrude-glitch/IATMO/actions/workflows/copie_lcsqa.yml/dispatches</code>), avec un jeton « fine-grained » limité au dépôt IATMO et à la seule permission Actions (lancer une tâche, sans accès au contenu), à durée limitée et révocable. La planification de GitHub, toutes les 30 minutes, reste en secours : elle sautait la plupart des passages (deux seulement entre le 17 novembre à 15 h 17 et le 18 à 9 h 45). Deux passages ne tournent jamais en même temps ; le bouton « Run workflow » propose une case « force » qui réextrait tout.</li>
+<li><b>Prévision jusqu'à minuit (depuis le 26 novembre).</b> Calculée à chaque passage par <code>prevision.py</code> et les modèles <code>prevision_modeles.npz</code> de la branche principale (copiés une fois dans <code>prevision/</code>, retéléchargés seulement s'ils changent) ; dossier <code>prevision/</code> (§ 7.9).</li>
 <li><b>Archives des prévisions (depuis le 25 novembre).</b> Prévisions Prev'air (Ineris) du jour et du lendemain lues aux stations, une fois par jour après 9 h (dossier <code>prevair/</code>, 400 jours) ; prévisions AROME telles qu'émises à 8 h, 12 h et 16 h, aux stations, pour les heures restantes du jour (<code>arome/previsions/</code>, 60 jours) : de quoi évaluer une prévision de la qualité de l'air sur des données réellement disponibles au moment de la prévision (§ 8).</li>
 <li><b>Lecture par la page.</b> À l'adresse <code>raw.githubusercontent.com/…/donnees/</code>, qui autorise la lecture depuis toute page (<code>Access-Control-Allow-Origin: *</code>). Le bandeau de l'onglet IATMO donne l'heure de la copie et la signale si elle a plus de trois heures ; il précise alors, d'après le journal de la tâche (<code>suivi/journal.json</code>), depuis quand la lecture du LCSQA échoue ou depuis quand la tâche ne passe plus. Depuis le 24 novembre, si <code>files.data.gouv.fr</code> ne répond pas, la tâche essaie le stockage objet de data.gouv.fr (<code>object.infra.data.gouv.fr</code>, adresse indiquée sur la fiche du jeu de données). À défaut, la page tente data.gouv.fr directement (liste du dossier, puis nom <code>FR_E2_AAAA-MM-JJ.csv</code>) et donne la cause de chaque échec (copie absente, code d'erreur, lecture refusée par le navigateur).</li>
 <li><b>Suivi.</b> Journal des passages (<code>suivi/journal.json</code>) et heures d'arrivée des fichiers du LCSQA, présentés dans l'onglet Évaluation (§ 8).</li>
@@ -755,6 +756,15 @@ e_i = z_i − ẑ₋ᵢ(x_i) = w_i / Q_ii                 erreur de prévision, 
 <li>Mesures temps réel non validées ; une valeur aberrante se propage dans son voisinage.</li>
 <li>La version réelle devrait recourir à un krigeage avec dérive externe ou à une assimilation dans un modèle de chimie-transport, et publier la variance d'estimation.</li>
 </ul>
+<h3>7.9 Prévision jusqu'à minuit (depuis le 26 novembre)</h3>
+<p>Après la dernière heure bien mesurée, le curseur de l'onglet IATMO continue jusqu'à 23 h : les heures prévues sont signalées par « prév. » à côté de l'heure, dans le bandeau, le texte sous le curseur et l'info-bulle. Outre-mer, aucune prévision : la carte garde la dernière heure mesurée.</p>
+<ul>
+<li><b>Valeurs prévues aux stations.</b> À chaque passage de la tâche de copie, le script <code>prevision.py</code> (racine du dépôt) applique les modèles de <code>prevision_modeles.npz</code> aux mesures de l'archive (33 derniers jours) et à la météo AROME copiée : Ĉ(t+k) = max(0, Clim(t+k) + α(k)·[C(t) − Clim(t)] + correction apprise), t étant la dernière heure mesurée à la station (3 h au plus avant la dernière heure bien renseignée) et k ≤ 24 h. Clim : profil de la station par mois, type de jour (ouvré ou non) et heure de Paris ; α(k) : persistance de l'écart à ce profil ; correction : gradient boosting à 23 entrées (échéance, calendrier, climatologie, écarts des dernières heures et de la veille, niveau des 30 derniers jours, température, vent, composantes u et v, pluie et humidité AROME à l'heure visée et à l'heure de base, température maximale des 24 heures suivantes). Stations : NO₂ 231, O₃ 268, PM₁₀ 212, PM₂,₅ 179 (stations de fond de métropole avec un an de mesures au moins). Résultat : <code>prevision/derniere.json</code> sur la branche de données, lu par la carte ; les prévisions telles qu'émises sont archivées une fois par heure (60 jours).</li>
+<li><b>Apprentissage.</b> Moyennes horaires Geod'air de janvier 2023 à novembre 2026 (lignes invalides écartées) et météo AROME HD d'Open-Meteo aux stations (archive des prévisions, depuis 2023 aux stations trafic et depuis 2024 aux stations de fond) ; 1,2 million d'exemples par polluant (<code>histo/analyses/prevision_production.py</code>). En exploitation, la météo vient de la grille de 0,1° de la copie : le 23/11, vent moyen 3,21 contre 3,12 m/s aux points (corrélation 0,90), température 0,5 °C plus basse (corrélation 0,96).</li>
+<li><b>Carte.</b> Les valeurs prévues sont krigées comme les mesures (§ 7.3 à 7.5) ; une mesure déjà arrivée pour une heure prévue est gardée. L'écart-type de krigeage et la probabilité de classe ne sont pas affichés aux heures prévues : ils ne disent rien de l'erreur de prévision.</li>
+<li><b>Performances.</b> Test à l'aveugle sur 2026, stations des zones (ZAS) écartées de l'apprentissage, jusqu'à minuit, affichage à 8 h, référence (climatologie et persistance de l'écart) → prévision : NO₂ 7,2 → 5,9, O₃ 19,5 → 13,5, PM₁₀ 10,9 → 10,3, PM₂,₅ 5,1 → 4,8 µg/m³. Indice du jour complété (heures mesurées puis prévues) : ozone dans la bonne classe 80 % des jours à 8 h, contre 50 % avec les seules heures mesurées. Chaîne d'exploitation rejouée sur le 25/11 (base 8 h) : NO₂ 6,5 contre 11,3 µg/m³ pour la persistance, O₃ 11,7 contre 17,2, PM₂,₅ 4,6 contre 5,8. Ces scores utilisent, pour l'apprentissage et le test, la météo de l'archive, proche de l'observée : une borne haute. Les prévisions AROME telles qu'émises, archivées depuis le 24 novembre, mesureront l'écart.</li>
+<li><b>Ozone au-dessus de 130 µg/m³.</b> Classifieur des jours où le maximum horaire dépasse 130 µg/m³ (classe « mauvais » de la grille ATMO 2020), appris sur 2023-2026 et calculé quand la dernière heure mesurée est entre 6 et 16 h. Signalé à partir d'une probabilité de 0,9 : en 2026, environ une alerte sur deux s'est vérifiée, et la moitié (à 8 h) à deux tiers (à 12 h) des jours de dépassement ont été annoncés. Le seuil de 180 µg/m³ n'est pas signalé : trop rare (0,2 % des jours-stations), 2 % d'alertes justes seulement.</li>
+</ul>
 <h2>8. Onglet Évaluation</h2>
 <p>L'onglet mesure la justesse des calculs : ceux de l'onglet IATMO sur les mesures du jour en métropole, pour un polluant au choix, et ceux de la descente d'échelle sur l'historique. Il ne retient que les heures renseignées par au moins 40 % des stations de l'heure la plus fournie (et au moins vingt) ; les DROM, avec trop peu de stations, n'entrent que dans la cohérence avec l'indice. Chaque bloc de l'onglet porte sa légende ; ce paragraphe en donne les définitions.</p>
 <ul>
@@ -773,7 +783,7 @@ e_i = z_i − ẑ₋ᵢ(x_i) = w_i / Q_ii                 erreur de prévision, 
 </ul>
 <h2>9. Note méthodologique de synthèse</h2>
 <p>Les choix de méthode et les options d'IATMO sont résumés dans une note de dix pages, dont la date de mise à jour figure en haut de chaque page : organisation générale et sources, commandes, krigeage et validation croisée, aperçu 2027, descente d'échelle (incrément routier, titration, calage, modèle de rue, cohérence), limites, pistes, questions ouvertes et références. Elle est intégrée à la page et se télécharge sans connexion.</p>
-<p><a href="note_methodologique.pdf" id="noteLien" class="lnk notePdf" download="IATMO_Note_methodologique.pdf" target="_blank" rel="noopener">Télécharger la note méthodologique (PDF, 10 pages, 145 Ko)</a></p>
+<p><a href="note_methodologique.pdf" id="noteLien" class="lnk notePdf" download="IATMO_Note_methodologique.pdf" target="_blank" rel="noopener">Télécharger la note méthodologique (PDF, 10 pages, 147 Ko)</a></p>
 <h2>10. Références</h2>
 <p>Ouvrages, articles, guides et textes utilisés pour les choix de méthode. Les sources de données (producteur, licence, adresse) sont listées dans l'onglet Sources.</p>
 <h3>10.1 Textes réglementaires et guides</h3>
@@ -1639,7 +1649,7 @@ function lcsqaLire(silencieux){
       }).catch(function(){ return suivant(i+1); });
     }
     return suivant(0);
-  }).then(function(){
+  }).then(function(){ return prevhLire(); }).then(function(){
     GEO.busy = false; GEO.msg = ""; GEO.msgDetail = null; GEO.ajout = false; geoLireMontrer(false); geoCache(); geoPrepare(); refresh(); return true;
   },function(){
     GEO.busy = false; GEO.lcsqaJournal = journal; geoLireMontrer(true);
@@ -1787,11 +1797,54 @@ function simFond(){
 var VILLES_GEO = [["Paris",2.3488,48.8534],["Lyon",4.835,45.758],["Marseille",5.38,43.3],["Toulouse",1.444,43.604],["Lille",3.057,50.629],
   ["Strasbourg",7.752,48.573],["Bordeaux",-0.579,44.838],["Orléans",1.909,47.902],["Nantes",-1.553,47.218],["Rennes",-1.678,48.117],
   ["Rouen",1.099,49.443],["Dijon",5.041,47.322],["Ajaccio",8.737,41.919]];
+/* ---------- Prévision jusqu'à minuit (prevision/derniere.json de la branche donnees, calculée à chaque passage de la tâche de copie) ----------
+   Valeurs prévues aux stations de fond de métropole : climatologie de la station, persistance de l'écart et correction apprise avec la météo AROME
+   (note méthodologique, § 8). Elles sont krigées comme les mesures ; une mesure déjà arrivée pour une heure prévue est gardée. */
+var PREVH = null, PREVH_URL = "https://raw.githubusercontent.com/julienrude-glitch/IATMO/donnees/prevision/derniere.json";
+var PREVH_ERR = {NO2:6, O3:13, PM10:10, PM25:5};             // écart quadratique jusqu'à minuit aux stations (test 2026, ZAS écartées, affichage 8 h)
+function prevhLire(){
+  return fetch(PREVH_URL,{cache:"no-store"}).then(function(r){ return r.ok ? r.json() : null; }).then(function(j){
+    PREVH = j && j.jour===parisDate(0) && j.heures && j.heures.length && j.stations ? j : null;
+  }).catch(function(){});
+}
+function estPrev(hk){ return !!(hk && GEO.prevSet && GEO.prevSet[hk]); }
+function geoPrevAjout(src,list){
+  GEO.prevSet = {}; GEO.prevSt = null; GEO.prevFin = null; GEO.prevEmis = PREVH ? PREVH.emis : "";
+  if(GEO.sim || !PREVH || PREVH.jour!==parisDate(0)) return null;
+  var mx0 = 0, k; for(k in src.counts) if(src.counts[k]>mx0) mx0 = src.counts[k];
+  var fin = null; for(var j=src.hours.length-1;j>=0;j--) if((src.counts[src.hours[j]]||0)>=0.4*mx0){ fin = src.hours[j]; break; }
+  if(!fin) return null;
+  var ix = {}, hs = [];
+  PREVH.heures.forEach(function(h,i){ if(h>fin && h.slice(0,10)===fin.slice(0,10)){ ix[h] = i; hs.push(h); } });
+  if(!hs.length) return null;
+  var st = [];
+  list.forEach(function(s){
+    var pv = s.dom==="metro" && PREVH.stations[s.code]; if(!pv) return;
+    var h = {};
+    hs.forEach(function(hk){
+      var v = pv[ix[hk]], m = s.h[hk], o = [null,null,null,null,m ? m[4] : null], n = 0;
+      for(var p=0;p<4;p++){ var x = m && m[p]!=null ? m[p] : (v ? v[p] : null); if(x!=null){ o[p] = x; n++; } }
+      if(n) h[hk] = o;
+    });
+    st.push(Object.assign({},s,{h:h,prev:true}));
+  });
+  var ok = hs.filter(function(hk){ return st.filter(function(s){ return s.h[hk]; }).length>=10; });
+  if(!ok.length) return null;
+  ok.forEach(function(h){ GEO.prevSet[h] = 1; }); GEO.prevSt = st; GEO.prevFin = fin;
+  return {hours:src.hours.filter(function(h){ return !GEO.prevSet[h]; }).concat(ok).sort()};
+}
+function prevhEmisTxt(){ var d = PREVH && new Date(PREVH.emis); return d && !isNaN(d) ? d.toLocaleTimeString("fr-FR",{timeZone:"Europe/Paris",hour:"2-digit",minute:"2-digit"}).replace(":"," h ") : "—"; }
+// Ozone : stations où le classifieur donne une probabilité d'au moins 0,9 que le maximum horaire du jour dépasse 130 µg/m³
+function prevhOzone(){
+  var o = PREVH && PREVH.o3_130 && PREVH.o3_130.probabilites; if(!o) return [];
+  return Object.keys(o).filter(function(c){ return o[c]>=0.9; }).map(function(c){ var m = GEO.meas && GEO.meas[c]; return {code:c,nom:m ? m.nom : c,p:o[c]}; })
+    .sort(function(a,b){ return b.p-a.p; });
+}
 function geoReset(){ GEO.version++; GEO.models = {}; GEO.domH = {}; GEO.stations = null; GEO.key = ""; }
 // Constitue la liste des stations de fond utilisables (réelles si les deux fichiers sont lus, fictives sinon)
 function geoPrepare(){
   var R = GEO.relecture;
-  if(R && R.sig===JSON.stringify(GEO.counts||{}) && !GEO.sim && GEO.stations){ return; }   // relecture sans nouvelle mesure : rien à recalculer
+  if(R && R.sig===JSON.stringify(GEO.counts||{}) && !GEO.sim && GEO.stations && GEO.prevEmis===(PREVH ? PREVH.emis : "")){ return; }   // relecture sans nouvelle mesure ni nouvelle prévision : rien à recalculer
   var src;
   if(GEO.meas && Object.keys(GEO.meas).some(coordDe)){ GEO.sim = false; src = {meas:GEO.meas,coords:null,hours:GEO.hours,counts:GEO.counts}; }
   else{ GEO.sim = true; src = GEO.demo || (GEO.demo = simFond()); }
@@ -1810,18 +1863,19 @@ function geoPrepare(){
     list.push({code:code,nom:st.nom,org:st.org,type:[st.impl,st.infl].filter(Boolean).join(" · "),lon:c[0],lat:c[1],dom:dom,x:kmX(dom,c[0]),y:kmY(dom,c[1]),h:st.h});
   });
   if(!GEO.sim && GEO.exclus) Object.keys(GEO.exclus).forEach(function(c){ if(!src.meas[c]) ecart++; });
-  GEO.stations = list; GEO.sans = sans; GEO.ecart = ecart; GEO.hoursUse = src.hours; GEO.countsUse = src.counts;
+  var pv = geoPrevAjout(src,list);                                                  // prévision jusqu'à minuit, après la dernière heure bien mesurée
+  GEO.stations = list; GEO.sans = sans; GEO.ecart = ecart; GEO.hoursUse = pv ? pv.hours : src.hours; GEO.countsUse = src.counts;
   GEO.models = {}; GEO.domH = {}; GEO.version++; GEO.key = "";
   if(typeof perfOuvert==="function" && perfOuvert() && !GEO.sim) setTimeout(perfOuvrir,50);
   else if(typeof perfFond==="function" && !GEO.sim) setTimeout(perfFond,5000);       // calcul d'avance de l'onglet Évaluation, quand le navigateur est libre
   // Heure par défaut à revoir quand la liste des heures change, ou quand on passe des stations fictives aux mesures (mêmes heures)
-  var cleH = (GEO.sim ? "fictif|" : "mesures|")+src.hours.join();
-  if(state.geoI==null || state.geoI>=src.hours.length || GEO.hoursKey!==cleH || R){
+  var HS = GEO.hoursUse, cleH = (GEO.sim ? "fictif|" : "mesures|")+HS.join();             // heures mesurées, puis heures prévues
+  if(state.geoI==null || state.geoI>=HS.length || GEO.hoursKey!==cleH || R){
     var mx0 = 0, k; for(k in src.counts) if(src.counts[k]>mx0) mx0 = src.counts[k];
-    state.geoI = src.hours.length-1;
-    for(var j=src.hours.length-1;j>=0;j--) if(src.counts[src.hours[j]]>=0.4*mx0){ state.geoI = j; break; }   // dernière heure suffisamment renseignée
-    if(R && R.hk && !R.derniere){ var qk = src.hours.indexOf(R.hk); if(qk>=0) state.geoI = qk; }        // relecture : l'heure choisie est gardée
-    if(ADR_GEOH!=null && !GEO.sim){ for(var q=0;q<src.hours.length;q++) if(src.hours[q]===ADR_GEOH.j+" "+(ADR_GEOH.h<10?"0":"")+ADR_GEOH.h){ state.geoI = q; break; } ADR_GEOH = null; }   // heure et date demandées par le lien
+    state.geoI = HS.length-1;
+    for(var j=HS.length-1;j>=0;j--) if(!estPrev(HS[j]) && src.counts[HS[j]]>=0.4*mx0){ state.geoI = j; break; }   // dernière heure suffisamment renseignée
+    if(R && R.hk && !R.derniere){ var qk = HS.indexOf(R.hk); if(qk>=0) state.geoI = qk; }        // relecture : l'heure choisie est gardée
+    if(ADR_GEOH!=null && !GEO.sim){ for(var q=0;q<HS.length;q++) if(HS[q]===ADR_GEOH.j+" "+(ADR_GEOH.h<10?"0":"")+ADR_GEOH.h){ state.geoI = q; break; } ADR_GEOH = null; }   // heure et date demandées par le lien
     GEO.hoursKey = cleH;
   }
   calage();
@@ -2019,6 +2073,7 @@ function geoVal(gm,p,x,y,lon,lat){
 function domHour(dom,hk){
   if(!GEO.domH) GEO.domH = {};
   var key = dom+"|"+hk; if(GEO.domH[key]!==undefined) return GEO.domH[key];
+  if(dom==="metro" && estPrev(hk)){ GEO.domH[key] = GEO.prevSt.some(function(s){ return s.h[hk]; }) ? hk : null; return GEO.domH[key]; }
   var hs = GEO.hoursUse||[], i = hs.indexOf(hk), st = GEO.stations.filter(function(s){ return s.dom===dom; }), res = null;
   for(var n=0;i>=0 && n<24 && !res;i--,n++){ var h = hs[i]; if(st.some(function(s){ var v = s.h[h]; return v && v.some(function(a){ return a!=null; }); })) res = h; }
   GEO.domH[key] = res; return res;
@@ -2026,7 +2081,8 @@ function domHour(dom,hk){
 function geoModel(p,hk0,dom){
   var key = hk0+"|"+p+"|"+dom; if(GEO.models[key]!==undefined) return GEO.models[key];
   var hk = domHour(dom,hk0); if(!hk){ GEO.models[key] = null; return null; }
-  var act = GEO.stations.filter(function(s){ var v = s.h[hk]; return s.dom===dom && v && v.some(function(a){ return a!=null; }); });
+  var LST = dom==="metro" && estPrev(hk) ? GEO.prevSt : GEO.stations;              // heure de prévision : valeurs prévues aux stations (mesure gardée si déjà arrivée)
+  var act = LST.filter(function(s){ var v = s.h[hk]; return s.dom===dom && v && v.some(function(a){ return a!=null; }); });
   var mes = act.filter(function(s){ return s.h[hk][p]!=null; });
   var res = null;
   if(mes.length){
@@ -2934,7 +2990,7 @@ function geoHeureTxt(h0){ var hk = h0||geoHour(); return hk ? frDate(hk.slice(0,
 function geoStatus(){
   var el = document.getElementById("geoStatus"); if(!el || !GEO.stations) return;
   var ouvert = !!(el.querySelector("details") && el.querySelector("details").open);
-  var hk = geoHour(), n = GEO.stations.filter(function(s){ return s.h[hk]; }).length, fin = mesuresFin(), d = [], t = "";
+  var hk = geoHour(), pr = estPrev(hk), n = (pr ? GEO.prevSt : GEO.stations).filter(function(s){ return s.h[hk]; }).length, fin = mesuresFin(), d = [], t = "";
   var hm = function(x){ return x.toLocaleTimeString("fr-FR",{timeZone:"Europe/Paris",hour:"2-digit",minute:"2-digit"}).replace(":"," h "); };
   if(GEO.sim) t = "<b style='color:#ffb469'>Stations fictives.</b> "+(!GEO.meas ? "Mesures horaires non lues" : "Coordonnées des stations non lues")+" : cliquez sur « Lire Geod'air ».";
   else{
@@ -2943,7 +2999,13 @@ function geoStatus(){
     var ech = vieux ? echecsLcsqa() : null; if(vieux) journalCopie();
     var alerte = !vieux ? "" : ech && !ech.ok && ech.debut ? "LCSQA en échec depuis "+hm(new Date(ech.debut))
       : ech && Date.now()-new Date(ech.dern) > 36e5 ? "copie arrêtée depuis "+hm(new Date(ech.dern)) : "plus de 3 h";
-    t = "<b>"+n+" stations</b>"+(fin ? " · mesures jusqu'à "+fin.slice(11,13)+" h" : "")+(cm && !isNaN(cm) ? " · copie de "+hm(cm)+(alerte ? " <b style='color:#ffb469'>("+alerte+")</b>" : "") : "");
+    t = (pr ? "<b style='color:var(--accent)'>Prévision</b> · " : "")+"<b>"+n+" stations</b>"+(fin ? " · mesures jusqu'à "+fin.slice(11,13)+" h" : "")+(cm && !isNaN(cm) ? " · copie de "+hm(cm)+(alerte ? " <b style='color:#ffb469'>("+alerte+")</b>" : "") : "");
+    var oz = PREVH ? prevhOzone() : [];
+    if(oz.length) t += "<br><b style='color:#ffb469'>Ozone : dépassement de 130 µg/m³ probable aujourd'hui à "+oz.length+" station"+(oz.length>1?"s":"")+"</b>";
+    if(pr) d.push("Heure prévue : valeurs aux stations calculées à "+prevhEmisTxt()+" par la tâche de copie (climatologie de la station, persistance de l'écart à la dernière heure mesurée, correction apprise sur 2023-2026 avec la météo AROME), puis krigées comme les mesures ; une mesure déjà arrivée est gardée. Erreur quadratique jusqu'à minuit aux stations, à l'aveugle sur 2026 : NO₂ ≈ "+PREVH_ERR.NO2+", O₃ ≈ "+PREVH_ERR.O3+", PM₁₀ ≈ "+PREVH_ERR.PM10+", PM₂,₅ ≈ "+PREVH_ERR.PM25+" µg/m³. Outre-mer : dernière heure mesurée.");
+    else if(PREVH && GEO.prevSt) d.push("Prévision jusqu'à minuit disponible (calculée à "+prevhEmisTxt()+") : avancez le curseur au-delà de "+(GEO.prevFin ? GEO.prevFin.slice(11,13)+" h" : "la dernière heure mesurée")+".");
+    if(oz.length) d.push("Ozone, maximum horaire du jour au-dessus de 130 µg/m³ (classe « mauvais »), probabilité d'au moins 0,9 selon le classifieur appris sur 2023-2026 : "+
+      oz.slice(0,12).map(function(o){ return esc(o.nom)+" ("+Math.round(100*o.p)+" %)"; }).join(", ")+(oz.length>12 ? "…" : "")+". À ce seuil, environ une alerte sur deux s'est vérifiée en 2026.");
     if(ech && !ech.ok && ech.debut) d.push("La tâche GitHub tourne toujours (dernier passage à "+hm(new Date(ech.dern))+") mais ne parvient plus à lire les fichiers du LCSQA sur data.gouv.fr depuis "+
       hm(new Date(ech.debut))+" ("+ech.n+" essai"+(ech.n>1?"s":"")+") : la dernière copie réussie est gardée. En attendant, « Autres sources » permet de lire l'API Geod'air par le relais local.");
     else if(ech && Date.now()-new Date(ech.dern) > 36e5) d.push("Dernier passage de la tâche GitHub à "+hm(new Date(ech.dern))+" : vérifiez son déclenchement (cron-job.org) et l'onglet Actions du dépôt.");
@@ -2954,7 +3016,7 @@ function geoStatus(){
   if(GEO.ecart) d.push(GEO.ecart+" stations sous influence du trafic ou industrielle écartées"+(GEO.sans ? ", "+GEO.sans+" sans coordonnées" : "")+".");
   else if(GEO.sans) d.push(GEO.sans+" stations sans coordonnées.");
   if(GEO.sim) d.push("Validation croisée du krigeage : affichée dès que des mesures réelles sont chargées (« Autres sources », puis « Charger des fichiers… »).");
-  if(!GEO.sim && hk){
+  if(!GEO.sim && hk && !pr){                                                         // heure prévue : la validation croisée du krigeage ne mesure pas l'erreur de prévision
     var cvs = [0,1,2,3,4].map(function(p){ var gm = geoModel(p,hk,"metro"); return gm && gm.cv ? {p:p,cv:gm.cv,gm:gm} : null; }).filter(Boolean);
     if(state.pol!=="idx") cvs = cvs.filter(function(o){ return o.p===+state.pol; });
     if(cvs.length) d.push("Validation croisée (métropole, station retirée tour à tour) : écart quadratique moyen "+cvs.map(function(o){
@@ -2978,11 +3040,12 @@ function geoPopup(e){
   var r = geoPoint(e.lngLat.lng,e.lngLat.lat,T,geom), fs = map.queryRenderedFeatures(e.point,{layers:["commune-fill"]});
   if(!r || !fs.length) return;
   var hk = geoHour(), hd = domHour(r.dom,hk), det = [];
-  var h = '<div class="pp"><h3>'+esc(fs[0].properties.nom_officiel||"Commune")+'</h3><div class="src">Geod\'air · mesures du '+geoHeureTxt(hd)+(r.dom!=="metro" && hd ? " à Paris, "+heureLocaleTxt(hd,r.dom)+" heure locale" : "")+
+  var prv = estPrev(hd);
+  var h = '<div class="pp"><h3>'+esc(fs[0].properties.nom_officiel||"Commune")+'</h3><div class="src">'+(prv ? "IATMO · prévision pour le "+geoHeureTxt(hd)+", calculée à "+prevhEmisTxt() : 'Geod\'air · mesures du '+geoHeureTxt(hd))+(r.dom!=="metro" && hd ? " à Paris, "+heureLocaleTxt(hd,r.dom)+" heure locale" : "")+
     (hd && hd!==hk ? " (dernière heure disponible pour ce territoire)" : "")+(GEO.sim ? " · stations fictives" : "")+"</div>";
   var qi = Math.max.apply(null,r.subs);
   h += badge(qi,qi ? "Indice horaire : "+lib(qi) : "Aucune mesure exploitable");
-  var sig = POL.map(function(a,p){ var gm = geoModelSig(p,hk,r.dom), mm = gm && gm.m1; return mm && (mm.L || mm.Q) ? krigeSigma(mm,r.x,r.y) : null; });
+  var sig = POL.map(function(a,p){ var gm = prv ? null : geoModelSig(p,hk,r.dom), mm = gm && gm.m1; return mm && (mm.L || mm.Q) ? krigeSigma(mm,r.x,r.y) : null; });   // heure prévue : l'écart-type de krigeage ne dit rien de l'erreur de prévision
   var pc = r.domp>=0 && sig[r.domp]!=null ? Math.round(100*probClasse(r.domp,r.q,r.val[r.domp],sig[r.domp])) : null;
   if(qi && r.domp>=0) h += '<div class="resp">Polluant déterminant : <b>'+POL[r.domp][1]+"</b>"+(pc!=null ? " · probabilité de la classe : "+pc+" %" : "")+"</div>";
   h += "<table>"+POL.map(function(a,p){ return "<tr><td>"+a[1]+"</td><td>"+(r.val[p]==null ? "non disponible" : sw(r.subs[p])+fr1(r.val[p])+" µg/m³"+(sig[p]!=null ? " <small>± "+fr1(sig[p])+"</small>" : ""))+"</td></tr>"; }).join("")+"</table>";
@@ -2993,6 +3056,7 @@ function geoPopup(e){
     var tp = trafPres(e.lngLat.lng,e.lngLat.lat); if(tp) det.push(trafTxt(tp));
   }
   if(pc!=null) det.push("Probabilité de la classe : calculée pour le polluant déterminant, en supposant l'erreur de krigeage gaussienne. ± : écart-type de krigeage, pour les polluants mesurés par des stations.");
+  if(prv) det.push("Heure prévue : valeurs aux stations calculées par IATMO (climatologie de la station, persistance de l'écart, correction apprise avec la météo AROME), puis krigées. Erreur quadratique jusqu'à minuit aux stations (2026) : NO₂ ≈ "+PREVH_ERR.NO2+", O₃ ≈ "+PREVH_ERR.O3+", PM₁₀ ≈ "+PREVH_ERR.PM10+", PM₂,₅ ≈ "+PREVH_ERR.PM25+" µg/m³.");
   // station de fond la plus proche et polluants qui y sont estimés de façon fictive
   var gm0 = null, pp; for(pp=0;pp<5 && !gm0;pp++) gm0 = geoModel(pp,hk,r.dom);
   if(gm0 && gm0.act.length){
@@ -3500,10 +3564,13 @@ function updateScale(){
     msg.push('<b class="nm">Indice ATMO</b> — '+(state.day ? "prévision officielle des AASQA pour demain, pour chaque commune, affichée sans recalcul."
       : "indice journalier officiel publié par les AASQA pour chaque commune, affiché sans recalcul."));
     court = '<b class="nm">Indice ATMO</b> — '+(state.day ? "prévision officielle des AASQA, sans recalcul." : "indice officiel des AASQA, sans recalcul."); }
-  if(ge){ vert = true; msg = [NOM+" — fond krigé à partir des stations de fond urbaines, périurbaines et rurales ; "+
+  var ghp = ge && estPrev(geoHour()) ? geoHour().slice(11,13)+" h" : "";
+  if(ge && ghp){ vert = true; msg = [NOM+" — <b class='nm'>prévision pour "+ghp+"</b> : fond krigé à partir des valeurs prévues aux stations de fond (mesures temps réel et météo AROME). Ce n'est pas l'indice ATMO."];
+    court = NOM+" — prévision pour "+ghp+". Ce n'est pas l'indice ATMO."; }
+  else if(ge){ vert = true; msg = [NOM+" — fond krigé à partir des stations de fond urbaines, périurbaines et rurales ; "+
     (GEO.sim ? "<b>stations fictives</b>, faute de fichiers lus." : "mesures temps réel.")+" Ce n'est pas l'indice ATMO."];
     court = NOM+" — fond krigé"+(GEO.sim ? ", <b>stations fictives</b>" : ", mesures temps réel")+". Ce n'est pas l'indice ATMO."; }
-  if(MOBILE){ msg = []; vert = ge; court = ""; if(ge) msg.push(NOM+" · "+(GEO.sim ? "<b>stations fictives</b>" : "mesures temps réel")); else if(lvl===3) msg.push("<b>Estimation simulée</b> sous la commune"); if(state.view==="2027" && !ge) msg.push("<b>Aperçu 2027 simulé</b>"); if(state.mode==="cas") msg.push("<b>Cas fictif</b>"); }
+  if(MOBILE){ msg = []; vert = ge; court = ""; if(ge) msg.push(NOM+" · "+(GEO.sim ? "<b>stations fictives</b>" : ghp ? "prévision "+ghp : "mesures temps réel")); else if(lvl===3) msg.push("<b>Estimation simulée</b> sous la commune"); if(state.view==="2027" && !ge) msg.push("<b>Aperçu 2027 simulé</b>"); if(state.mode==="cas") msg.push("<b>Cas fictif</b>"); }
   ban.innerHTML = msg.join(MOBILE?" · ":"<br>"); ban.classList.toggle("vert",vert); ban.style.display = msg.length ? "block" : "none";
   if(msg.length) bandeauAjuste(ban, msg.length===1 ? court : "");
   document.getElementById("insets").className = z<7 ? "" : "off";
@@ -3514,12 +3581,13 @@ function updateScale(){
   prevInfo();
   var hr = document.getElementById("hour");
   if(ge){ var nh = GEO.hoursUse ? GEO.hoursUse.length : 1; hr.min = 0; hr.max = Math.max(0,nh-1); hr.value = state.geoI||0; hr.disabled = false;
-    document.getElementById("hourLbl").textContent = geoHour() ? geoHour().slice(11,13)+" h" : "—"; }
+    document.getElementById("hourLbl").textContent = geoHour() ? geoHour().slice(11,13)+" h"+(estPrev(geoHour()) ? " prév." : "") : "—"; }
   else{ hr.min = 0; hr.max = 23; hr.value = state.hour; hr.disabled = state.pire; document.getElementById("hourLbl").textContent = heureLbl(); }
   document.getElementById("hourRow").style.display = (state.view==="2027" || ge) ? "flex" : "none";
   if(MOBILE) document.body.classList.toggle("mh",state.view==="2027" || ge);            // téléphone : curseur horaire posé sur la carte
   document.getElementById("pireRow").style.display = state.view==="2027" ? "flex" : "none";
-  document.getElementById("viewHint").textContent = ge ? "Mesures horaires du "+geoHeureTxt()+" (heure de Paris). Indice calculé avec la grille européenne révisée en 2025." : state.view==="2027"
+  document.getElementById("viewHint").textContent = ge ? (estPrev(geoHour()) ? "Prévision IATMO pour le "+geoHeureTxt()+" (heure de Paris), calculée à "+prevhEmisTxt()+" à partir des mesures jusqu'à "+(GEO.prevFin||"").slice(11,13)+" h et de la météo AROME."
+    : "Mesures horaires du "+geoHeureTxt()+" (heure de Paris).")+" Indice calculé avec la grille européenne révisée en 2025." : state.view==="2027"
     ? "Indice horaire, grille européenne révisée en 2025. Libellés officiels français à arbitrer."
     : "Indice journalier en vigueur (arrêté du 10 juillet 2020).";
 }
@@ -3740,7 +3808,7 @@ function pfr(v,d){ return v==null || !isFinite(v) ? "—" : v.toFixed(d==null?1:
 function hk2h(hk){ return +hk.slice(11,13); }
 // Heures de métropole suffisamment renseignées (au moins 40 % des stations de l'heure la plus fournie)
 function perfHeures(){
-  var hs = GEO.hoursUse||[], st = (GEO.stations||[]).filter(function(s){ return s.dom==="metro"; }), c = {}, mx = 0;
+  var hs = (GEO.hoursUse||[]).filter(function(h){ return !estPrev(h); }), st = (GEO.stations||[]).filter(function(s){ return s.dom==="metro"; }), c = {}, mx = 0;
   hs.forEach(function(h){ var n = 0; st.forEach(function(s){ var v = s.h[h]; if(v && v.some(function(a){ return a!=null; })) n++; }); c[h] = n; if(n>mx) mx = n; });
   return hs.filter(function(h){ return c[h]>=Math.max(20,0.4*mx); });
 }
@@ -3871,7 +3939,7 @@ function perfCoherence(){
   PERF.cohBusy = true;
   var liste = GEO.stations.filter(function(s){ return isFinite(s.lon) && isFinite(s.lat); });
   perfInsee(liste).then(function(){
-    var res = {key:PERF.key, pol:[]}, hs = GEO.hoursUse||[];
+    var res = {key:PERF.key, pol:[]}, hs = (GEO.hoursUse||[]).filter(function(h){ return !estPrev(h); });
     [0,1,2,3].forEach(function(p){
       var ecarts = [0,0,0,0,0], lignes = [], sans = 0, n = 0;
       liste.forEach(function(s){
