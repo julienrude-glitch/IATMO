@@ -6,6 +6,8 @@
 # (histo/analyses/prevision_production.py) : climatologie de chaque station (mois × type de jour × heure de Paris), coefficients de
 # persistance de l'écart α(k), gradient boosting « GBd » qui corrige la référence, classifieur des jours où l'ozone dépasse 130 µg/m³.
 # Méthode : Ĉ(t+k) = max(0, Clim(t+k) + α(k)·[C(t) − Clim(t)] + correction apprise), t = dernière heure mesurée, k ≤ 24 h.
+# Lendemain (expérimental, depuis le 26/11/2026) : même méthode avec le modèle appris jusqu'à 48 h d'échéance (<POL>_gbd48, α à 48 h), heures 0 à 23 du
+# lendemain, clé « lendemain » de la sortie.
 # Sortie : prevision/derniere.json (lu par la carte) et prevision/archive/AAAA-MM-JJ-HH.json.gz (prévisions telles qu'émises, 60 jours).
 # Seul numpy est nécessaire : les arbres sont parcourus ici, sans scikit-learn.
 import sys, os, json, gzip, glob, csv, io, warnings, datetime as dt
@@ -173,7 +175,10 @@ def main(fichier):
               "heures": [], "base": {}, "stations_par_polluant": {}, "stations": {},
               "methode": "Clim(t+k) + α(k)·[C(t) − Clim(t)] + correction GBd ; météo AROME de la copie (grille de 0,1°)",
               "format": "stations : code → valeurs [NO2, O3, PM10, PM2,5] en µg/m³ pour chaque heure de « heures » (heure de Paris), null si non prévue"}
-    val = {}
+    val, val1 = {}, {}                                                       # jour même ; lendemain (modèle à 48 h, si présent)
+    J1 = J0 + dt.timedelta(days=1)
+    deb1_i = int((dt.datetime.combine(J1, dt.time(0), PARIS).astimezone(UTC) - t0).total_seconds() // 3600)
+    fin1_i = int((dt.datetime.combine(J1, dt.time(23), PARIS).astimezone(UTC) - t0).total_seconds() // 3600)
     for pi, p in enumerate(POLS):
         codes = [str(c) for c in z[p + "_codes"]]; rows = np.array([ix[c] for c in codes])
         Xp = X[p][rows]; M = Mt[rows]; CL = z[p + "_clim"][:, KEY].astype(np.float32); A = Xp - CL; L30 = niveau30(A); ALK = z[p + "_alpha"]
@@ -181,22 +186,26 @@ def main(fichier):
         if not len(recent) or recent.max() < 10: continue
         seuil = 0.4 * recent.max(); h0 = max(i for i in range(max(0, now_i - 48), now_i + 1) if n_h[i] >= seuil)
         h0 = int(h0); sortie["base"][p] = cle_paris(t0 + dt.timedelta(hours=h0))
-        S, T, Kk = [], [], []
+        ts_st = {}
         for s in range(len(codes)):
             fin_mes = [i for i in range(h0 - 3, h0 + 1) if np.isfinite(A[s, i])]
-            if not fin_mes: continue
-            ts = fin_mes[-1]
-            for tt in range(h0 + 1, fin_i + 1):
-                if 1 <= tt - ts <= K: S.append(s); T.append(ts); Kk.append(tt - ts)
-        if not S: continue
-        S, T, Kk = np.array(S), np.array(T), np.array(Kk)
-        F = entrees(S, T, Kk, HL, TY, DOY, CL, A, L30, M)
-        pred = np.maximum(0, CL[S, T + Kk] + ALK[Kk] * A[S, T] + foret(z, p + "_gbd", F))
-        n = 0
-        for s, tt, v in zip(S, T + Kk, pred):
-            if not np.isfinite(v): continue
-            r = val.setdefault(codes[s], {}); r.setdefault(int(tt), [None] * 4)[pi] = round(float(v), 1); n += 1
-        sortie["stations_par_polluant"][p] = int(len(set(S.tolist())))
+            if fin_mes: ts_st[s] = fin_mes[-1]
+        def prevoir(deb, fin, kmax, nom_gbd, alpha, dest):
+            S, T, Kk = [], [], []
+            for s, ts in ts_st.items():
+                for tt in range(deb, fin + 1):
+                    if 1 <= tt - ts <= kmax: S.append(s); T.append(ts); Kk.append(tt - ts)
+            if not S: return 0
+            S, T, Kk = np.array(S), np.array(T), np.array(Kk)
+            pred = np.maximum(0, CL[S, T + Kk] + alpha[Kk] * A[S, T] + foret(z, nom_gbd, entrees(S, T, Kk, HL, TY, DOY, CL, A, L30, M)))
+            for s, tt, v in zip(S, T + Kk, pred):
+                if np.isfinite(v): dest.setdefault(codes[s], {}).setdefault(int(tt), [None] * 4)[pi] = round(float(v), 1)
+            return int(len(set(S.tolist())))
+        n0 = prevoir(h0 + 1, fin_i, K, p + "_gbd", ALK, val)
+        if n0: sortie["stations_par_polluant"][p] = n0
+        if p + "_gbd48_f" in z.files:
+            n1 = prevoir(deb1_i, fin1_i, 48, p + "_gbd48", z[p + "_alpha48"], val1)
+            if n1: sortie.setdefault("lendemain", {"jour": J1.isoformat(), "experimental": True, "stations_par_polluant": {}})["stations_par_polluant"][p] = n1
         if p == "O3" and "o3_130_f" in z.files:
             hl0 = int(HL[h0])
             if H0_CLASSIFIEUR[0] <= hl0 <= H0_CLASSIFIEUR[1]:
@@ -208,6 +217,9 @@ def main(fichier):
                                         "probabilites": {codes[s]: round(float(q), 2) for s, q in zip(ok, pr) if q >= 0.01}}
     heures = sorted({i for r in val.values() for i in r}); sortie["heures"] = [cle_paris(t0 + dt.timedelta(hours=i)) for i in heures]
     for c, r in val.items(): sortie["stations"][c] = [r.get(i) for i in heures]
+    if val1:                                                                 # lendemain, 0 h à 23 h de Paris : même format que le jour même
+        h1 = list(range(deb1_i, fin1_i + 1)); L = sortie["lendemain"]
+        L["heures"] = [cle_paris(t0 + dt.timedelta(hours=i)) for i in h1]; L["stations"] = {c: [r.get(i) for i in h1] for c, r in val1.items()}
     os.makedirs("prevision/archive", exist_ok=True)
     txt = json.dumps(sortie, ensure_ascii=False, separators=(",", ":"))
     open("prevision/derniere.json", "w", encoding="utf-8").write(txt)
@@ -218,7 +230,8 @@ def main(fichier):
     for f in glob.glob("prevision/archive/*.json.gz"):
         if os.path.basename(f)[:10] < lim: os.remove(f)
     print("prévision :", {p: (sortie["base"].get(p), sortie["stations_par_polluant"].get(p)) for p in POLS}, "| heures", (sortie["heures"] or ["—"])[0], "→", (sortie["heures"] or ["—"])[-1],
-          "| ozone > 130 :", len((sortie.get("o3_130") or {}).get("probabilites", {})), "stations")
+          "| ozone > 130 :", len((sortie.get("o3_130") or {}).get("probabilites", {})), "stations",
+          "| lendemain :", (sortie.get("lendemain") or {}).get("stations_par_polluant"))
 
 if __name__ == "__main__":
     main(sys.argv[1] if len(sys.argv) > 1 else "prevision_modeles.npz")
