@@ -229,6 +229,7 @@
 
   /* ---------- Version smartphone (body.m) ---------- */
   #legPts{display:none;margin:-8px 0 14px} #legPts.on{display:block}
+  #legVent{display:none;margin:-8px 0 14px} #legVent.on{display:block}
   .legend .pt{flex:none;width:9px;height:9px;margin:0 5px 0 4px;border-radius:50%;border:1px solid #0d1b24;box-shadow:0 0 0 1px rgba(255,255,255,.25)}
   #mbar,#mleg,#mclose,#mheure,#mpts{display:none}
   body.m{height:100dvh;overflow:hidden}
@@ -328,6 +329,7 @@
 
   <ul class="legend" id="legend"></ul>
   <ul class="legend" id="legPts"></ul>
+  <ul class="legend" id="legVent"></ul>
 
   <details id="optBox"><summary>Options</summary>
   <label class="row"><input type="checkbox" id="iaToggle" checked> Estimation IA (simulée)</label>
@@ -337,6 +339,7 @@
   <label class="row"><input type="checkbox" id="roadToggle" checked> Axes routiers</label>
   <label class="row"><input type="checkbox" id="modToggle" checked> Effet routier modulé (bâti, trafic, météo)</label>
   <label class="row"><input type="checkbox" id="trafToggle" checked> Trafic réel (Bison Futé, Ville de Paris)</label>
+  <label class="row" title="Onglet Indice IATMO : flèches orientées vers où souffle le vent, longueur proportionnelle à la vitesse ; elles suivent l'heure affichée et l'animation"><input type="checkbox" id="ventToggle"> Vent AROME (flèches, onglet Indice IATMO)</label>
   <p class="hint" id="modInfo"></p>
   </details>
   <div id="prevAncre"></div>
@@ -372,7 +375,7 @@
 <p>Règles d'interface :</p>
 <ul><li>Un clic sur une commune donne l'indice, les cinq sous-indices (NO₂, O₃, PM₁₀, PM₂,₅, SO₂) et l'AASQA productrice. La fiche est hiérarchisée : la classe en tête, puis le polluant responsable, les sous-indices et l'estimation au point, enfin un volet replié « Détails du calcul » (méthode, station la plus proche, incertitude), qui reste ouvert d'un clic à l'autre une fois ouvert.</li><li>En haut de la carte, un bandeau d'une ligne rappelle ce qui est affiché : contour vert pour l'indice officiel des AASQA (onglet Indice ATMO) et pour le fond krigé (onglet Indice IATMO), contour orange pour les rendus simulés ou fictifs. Au niveau quartier, il signale qu'il s'agit d'une estimation et non de l'indice officiel ; le contour de la commune reste visible.</li><li>La transition commune → quartier est un fondu, pour que l'on voie de quelle valeur communale part l'estimation.</li><li>L'estimation peut être désactivée : la carte reste alors à la commune à tous les zooms.</li></ul>
 <p>Commandes d'IATMO :</p>
-<ul><li><b>Recherche</b> d'une commune ou d'une adresse, qui centre la carte sur le lieu.</li><li><b>Aujourd'hui ou demain</b> : les deux échéances du flux Atmo Data. Dans l'onglet Indice IATMO, « Demain » affiche la prévision expérimentale du lendemain, heure par heure, en commençant à 0 h (§ 7.9) ; le choix y est masqué tant qu'elle n'est pas disponible.</li><li><b>Onglet Indice ATMO</b> (nommé « Indice actuel » jusqu'au 26 novembre) <b>ou aperçu 2027</b> (onglet Aperçu 2027 masqué depuis le 24 novembre ; son calcul est conservé) : l'aperçu ajoute un curseur horaire, une animation des 24 heures, ou la pire heure de la journée, et classe des concentrations simulées avec la grille européenne révisée en 2025.</li><li><b>Onglet Indice IATMO</b> (nommé « Geod'air » jusqu'au 24 novembre, d'après la source de ses mesures, puis « IATMO » jusqu'au 26 novembre) : carte des concentrations de fond krigées à partir des mesures horaires des stations de fond, classées avec la grille européenne, avec animation des heures et estimation de l'incertitude (§ 7) ; après la dernière heure mesurée, le curseur continue jusqu'à 23 h avec la prévision d'IATMO (§ 7.9).</li><li><b>Indice ou polluant</b> : NO₂, O₃, PM₁₀ ou PM₂,₅, à la commune comme au quartier.</li><li><b>Vignettes des DROM</b> en vue nationale, avec la mention « Indice non diffusé » quand le flux ne couvre pas le territoire.</li><li><b>Rendu lissé ou en mailles</b> au niveau quartier.</li><li><b>Options</b> (menu replié par défaut) : estimation sous la commune, règle de cohérence avec l'indice communal (case à cocher, puis percentile 90 ou maximum des mailles ; décochée, aucune contrainte), rendu lissé, axes routiers (avec les points de comptage du trafic : blancs pour Bison Futé, jaune orangé pour les capteurs de la Ville de Paris), effet routier modulé et trafic réel (§ 5 et § 6).</li><li><b>Méthodologie</b> : ce cahier des charges, suivi de la note méthodologique détaillant les sources, les calculs et les règles de cohérence. Elle se termine par un lien de téléchargement de la note méthodologique de synthèse, au format PDF.</li><li><b>Évaluation</b> : indicateurs de qualité des calculs, sur les mesures du jour et, pour 7 et 30 jours, sur l'historique (§ 8).</li>
+<ul><li><b>Recherche</b> d'une commune ou d'une adresse, qui centre la carte sur le lieu.</li><li><b>Aujourd'hui ou demain</b> : les deux échéances du flux Atmo Data. Dans l'onglet Indice IATMO, « Demain » affiche la prévision expérimentale du lendemain, heure par heure, en commençant à 0 h (§ 7.9) ; le choix y est masqué tant qu'elle n'est pas disponible.</li><li><b>Onglet Indice ATMO</b> (nommé « Indice actuel » jusqu'au 26 novembre) <b>ou aperçu 2027</b> (onglet Aperçu 2027 masqué depuis le 24 novembre ; son calcul est conservé) : l'aperçu ajoute un curseur horaire, une animation des 24 heures, ou la pire heure de la journée, et classe des concentrations simulées avec la grille européenne révisée en 2025.</li><li><b>Onglet Indice IATMO</b> (nommé « Geod'air » jusqu'au 24 novembre, d'après la source de ses mesures, puis « IATMO » jusqu'au 26 novembre) : carte des concentrations de fond krigées à partir des mesures horaires des stations de fond, classées avec la grille européenne, avec animation des heures et estimation de l'incertitude (§ 7) ; après la dernière heure mesurée, le curseur continue jusqu'à 23 h avec la prévision d'IATMO (§ 7.9).</li><li><b>Indice ou polluant</b> : NO₂, O₃, PM₁₀ ou PM₂,₅, à la commune comme au quartier.</li><li><b>Vignettes des DROM</b> en vue nationale, avec la mention « Indice non diffusé » quand le flux ne couvre pas le territoire.</li><li><b>Rendu lissé ou en mailles</b> au niveau quartier.</li><li><b>Options</b> (menu replié par défaut) : estimation sous la commune, règle de cohérence avec l'indice communal (case à cocher, puis percentile 90 ou maximum des mailles ; décochée, aucune contrainte), rendu lissé, axes routiers (avec les points de comptage du trafic : blancs pour Bison Futé, jaune orangé pour les capteurs de la Ville de Paris), effet routier modulé et trafic réel (§ 5 et § 6), et vent AROME en flèches (depuis le 26 novembre, décochée par défaut ; onglet Indice IATMO seulement) : une flèche tous les 62 pixels (52 sur smartphone), orientée vers où souffle le vent, de longueur proportionnelle à la vitesse (10 m/s, soit 36 km/h, pour 36 pixels, plafonnée vers 20 m/s), avec une flèche témoin en légende ; vent de la prévision AROME copiée par la tâche GitHub (aujourd'hui et demain, métropole et DROM, heures locales outre-mer) ; les flèches suivent l'heure affichée et l'animation, le vent étant interpolé entre deux heures pleines (composantes est et nord) ; sans effet sur le calcul.</li><li><b>Méthodologie</b> : ce cahier des charges, suivi de la note méthodologique détaillant les sources, les calculs et les règles de cohérence. Elle se termine par un lien de téléchargement de la note méthodologique de synthèse, au format PDF.</li><li><b>Évaluation</b> : indicateurs de qualité des calculs, sur les mesures du jour et, pour 7 et 30 jours, sur l'historique (§ 8).</li>
 <li><b>Sources</b> : producteur, licence, branchement et fréquence d'actualisation de chaque donnée, avec l'état de lecture depuis l'ouverture de la page.</li><li><b>Légende</b> : quand un polluant est sélectionné, bornes de chaque classe en µg/m³ (grille 2020 pour l'onglet Indice ATMO, grille européenne révisée en 2025 pour l'aperçu 2027 et l'onglet Indice IATMO). Sous le choix de l'onglet, une ligne rappelle la grille : seuils de l'indice européen de l'AEE d'avant sa révision de 2025, appliqués au pas journalier, pour l'indice ATMO ; grille européenne révisée en 2025 pour l'indice IATMO. À l'échelle du quartier, une seconde légende nomme les points de comptage du trafic présents à l'écran.</li><li><b>Copier le lien de cette vue</b> : adresse qui rouvre la vue affichée (lieu, zoom, onglet, polluant, heure). Fond satellite et opacité de la couche d'indice fixes (60 %) ; le panneau n'a plus de rubriques « Échelle affichée » ni « Réglages » depuis le 18 novembre. Le bouton ◀ masque le panneau pour montrer la carte en plein écran.</li><li><b>Smartphone</b> : sur un écran tactile étroit (téléphone, en vertical comme en horizontal), la page passe d'elle-même en affichage smartphone : barre du haut avec la recherche et l'état du flux, carte en plein écran, légende en bas, fiche au clic remontée au-dessus du point, bandeau d'avertissement abrégé ; le panneau devient un tiroir ouvert par le bouton « Menu », qui se referme au choix d'une ville ou d'un onglet, et au passage à l'onglet Indice IATMO (ou à l'Aperçu 2027, masqué) ; dans ces vues, le curseur horaire et le bouton de lecture de l'animation sont posés sur une barre au-dessus de la légende, pour voir la carte s'animer ; Méthodologie, Évaluation et Sources s'ouvrent en plein écran, tableaux défilant à l'horizontale. Les vignettes des DROM laissent la place aux boutons « Outre-mer ». C'est la même page : rien à déposer en plus. Un lien en bas du tiroir rouvre la version ordinateur ; sur ordinateur, l'adresse terminée par <code>?vue=mobile</code> montre l'affichage smartphone (et <code>?vue=ordinateur</code> l'inverse).</li><li><b>Barre de chargement</b> au centre de la carte à l'ouverture : lecture de l'indice ATMO des AASQA du jour, puis des prévisions Prev'air.</li></ul>
 <h2>Données</h2>
 <p>Toutes les sources d'IATMO sont ouvertes ; seule l'API de Geod'air, utilisée en secours, demande une inscription et une clé personnelle. Leur liste complète (producteur, licence, branchement, fréquence d'actualisation) est dans l'onglet Sources ; leur lecture et leurs limites sont décrites au § 2, leur acheminement jusqu'à la page au § 3.</p>
@@ -998,7 +1001,7 @@ var DROM = [["972","Martinique",[-61.25,14.37,-60.78,14.9]],["971","Guadeloupe",
 var state = {
   mode:"loading", day:0, dates:[], store:{},
   rec:new Map(), epci:new Map(),
-  trafReel:true, view:"actuel", hour:8, pire:false, geoI:null, pol:"idx", rule:"p90", smooth:true, ia:true, mod:true, incert:false, opacity:.6,
+  trafReel:true, vent:false, view:"actuel", hour:8, pire:false, geoI:null, pol:"idx", rule:"p90", smooth:true, ia:true, mod:true, incert:false, opacity:.6,
   version:0, fine:null, fineKey:"", cellSize:0, check:null
 };
 
@@ -1195,6 +1198,9 @@ map.on("load",function(){
   map.addSource("geo",{type:"image",url:VIDE,coordinates:[[0,0.001],[0.001,0.001],[0.001,0],[0,0]]});
   map.addLayer({id:"geo",type:"raster",source:"geo",layout:{visibility:"none"},
     paint:{"raster-opacity":state.opacity,"raster-fade-duration":0,"raster-resampling":"linear"}});
+  map.addSource("vent",{type:"geojson",data:{type:"FeatureCollection",features:[]}});                 // flèches de vent (option, onglet Indice IATMO)
+  map.addLayer({id:"vent-halo",type:"line",source:"vent",layout:{"line-cap":"round","line-join":"round"},paint:{"line-color":"rgba(13,27,36,.7)","line-width":3.6}});
+  map.addLayer({id:"vent",type:"line",source:"vent",layout:{"line-cap":"round","line-join":"round"},paint:{"line-color":"#ffffff","line-width":1.5}});
   map.addLayer({id:"routes",type:"line",source:"plan","source-layer":"routier_route",minzoom:IA_ZOOM-0.4,
     filter:["any",["in","AUTOROU",["get","symbo"]],["in","BRET",["get","symbo"]],["in","PRINCIPALE",["get","symbo"]],["in","REGIONALE",["get","symbo"]]],
     paint:{"line-color":"#ffffff","line-opacity":0.38,"line-width":["interpolate",["linear"],["zoom"],12,0.6,16,2]}});
@@ -2617,7 +2623,7 @@ function aromeLire(){
         if(!Object.keys(jours).length && !Object.keys(omJours).length) throw "fichiers AROME illisibles";
         AROME = {ok:!!jours[J[0]],jour:J[0],g:g,n:n,jours:jours,om:om ? {boites:om.boites,jours:omJours} : null,maj:m.maj,err:null,version:AROME.version+1,
                  ta:ta ? {e:ta.echelle_temperature||0.5,dec:ta.decalages_om||{},j:taJ,om:taOM} : null};
-        METEO.key = ""; meteoUpdate(); CAL.key = ""; calageVent(); modInfo(); return true;
+        METEO.key = ""; meteoUpdate(); CAL.key = ""; calageVent(); modInfo(); ventMaj(0); return true;
       });
   }).catch(function(e){ AROME.err = e; modInfo(); return false; });
 }
@@ -2630,6 +2636,59 @@ function aromeGrille(J,g,dec,n,lon,lat,h){
   var bil = function(o){ return (D[o+k00]*(1-ax)+D[o+k01]*ax)*(1-ay)+(D[o+k10]*(1-ax)+D[o+k11]*ax)*ay; };
   var ev = g.echelle_vent||0.25, u = bil(b)*ev, v = bil(b+n)*ev, p = J.u8[b+2*n+Math.round(fy)*g.ni+Math.round(fx)];
   return {u:Math.sqrt(u*u+v*v), d:(Math.atan2(-u,-v)*180/Math.PI+360)%360, p:p===255 ? null : p*(g.echelle_pluie||0.1), src:"AROME de Météo-France"};
+}
+/* Vent AROME en flèches sur la carte de l'onglet Indice IATMO (option « Vent AROME », décochée par défaut) : une flèche tous les
+   62 pixels (52 sur smartphone), orientée vers où souffle le vent, de longueur proportionnelle à la vitesse (VENT_PX pixels par m/s,
+   plafonnée) ; elle suit l'heure affichée et l'animation, le vent étant interpolé entre deux heures pleines (composantes est et nord). */
+var VENT = {pts:null, cle:"", vide:true, legM:""}, VENT_PX = 3.6, VENT_REF = 10;
+function ventPas(){ return MOBILE ? 52 : 62; }
+function heureLocale(hk,dom){                                                   // heure locale d'un DROM pour une clé horaire de Paris
+  var dec = DEC_DROM[dom], m = /^(\d{4})\/(\d{2})\/(\d{2}) (\d{2})/.exec(hk||""); if(dec==null || !m) return null;
+  var t = Date.UTC(+m[1],+m[2]-1,+m[3],+m[4]); for(var k=0;k<2;k++){ var c = cleParis(new Date(t).toISOString().slice(0,13).replace("T"," "),0); var d = Date.UTC(+c.slice(0,4),+c.slice(5,7)-1,+c.slice(8,10),+c.slice(11,13))-Date.UTC(+m[1],+m[2]-1,+m[3],+m[4]); t -= d; }
+  var l = new Date(t+dec*36e5); return {iso:l.toISOString().slice(0,10), h:l.getUTCHours()};
+}
+function ventEn(q,hk){                                                          // composantes (m/s) vers l'est et vers le nord, vers où souffle le vent
+  var t = q.dom && q.dom!=="metro" ? heureLocale(hk,q.dom) : {iso:hk.slice(0,10).replace(/\//g,"-"), h:+hk.slice(11,13)};
+  if(!t) return null;
+  var a = aromeAt(q.lon,q.lat,t.h,t.iso); if(!a || a.u==null || a.d==null) return null;
+  var r = a.d*Math.PI/180; return [-a.u*Math.sin(r), -a.u*Math.cos(r)];
+}
+function ventFleche(x,y,e,n,sp){                                                // flèche centrée sur (x, y), en pixels, puis en coordonnées
+  var v = Math.sqrt(e*e+n*n); if(v<0.3) return null;
+  var ux = e/v, uy = -n/v, L = Math.min(1.15*sp,VENT_PX*v), hl = Math.min(7,0.45*L), ca = Math.cos(0.5), sa = Math.sin(0.5);
+  var tx = x+ux*L/2, ty = y+uy*L/2, P = function(a,b){ var ll = map.unproject([a,b]); return [ll.lng,ll.lat]; };
+  var g1 = [tx-hl*(ux*ca-uy*sa), ty-hl*(uy*ca+ux*sa)], g2 = [tx-hl*(ux*ca+uy*sa), ty-hl*(uy*ca-ux*sa)];
+  return {type:"Feature",properties:{v:v},geometry:{type:"MultiLineString",coordinates:[[P(x-ux*L/2,y-uy*L/2),P(tx,ty)],[P(g1[0],g1[1]),P(tx,ty),P(g2[0],g2[1])]]}};
+}
+function ventMaj(f){
+  var src = map.getSource && map.getSource("vent"); if(!src) return;
+  var hk = (state.vent && geoOn() && state.mode!=="loading" && AROME.version>0 && GEO.hoursUse) ? geoHour() : null;
+  if(!hk){ if(!VENT.vide){ src.setData({type:"FeatureCollection",features:[]}); VENT.vide = true; } ventLegende(null); return; }
+  var hk2 = f>0 ? GEO.hoursUse[(state.geoI||0)+1] : null;
+  var cv = map.getCanvas(), W = cv.clientWidth, H = cv.clientHeight, sp = ventPas(), c0 = map.getCenter();
+  var cle = [W,H,map.getZoom().toFixed(4),c0.lng.toFixed(5),c0.lat.toFixed(5),map.getBearing(),map.getPitch()].join("|");
+  if(cle!==VENT.cle){
+    VENT.cle = cle; VENT.pts = [];
+    for(var y=sp/2;y<H;y+=sp) for(var x=sp/2;x<W;x+=sp){ var ll = map.unproject([x,y]); VENT.pts.push({x:x,y:y,lon:ll.lng,lat:ll.lat,dom:domaine(ll.lng,ll.lat)}); }
+  }
+  var fs = [];
+  VENT.pts.forEach(function(q){
+    var a = ventEn(q,hk); if(!a) return;
+    if(hk2){ var b = ventEn(q,hk2); if(b) a = [a[0]+(b[0]-a[0])*f, a[1]+(b[1]-a[1])*f]; }
+    var ft = ventFleche(q.x,q.y,a[0],a[1],sp); if(ft) fs.push(ft);
+  });
+  src.setData({type:"FeatureCollection",features:fs}); VENT.vide = !fs.length;
+  ventLegende(hk,fs.length>0);
+}
+function ventLegende(hk,ok){
+  var el = document.getElementById("legVent"), L = Math.round(VENT_PX*VENT_REF), svg = "<svg width='"+(L+4)+"' height='12' viewBox='0 0 "+(L+4)+" 12' style='vertical-align:-2px;margin-right:6px'><g stroke='#0d1b24' stroke-width='3.6' stroke-linecap='round' fill='none' opacity='.7'><path d='M2 6H"+(L+2)+"M"+(L-4)+" 2.6L"+(L+2)+" 6L"+(L-4)+" 9.4'/></g><g stroke='#fff' stroke-width='1.5' stroke-linecap='round' fill='none'><path d='M2 6H"+(L+2)+"M"+(L-4)+" 2.6L"+(L+2)+" 6L"+(L-4)+" 9.4'/></g></svg>";
+  var h = "", m = "";
+  if(hk){
+    h = "<li class='leg-t'>Vent AROME à "+hk.slice(11,13)+" h"+(state.day===1 && GEO.prevDemain ? " demain" : "")+", vers où il souffle</li>"+(ok ? "<li>"+svg+VENT_REF+" m/s ("+Math.round(3.6*VENT_REF)+" km/h) ; longueur proportionnelle à la vitesse</li>" : "<li>Prévision AROME indisponible à cette heure</li>");
+    m = ok ? "Vent :"+svg+VENT_REF+" m/s" : "";
+  }
+  if(el){ el.innerHTML = h; el.className = "legend"+(h ? " on" : ""); }
+  if(m!==VENT.legM){ VENT.legM = m; if(typeof legPtsMaj==="function") legPtsMaj(); }
 }
 // Température (°C) et humidité relative (%) AROME au même point : fichiers ta-*.bin (2 octets par case et par heure), facultatifs
 function aromeTA(T,g,dec,n,lon,lat,h,e){
@@ -2936,7 +2995,7 @@ function updateGeoInsets(){
 function updateGeo(force){
   updateGeoInsets();
   if(!map.getLayer("geo")) return;
-  if(!geoOn() || state.mode==="loading"){ if(GEO.grid){ GEO.grid = null; GEO.key = ""; map.setLayoutProperty("geo","visibility","none"); } return; }
+  if(!geoOn() || state.mode==="loading"){ if(GEO.grid){ GEO.grid = null; GEO.key = ""; map.setLayoutProperty("geo","visibility","none"); } ventMaj(0); return; }
   if(!GEO.stations) geoPrepare();
   var z = map.getZoom(), b = map.getBounds(), k = Math.cos(map.getCenter().lat*Math.PI/180);
   var mpp = 2*Math.PI*R/(512*Math.pow(2,z)), s = 12*mpp;                    // un nœud de calcul tous les 12 pixels
@@ -2956,7 +3015,7 @@ function updateGeo(force){
   GEO.grid = geoGrille(cad,w0.C,w0.has,w0.U);
   GEO.hist = geoImage(GEO.grid,cad.pieces);
   GEO.vide = cad.pieces.length>0 && !Object.keys(GEO.hist).length;
-  geoStatus();
+  geoStatus(); ventMaj(0);
 }
 // Nœuds de la vue (domaine, coordonnées) et proximité routière : indépendants de l'heure
 function geoCadre(cle,s,X0,Y0,nx,ny,trafic,pieces,roads,bucket,L){
@@ -4886,7 +4945,7 @@ function animHeure(i){                                                          
   GEO.key = c.cle+"|"+i+"|"+DYN.m.join();
   GEO.hist = geoImage(GEO.grid,c.cad.pieces);
   GEO.vide = c.cad.pieces.length>0 && !Object.keys(GEO.hist).length;
-  updateGeoInsets(); geoStatus(); updateScale(); majAdresse();
+  updateGeoInsets(); geoStatus(); updateScale(); majAdresse(); ventMaj(0);
 }
 function animEntre(i,f){                                                         // image intermédiaire entre les heures i et i+1
   var c = ANIM.cache, a = c.g[i], b = c.g[i+1]; if(!a || !b) return;
@@ -4905,6 +4964,7 @@ function animEntre(i,f){                                                        
   var d0 = DYN, da = a.dyn, db = b.dyn;
   DYN = Object.assign({},f<0.5 ? da : db,{m:da.m.map(function(v,q){ return v+(db.m[q]-v)*f; }),mx:(da.mx!=null && db.mx!=null) ? da.mx+(db.mx-da.mx)*f : (f<0.5 ? da.mx : db.mx)});
   try{ geoImage(geoGrille(c.cad,C,has,U),c.cad.pieces); } finally{ DYN = d0; }
+  ventMaj(f);
 }
 // Calcul d'avance des grilles debut..fin, par tranches de 25 ms ; la lecture démarre dès que les deux premières heures
 // sont prêtes et le calcul se poursuit entre les images (la lecture attend si elle le rattrape)
@@ -5000,6 +5060,8 @@ document.getElementById("iaToggle").addEventListener("change",function(){
   updateFine(true); updateGeo(true); updateScale();
 });
 document.getElementById("modToggle").addEventListener("change",function(){ state.mod = this.checked; state.version++; updateFine(true); updateGeo(true); modInfo(); });
+document.getElementById("ventToggle").addEventListener("change",function(){ state.vent = this.checked; ventMaj(0); });
+map.on("moveend",function(){ ventMaj(0); });
 document.getElementById("trafToggle").addEventListener("change",function(){ state.trafReel = this.checked; state.version++; updateFine(true); updateGeo(true); modInfo(); });
 document.getElementById("roadToggle").addEventListener("change",function(){
   map.setPaintProperty("routes","line-opacity",this.checked?0.38:0);
@@ -5016,8 +5078,8 @@ function legPtsMaj(){
   if(nb) h += "<li><span class='pt' style='background:#ffffff'></span>Bison Futé, réseau national</li>";
   if(np) h += "<li><span class='pt' style='background:#ffd166'></span>Capteurs de la Ville de Paris</li>";
   el.innerHTML = h; el.className = "legend"+(h ? " on" : "");
-  if(em){ em.innerHTML = (nb||np) ? "Trafic :"+(np ? "<span><i style='background:#ffd166'></i>Ville de Paris</span>" : "")+(nb ? "<span><i style='background:#fff'></i>Bison Futé</span>" : "") : "";
-    em.className = "panel"+((nb||np) ? " on" : ""); }
+  if(em){ var mt = ((nb||np) ? "Trafic :"+(np ? "<span><i style='background:#ffd166'></i>Ville de Paris</span>" : "")+(nb ? "<span><i style='background:#fff'></i>Bison Futé</span>" : "") : "")+(VENT.legM||"");
+    em.innerHTML = mt; em.className = "panel"+(mt ? " on" : ""); }
 }
 map.on("moveend",legPtsMaj);
 map.on("idle",prevCommunes);
