@@ -14,6 +14,8 @@
 #    par le script historique.py de la branche principale (racine du dépôt) ; numpy et scikit-learn installés au besoin.
 # 3. Archive des mesures du LCSQA (180 jours) : une ligne par station et par heure, valeurs de NO, NO2, NOx, O3, PM10,
 #    PM2,5 et SO2, pour caler le modèle sur un historique.
+# 6. Prévision jusqu'à minuit aux stations de fond de métropole (depuis le 26/11/2026) : script prevision.py et modèles prevision_modeles.npz
+#    de la branche principale, appliqués aux mesures de l'archive et à la météo AROME copiée ; prevision/derniere.json, lu par la carte.
 # À enregistrer dans le dépôt sous le nom .github/workflows/copie_lcsqa.yml
 # La branche « donnees » ne garde qu'un seul état (poussée forcée) : l'historique du dépôt ne grossit pas.
 name: Copie des mesures LCSQA et du trafic
@@ -942,6 +944,31 @@ jobs:
           print("Prev'air archivé :", fo, len(valeurs), "stations,", sorted(fichiers))
           PY
 
+      - name: Prévision jusqu'à minuit aux stations de fond (modèles appris, prévision AROME)
+        id: prevision
+        continue-on-error: true
+        timeout-minutes: 4
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Script et modèles de la branche principale (racine du dépôt) : prevision.py et prevision_modeles.npz (quelques Mo, gardés dans
+          # prevision/modeles.npz et retéléchargés seulement s'ils ont changé). Absents de la branche principale : étape sans effet.
+          # Entrées : archive/lcsqa/ (mesures des 33 derniers jours) et arome/ (météo du jour et du lendemain) ; sortie : prevision/derniere.json,
+          # lu par la carte, et prevision/archive/ (prévisions telles qu'émises, une par heure, 60 jours).
+          mkdir -p out/prevision
+          B="https://raw.githubusercontent.com/${REPO}/main"
+          if ! curl -fsSL --retry 2 --max-time 60 -o /tmp/prevision.py "$B/prevision.py"; then echo "prevision.py absent de la branche principale : pas de prévision"; exit 0; fi
+          M=out/prevision/modeles.npz; E=out/prevision/modeles.etag
+          [ -s "$M" ] || rm -f "$E"
+          if [ -s "$E" ]; then OPT=(--etag-compare "$E" --etag-save "$E"); else OPT=(--etag-save "$E"); fi
+          rm -f /tmp/modeles.npz
+          if curl -fsSL --retry 2 --max-time 180 "${OPT[@]}" -o /tmp/modeles.npz "$B/prevision_modeles.npz"; then
+            if [ -s /tmp/modeles.npz ]; then mv /tmp/modeles.npz "$M"; echo "modèles mis à jour ($(wc -c < "$M") octets)"; else echo "modèles inchangés"; fi
+          else echo "modèles illisibles sur la branche principale"; fi
+          if [ ! -s "$M" ]; then echo "modèles absents : pas de prévision"; exit 0; fi
+          python3 -c "import numpy" 2>/dev/null || python3 -m pip install -q --user --break-system-packages numpy >/dev/null 2>&1 || python3 -m pip install -q --user numpy >/dev/null
+          cd out && python3 /tmp/prevision.py prevision/modeles.npz
+
       - name: Historique (calage et performances, une fois par jour après 4 h)
         id: historique
         continue-on-error: true
@@ -981,13 +1008,14 @@ jobs:
             "- arome/ : vent à 10 m, pluie, température et humidité à 2 m AROME (Météo-France) heure par heure, aujourd'hui et demain : métropole sur une grille de 0,1° (AAAA-MM-JJ.bin et ta-AAAA-MM-JJ.bin, 30 jours gardés), DROM en AROME Outre-Mer (om-AAAA-MM-JJ.bin, om-ta-AAAA-MM-JJ.bin) ; jours du 21/10 au 21/11/2026 restaurés aux seules stations trafic (Open-Meteo) ;" \
             "- arome/previsions/ : prévisions AROME telles qu'émises à 8 h, 12 h et 16 h, aux stations, pour les heures restantes du jour (60 jours) ;" \
             "- prevair/ : prévisions Prev'air (Ineris) du jour et du lendemain lues aux stations, une fois par jour (400 jours) ;" \
+            "- prevision/ : prévision d'IATMO jusqu'à minuit aux stations de fond de métropole (derniere.json, lu par la carte ; archive/ : prévisions telles qu'émises, une par heure, 60 jours ; modeles.npz : copie des modèles de la branche principale) ;" \
             "- archive/lcsqa/ : mesures horaires du LCSQA par station (NO, NO2, NOx, O3, PM10, PM2,5, SO2), un fichier compressé par jour sur 180 jours, et table des stations ;" \
             "- suivi/ : journal des passages (3 jours), première apparition de chaque heure du LCSQA (30 jours) et performances quotidiennes du krigeage (90 jours), progression du calage (calage_jours.json, 400 jours), lus par l'onglet Évaluation ;" \
             "- calage/ : calage de l'effet routier sur les 30 derniers jours (incrément, profil horaire, vent, pluie, trafic et confinement), lu par la carte." \
             "Branche réécrite à chaque passage par la tâche .github/workflows/copie_lcsqa.yml : ne pas y travailler." > LISEZMOI.txt
           # Journal des passages (3 jours) : heure, durée, déclencheur et résultat de chaque partie, lu par l'onglet Évaluation
           mkdir -p suivi
-          LCSQA="${{ steps.lcsqa.outcome }}" TRAFIC="${{ steps.trafic.outcome }}" AROME="${{ steps.arome.outcome }}" HIST="${{ steps.historique.outcome }}" PARIS_T="${{ steps.paris.outcome }}" EVT="${EVENEMENT}" python3 - <<'PY'
+          LCSQA="${{ steps.lcsqa.outcome }}" TRAFIC="${{ steps.trafic.outcome }}" AROME="${{ steps.arome.outcome }}" HIST="${{ steps.historique.outcome }}" PARIS_T="${{ steps.paris.outcome }}" PREV="${{ steps.prevision.outcome }}" EVT="${EVENEMENT}" python3 - <<'PY'
           import json, os, time, datetime as dt
           from zoneinfo import ZoneInfo
           f = "suivi/journal.json"
@@ -995,7 +1023,7 @@ jobs:
           except Exception: j = []
           deb = int(os.environ.get("DEBUT") or time.time()); P = ZoneInfo("Europe/Paris")
           j.append({"t": dt.datetime.fromtimestamp(deb, P).isoformat(timespec="seconds"), "duree": int(time.time()) - deb, "evt": os.environ["EVT"],
-                    "lcsqa": os.environ["LCSQA"], "trafic": os.environ["TRAFIC"], "arome": os.environ["AROME"], "historique": os.environ.get("HIST", ""), "paris": os.environ.get("PARIS_T", "")})
+                    "lcsqa": os.environ["LCSQA"], "trafic": os.environ["TRAFIC"], "arome": os.environ["AROME"], "historique": os.environ.get("HIST", ""), "paris": os.environ.get("PARIS_T", ""), "prevision": os.environ.get("PREV", "")})
           json.dump(j[-432:], open(f, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
           print("journal :", len(j[-432:]), "passages")
           PY
