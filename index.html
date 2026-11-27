@@ -418,7 +418,7 @@
 <h3>2.2 Prev'air</h3>
 <ul>
 <li><b>Dans IATMO : utilisé si les fichiers sont chargés.</b> Prévisions journalières publiées sur data.gouv.fr (Licence Ouverte 2.0, mention « Données issues de la plateforme nationale de prévision de la qualité de l'air www.prevair.org ») : un fichier NetCDF 4 par polluant (O₃, NO₂, PM₁₀, PM₂,₅), par statistique (maximum horaire ou moyenne du jour) et par échéance (J à J+5), mis à disposition chaque jour à 9 h. Grille régulière de 534 × 755 mailles sur la métropole (pas de 0,03125° en longitude et 0,015625° en latitude, soit environ 2 km), sans les DROM. Aucune valeur horaire.</li>
-<li><b>Lecture.</b> Lecture automatique à l'ouverture de la page, sur data.gouv.fr (vérifiée le 17 novembre), signalée par la barre de chargement ; les champs lus sont gardés dans le navigateur (IndexedDB) pour la journée, et relus si la prévision gardée a été émise la veille et date de plus de trois heures. Le bouton est masqué. Les fichiers <code>.nc</code> téléchargés à la main se chargent encore par « Autres sources », puis « Charger des fichiers… ». Le lecteur est écrit pour ces fichiers précis (un seul champ, stocké d'un bloc) et vérifié sur le fichier PM₂,₅ du 16 novembre 2026 ; ce n'est pas un lecteur NetCDF général.</li>
+<li><b>Lecture.</b> Lecture automatique à l'ouverture de la page, sur data.gouv.fr (vérifiée le 17 novembre), signalée par la barre de chargement ; les champs lus sont gardés dans le navigateur (IndexedDB) pour la journée, et relus si la prévision gardée a été émise la veille et date de plus de trois heures. Quand la carte montre demain (onglet Indice ATMO, ou « Demain » dans l'onglet Indice IATMO), la page lit à la demande les fichiers J+1 émis le jour même (maximum pour O₃ et NO₂, moyenne pour les particules), gardés de même, et les utilise pour la répartition sous la commune et la dérive externe du krigeage ; auparavant, la prévision J0 servait aussi pour le lendemain (depuis le 27 novembre). Le bouton est masqué. Les fichiers <code>.nc</code> téléchargés à la main se chargent encore par « Autres sources », puis « Charger des fichiers… ». Le lecteur est écrit pour ces fichiers précis (un seul champ, stocké d'un bloc) et vérifié sur le fichier PM₂,₅ du 16 novembre 2026 ; ce n'est pas un lecteur NetCDF général.</li>
 <li><b>Choix du fichier.</b> La liste des fichiers publiée sur data.gouv.fr peut avoir plusieurs jours de retard. IATMO retient donc, pour chaque polluant, la prévision valable pour le jour même, émise le plus récemment (J0 du jour, J+1 de la veille, J+2 de l'avant-veille…), avec le maximum horaire pour l'O₃ et le NO₂ et la moyenne journalière pour les particules. La date de validité est calculée à partir du nom du fichier (date d'émission + échéance). Une prévision qui ne vaut pas pour le jour affiché est signalée sous le bouton.</li>
 <li><b>Usages.</b> Répartition des concentrations sous la commune (§ 5.3) et dérive externe du krigeage de l'onglet Indice IATMO (§ 7.5).</li>
 <li><b>Rôle prévu.</b> (a) Champ de fond à la maille de 2 km en entrée de la descente d'échelle, là où l'AASQA ne diffuse que l'indice communal ; (b) source de secours si un flux régional manque ; (c) accès à des concentrations, que le flux d'indice ne fournit pas.</li>
@@ -1478,6 +1478,7 @@ function applyTo(m){
 var popup = null;
 function refresh(){
   if(popup){ popup.remove(); popup = null; }
+  prevChoisir();                                                            // Prev'air du jour affiché (demain : grilles J+1)
   maps.forEach(applyTo); state.version++;
   maps.forEach(resolveMissing);
   if(map.getLayer("commune-fill")) map.setPaintProperty("commune-fill","fill-opacity",communeOpacity());
@@ -2171,7 +2172,20 @@ var RATIO_TRAFIC = [1.9,1,1.3,1.3,1];        // proximité du trafic / fond urba
 /* ================= Prev'air : champs journaliers à 2 km (data.gouv.fr, NetCDF 4) =================
    Lecteur minimal, sans bibliothèque : les fichiers publiés contiennent un seul champ (temps, lat, lon) stocké d'un bloc.
    On repère les axes (suites arithmétiques de réels), puis l'adresse du bloc dans l'arbre des « chunks » HDF5. */
-var PREV = {};                                  // par polluant : {nx,ny,lon0,dlon,lat0,dlat,data,date,nom,stat}
+var PREVJ = {0:{}, 1:{}};                       // grilles Prev'air valables aujourd'hui (0) et demain (1)
+var PREV = PREVJ[0];                            // grilles en usage, par polluant : {nx,ny,lon0,dlon,lat0,dlat,data,date,nom,stat}
+// Jour Prev'air voulu : demain quand la carte montre demain (onglet Indice ATMO, ou onglet Indice IATMO avec la prévision du lendemain)
+function prevJourVoulu(){ return state.day===1 && (!geoOn() || (PREVH && PREVH.lendemain)) ? 1 : 0; }
+var PREV_OCC1 = false, PREV_T1 = 0;
+function prevChoisir(){                         // met en usage les grilles du jour affiché ; lit celles de demain à la demande
+  var j = prevJourVoulu();
+  if(j===1 && !Object.keys(PREVJ[1]).length && !PREV_OCC1 && PREV_ETAT==="ok" && Date.now()-PREV_T1>6e5){ PREV_T1 = Date.now(); prevAuto(null,1); }   // un essai toutes les 10 min au plus
+  var cible = Object.keys(PREVJ[j]).length ? PREVJ[j] : PREVJ[0];
+  if(cible===PREV) return false;
+  PREV = cible; GEO.models = {}; GEO.version++; GEO.key = ""; PREVC = {};
+  setTimeout(function(){ prevInfo(); prevCommunes(); },0);
+  return true;
+}
 var PREV_POL = {NO2:0,O3:1,PM10:2,PM25:3};
 function ncAxes(dv,n){
   var out = [], o = 0;
@@ -2212,7 +2226,7 @@ function ncInflate(bytes){
   if(typeof DecompressionStream==="undefined") return Promise.reject(new Error("fichier compressé, non lisible par ce navigateur"));
   return new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream("deflate"))).arrayBuffer();
 }
-function lirePrevair(buf,nom){
+function lirePrevair(buf,nom,dest){
   var dv = new DataView(buf), u8 = new Uint8Array(buf), n = buf.byteLength;
   if(!(u8[0]===0x89 && u8[1]===0x48 && u8[2]===0x44 && u8[3]===0x46)) return Promise.reject(new Error("ce n'est pas un fichier NetCDF 4"));
   var ax = ncAxes(dv,n), lon = null, lat = null;
@@ -2231,8 +2245,9 @@ function lirePrevair(buf,nom){
     if(!d8 && ab.byteLength!==N*4) throw new Error("taille du champ inattendue");
     for(var i=0;i<N;i++){ var v = d8 ? src.getFloat64(8*i,true) : src.getFloat32(4*i,true); if(v>=0 && v<5000){ data[i] = v; ok++; } else data[i] = NaN; }
     if(ok<0.2*N) throw new Error("valeurs illisibles (compression non prise en charge ?)");
-    var p = PREV_POL[cle];
-    PREV[p] = {nx:nx,ny:ny,lon0:lon.v0,dlon:lon.st,lat0:lat.v0,dlat:lat.st,data:data,nom:nom||"",
+    var p = PREV_POL[cle], dJ = (mf && ms) ? plusJours(mf[1]+"-"+mf[2]+"-"+mf[3],+ms[2]) : "";
+    if(!dest) dest = dJ && dJ===plusJours(parisDate(0),1) ? PREVJ[1] : PREVJ[0];               // fichier chargé à la main : rangé selon le jour visé
+    dest[p] = {nx:nx,ny:ny,lon0:lon.v0,dlon:lon.st,lat0:lat.v0,dlat:lat.st,data:data,nom:nom||"",
       date:(mf && ms) ? plusJours(mf[1]+"-"+mf[2]+"-"+mf[3],+ms[2]) : md ? md[1] : mf ? mf[1]+"-"+mf[2]+"-"+mf[3] : "",
       emis:mf ? mf[1]+"-"+mf[2]+"-"+mf[3] : (md ? md[1] : ""), stat:ms ? (ms[1].toLowerCase()==="max" ? "maximum horaire" : "moyenne")+" du jour J"+(ms[2]==="0" ? "" : "+"+ms[2]) : "champ journalier"};
     return p;
@@ -2274,16 +2289,25 @@ var PREV_JEU = "https://www.data.gouv.fr/api/1/datasets/prevair-previsions-de-la
 // Lecture de Prev'air sur data.gouv.fr. prog(f) : avancement entre 0 et 1, pour la barre de chargement.
 // Les champs lus sont gardés dans le navigateur (IndexedDB) pour la journée : la page ne retélécharge pas 12 Mo à chaque ouverture.
 var PREV_ETAT = "";
-function prevAuto(prog){
-  if(PREV_OCC) return Promise.resolve(false);
-  PREV_OCC = true; prog = prog || function(){};
-  prevInfo("Lecture de Prev'air sur data.gouv.fr…");
-  var auj = parisDate(0);
-  var fin = function(msg,ok){ PREV_OCC = false; PREV_ETAT = ok ? "ok" : "echec"; prog(1); prevApplique(msg); return ok; };
-  return memo("get","prev-"+auj).then(function(m){
+// jour : 0 (valable aujourd'hui, à l'ouverture) ou 1 (valable demain, lu à la demande quand la carte montre demain)
+function prevAuto(prog,jour){
+  jour = jour ? 1 : 0;
+  if(jour ? PREV_OCC1 : PREV_OCC) return Promise.resolve(false);
+  if(jour) PREV_OCC1 = true; else PREV_OCC = true;
+  prog = prog || function(){};
+  var auj = parisDate(0), voulu = plusJours(auj,jour), dest = PREVJ[jour];
+  if(!jour) prevInfo("Lecture de Prev'air sur data.gouv.fr…");
+  var fin = function(msg,ok){
+    if(jour){ PREV_OCC1 = false; if(ok && prevChoisir()) refresh(); else prevInfo(); return ok; }
+    PREV_OCC = false; PREV_ETAT = ok ? "ok" : "echec"; prog(1);
+    if(PREV===dest) prevApplique(msg); else prevInfo(msg);
+    if(ok && prevJourVoulu()===1) prevChoisir();
+    return ok;
+  };
+  return memo("get","prev"+(jour ? "1" : "")+"-"+auj).then(function(m){
     var ks = m && m.champs ? Object.keys(m.champs) : [];
-    var frais = ks.length && ks.every(function(p){ var g = m.champs[p]; return g.date===auj && (g.emis===auj || Date.now()-m.a<3*3600000); });
-    if(frais){ ks.forEach(function(p){ PREV[p] = m.champs[p]; }); return fin("",true); }
+    var frais = ks.length && ks.every(function(p){ var g = m.champs[p]; return g.date===voulu && (g.emis===auj || Date.now()-m.a<3*3600000); });
+    if(frais){ ks.forEach(function(p){ dest[p] = m.champs[p]; }); return fin("",true); }
     return fetch(PREV_JEU).then(function(r){ if(!r.ok) throw 0; return r.json(); }).then(function(j){
       prog(0.08);
       // Pour chaque polluant : la prévision valable aujourd'hui (émise le jour J pour J0, la veille pour J+1, etc.), la plus récemment émise ;
@@ -2291,26 +2315,26 @@ function prevAuto(prog){
       var choix = {}, re = /prevision\.(\d{8})\.(moy|max)j(\d)\.(o3|no2|pm10|pm25)\./i;
       (j.resources||[]).forEach(function(r){
         var mm = re.exec(r.title||"") || re.exec(r.url||""); if(!mm) return;
-        var emis = mm[1].slice(0,4)+"-"+mm[1].slice(4,6)+"-"+mm[1].slice(6,8), cible = plusJours(emis,+mm[3]); if(cible>auj) return;
+        var emis = mm[1].slice(0,4)+"-"+mm[1].slice(4,6)+"-"+mm[1].slice(6,8), cible = plusJours(emis,+mm[3]); if(cible>voulu || (jour && cible!==voulu)) return;
         var pol = mm[4].toUpperCase(), pref = (pol==="O3" || pol==="NO2") ? "max" : "moy";
-        var note = (cible===auj ? "1" : "0")+cible+emis+(mm[2].toLowerCase()===pref ? "1" : "0");
+        var note = (cible===voulu ? "1" : "0")+cible+emis+(mm[2].toLowerCase()===pref ? "1" : "0");
         if(!choix[pol] || note>choix[pol].note) choix[pol] = {note:note,url:r.url,nom:"prevair.prevision."+mm[1]+"."+mm[2].toLowerCase()+"j"+mm[3]+"."+mm[4].toLowerCase()+".nc",cible:cible};
       });
       var pols = Object.keys(choix); if(!pols.length) throw 0;
       var errs = [], lus = 0;
       return pols.reduce(function(ch,pol){ return ch.then(function(){
         return fetch(choix[pol].url).then(function(r){ if(!r.ok) throw new Error("code "+r.status); return r.arrayBuffer(); })
-          .then(function(b){ return lirePrevair(b,choix[pol].nom); })
+          .then(function(b){ return lirePrevair(b,choix[pol].nom,dest); })
           .catch(function(e){ errs.push(pol+" ("+(e && e.message || "échec")+")"); })
           .then(function(){ lus++; prog(0.08+0.92*lus/pols.length); });
       }); },Promise.resolve()).then(function(){
-        var vieux = pols.filter(function(p){ return choix[p].cible!==auj; }), champs = {};
-        Object.keys(PREV).forEach(function(p){ champs[p] = PREV[p]; });
-        if(Object.keys(champs).length) memo("set","prev-"+auj,{a:Date.now(),champs:champs});
+        var vieux = pols.filter(function(p){ return choix[p].cible!==voulu; }), champs = {};
+        Object.keys(dest).forEach(function(p){ champs[p] = dest[p]; });
+        if(Object.keys(champs).length) memo("set","prev"+(jour ? "1" : "")+"-"+auj,{a:Date.now(),champs:champs});
         return fin((errs.length ? "Non lu : "+errs.join(" ; ")+". " : "")+(vieux.length ? "Aucune prévision pour aujourd'hui sur data.gouv.fr pour "+vieux.join(", ")+" : prévision la plus récente utilisée." : ""),Object.keys(champs).length>0);
       });
     });
-  }).catch(function(){ return fin("Lecture de Prev'air impossible depuis ce navigateur.",false); });
+  }).catch(function(){ return fin(jour ? "" : "Lecture de Prev'air impossible depuis ce navigateur.",false); });
 }
 
 /* ================= Barre de chargement à l'ouverture : indice des AASQA, puis Prev'air ================= */
