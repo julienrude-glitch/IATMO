@@ -357,7 +357,7 @@
 <div id="insets" class="off"></div>
 <div id="methodo" class="sheet" role="dialog" aria-modal="true" aria-label="Méthodologie"><article><button type="button" class="sheetClose">Fermer ✕</button>
 <h1><span class="ia">IA</span>TMO – Méthodologie</h1>
-<p class="by">Mise à jour : <span id="methMaj">26 novembre 2026</span></p>
+<p class="by">Mise à jour : <span id="methMaj">27 novembre 2026</span></p>
 <div class="enbref"><b>En bref.</b> IATMO affiche l'indice ATMO publié chaque jour par les AASQA, tel quel, à la commune. En dessous, il simule ce que donnerait une descente d'échelle jusqu'au quartier, par des règles explicites dont les paramètres sont appris chaque jour des mesures aux stations trafic, de l'IA au sens large : ce n'est pas l'indice officiel. Deux modèles d'apprentissage automatique (gradient boosting et perceptron) sont mis à l'épreuve pour corriger cette descente d'échelle, sans être encore appliqués. L'Aperçu 2027, masqué depuis le 24 novembre, préfigure le futur indice horaire sur la grille européenne, à partir de concentrations simulées. L'onglet Indice IATMO cartographie les mesures horaires des stations de fond, et l'onglet Évaluation mesure la justesse de ces calculs. Toutes les sources sont ouvertes (onglet Sources) ; IATMO sert à montrer l'interface, pas à informer.</div>
 <nav class="sommaire"><a href="#" data-cible="partieCdc">I. Cahier des charges</a><a href="#" data-cible="partieNote">II. Note méthodologique</a></nav>
 <h2 class="partie" id="partieCdc">I. Cahier des charges</h2>
@@ -432,7 +432,7 @@
 <li><b>Quota.</b> 15 appels par heure : une lecture des cinq polluants en consomme au moins dix. Les mesures lues sont gardées dans le navigateur pour la journée ; aucune lecture n'est lancée sans action de l'utilisateur.</li>
 <li><b>Contenu du fichier.</b> Une ligne par station et par heure : organisme, station, implantation, influence, valeur, validité, latitude et longitude. Les coordonnées étant dans le fichier, l'export des stations n'est pas nécessaire ; il ne contient d'ailleurs pas l'influence, qui est attachée au point de prélèvement.</li>
 <li><b>Statut.</b> Mesures horaires brutes, non validées ; les lignes de validité négative sont écartées.</li>
-<li><b>Heures.</b> Temps universel en métropole, heure locale dans les DROM, sans heure d'été : confirmé par le LCSQA le 18 novembre, après deux relevés concordants (les copies du 17 à 15 h 17 et du 18 à 11 h 15 plaçaient tous les territoires au même instant en temps universel, et le pic du NO₂ du matin tombait à 7 h – 8 h). La carte convertit toutes les heures en heure de Paris à la lecture, ce qui aligne les territoires ; les heures de tête du fichier, de 21 h à 0 h de Paris, ne viennent que de La Réunion et de Mayotte (minuit à 3 h locales), et ne sont pas proposées : le curseur et l'animation de l'onglet Indice IATMO commencent à la première heure de la métropole, 1 h, et la carte de la métropole n'a ainsi plus d'heure vide. Cela aligne aussi les territoires et rapproche à la bonne heure le profil horaire de l'incrément routier, le vent AROME et le trafic. Outre-mer, la fiche au clic donne aussi l'heure locale (« 13 h à Paris, 8 h heure locale »).</li>
+<li><b>Heures.</b> Temps universel en métropole, heure locale dans les DROM, sans heure d'été : confirmé par le LCSQA le 18 novembre, après deux relevés concordants (les copies du 17 à 15 h 17 et du 18 à 11 h 15 plaçaient tous les territoires au même instant en temps universel, et le pic du NO₂ du matin tombait à 7 h – 8 h). La carte convertit toutes les heures en heure de Paris à la lecture, ce qui aligne les territoires ; le fichier du jour est limité au jour de Paris, et 0 h de Paris (23 h en temps universel la veille) est reprise du fichier de la veille : le curseur et l'animation de l'onglet Indice IATMO couvrent ainsi 0 h à 23 h (depuis le 27 novembre ; auparavant, ils commençaient à 1 h). Les heures trop peu renseignées en tête de journée restent écartées par précaution, si bien que la carte de la métropole n'a pas d'heure vide. Cela aligne aussi les territoires et rapproche à la bonne heure le profil horaire de l'incrément routier, le vent AROME et le trafic. Outre-mer, la fiche au clic donne aussi l'heure locale (« 13 h à Paris, 8 h heure locale »).</li>
 
 
 <li><b>Archive des mesures du LCSQA (depuis le 18 novembre).</b> À chaque passage, la tâche extrait des fichiers du jour et de la veille une ligne par station et par heure (NO, NO₂, NOₓ, O₃, PM₁₀, PM₂,₅, SO₂ ; validités positives seulement, valeurs brutes) dans un fichier compressé par jour (environ 110 Ko pour une journée complète), gardé 180 jours, avec la table des stations (nom, organisme, implantation, influence, zone). Le fichier de la veille est réécrit tant qu'il change, de sorte que chaque jour converge vers sa version complète. Cette archive, croisée avec celle du trafic, permettra de caler l'incrément, son profil horaire, l'effet du vent et la titration sur des semaines de mesures au lieu d'une journée.</li>
@@ -746,7 +746,7 @@ e_i = z_i − ẑ₋ᵢ(x_i) = w_i / Q_ii                 erreur de prévision, 
 <ul>
 <li>Calcul sur une grille d'un nœud tous les douze à vingt-quatre pixels, interpolation bilinéaire des concentrations, puis classement pixel par pixel avec la grille de l'AEE (valeurs horaires) ; l'indice est le plus mauvais sous-indice disponible.</li>
 <li>La carte est découpée au pixel par les contours des départements, avec un bord lissé. Le krigeage est calculé sur tout le rectangle affiché, donc jusqu'au trait de côte et aux frontières ; au-delà de la dernière station, il s'agit d'une extrapolation, qui tend vers la moyenne du domaine.</li>
-<li>Le bouton ▶ placé à côté du curseur d'heure fait défiler les heures : dans l'onglet Indice IATMO, de la première à la dernière heure lue, chacune avec son propre krigeage et son propre calage horaire ; dans l'aperçu 2027, de 0 h à 23 h. Un clic met en pause sur l'heure affichée, le suivant reprend ; vitesse fixe, une heure toutes les 0,45 s (le choix entre trois vitesses a été retiré le 26 novembre). Dans l'onglet Indice IATMO, l'animation est fluide (depuis le 26 novembre) : au premier clic, la page calcule d'avance les grilles des heures à venir pour la vue affichée, par tranches qui laissent la carte utilisable ; la lecture démarre dès que les deux premières heures sont prêtes (le bouton affiche l'avancement) et le calcul se poursuit pendant la lecture. La lecture suit l'horloge de l'écran : à chaque image (jusqu'à 30 par seconde, 20 sur smartphone, moins si l'appareil ne suit pas), la position dans l'heure fixe l'interpolation linéaire des concentrations entre deux heures pleines, et l'image est dessinée dans un canevas lu directement par la carte, sans passer par une image PNG : les limites de classes glissent au lieu de sauter, au rythme d'une heure toutes les 0,45 s. Ces images intermédiaires ne sont pas des données : l'heure affichée, les fiches et la pause restent calées sur les heures pleines. Déplacer ou zoomer la carte, changer de polluant ou de jour arrête l'animation ; les grilles calculées sont gardées tant que la vue et les données ne changent pas, et la reprise après une pause est immédiate. Tout changement d'onglet ou d'heure l'arrête. À l'ouverture de l'onglet, la carte se place sur la dernière heure renseignée par au moins 40 % des stations de l'heure la plus fournie ; les heures suivantes, publiées par les seuls DROM de l'océan Indien datés à leur heure locale, restent accessibles au curseur. Avec « Demain » (prévision expérimentale du lendemain), la carte s'ouvre sur 0 h. Le lien copié garde l'heure et la date affichées ; un simple rechargement de la page revient à la dernière heure, pour ne pas masquer les heures publiées depuis. Les mesures lues sont aussi gardées par le navigateur pour la journée : elles s'affichent tout de suite à l'ouverture, mais la copie GitHub est relue à chaque fois et les remplace dès qu'elle répond ; la mémoire ne sert seule que si la copie est injoignable, et le bandeau le signale.</li>
+<li>Le bouton ▶ placé à côté du curseur d'heure fait défiler les heures : dans l'onglet Indice IATMO, de la première à la dernière heure lue, chacune avec son propre krigeage et son propre calage horaire ; dans l'aperçu 2027, de 0 h à 23 h. Un clic met en pause sur l'heure affichée, le suivant reprend ; arrivée à 23 h, l'animation s'arrête sur cette heure, et un nouveau clic la relance à 0 h du jour affiché ; vitesse fixe, une heure toutes les 0,45 s (le choix entre trois vitesses a été retiré le 26 novembre). Dans l'onglet Indice IATMO, l'animation est fluide (depuis le 26 novembre) : au premier clic, la page calcule d'avance les grilles des heures à venir pour la vue affichée, par tranches qui laissent la carte utilisable ; la lecture démarre dès que les deux premières heures sont prêtes (le bouton affiche l'avancement) et le calcul se poursuit pendant la lecture. La lecture suit l'horloge de l'écran : à chaque image (jusqu'à 30 par seconde, 20 sur smartphone, moins si l'appareil ne suit pas), la position dans l'heure fixe l'interpolation linéaire des concentrations entre deux heures pleines, et l'image est dessinée dans un canevas lu directement par la carte, sans passer par une image PNG : les limites de classes glissent au lieu de sauter, au rythme d'une heure toutes les 0,45 s. Ces images intermédiaires ne sont pas des données : l'heure affichée, les fiches et la pause restent calées sur les heures pleines. Déplacer ou zoomer la carte, changer de polluant ou de jour arrête l'animation ; les grilles calculées sont gardées tant que la vue et les données ne changent pas, et la reprise après une pause est immédiate. Tout changement d'onglet ou d'heure l'arrête. À l'ouverture de l'onglet, la carte se place sur la dernière heure renseignée par au moins 40 % des stations de l'heure la plus fournie ; les heures suivantes, publiées par les seuls DROM de l'océan Indien datés à leur heure locale, restent accessibles au curseur. Avec « Demain » (prévision expérimentale du lendemain), la carte s'ouvre sur 0 h. Le lien copié garde l'heure et la date affichées ; un simple rechargement de la page revient à la dernière heure, pour ne pas masquer les heures publiées depuis. Les mesures lues sont aussi gardées par le navigateur pour la journée : elles s'affichent tout de suite à l'ouverture, mais la copie GitHub est relue à chaque fois et les remplace dès qu'elle répond ; la mémoire ne sert seule que si la copie est injoignable, et le bandeau le signale.</li>
 <li>Outre-mer, les mesures arrivent avec plusieurs heures de décalage. Quand un territoire n'a aucune mesure de fond à l'heure choisie, la carte y utilise la dernière heure antérieure disponible, dans la limite de vingt-quatre heures, et la fiche l'indique. Les vignettes des DROM montrent le même fond krigé, sans effet de proximité routière.</li>
 <li>Au niveau quartier, le fond krigé reçoit l'incrément routier Δ<sub>p</sub> · T̂ · <i>F</i><sub>p</sub>, et l'ozone sa baisse par titration (§ 5.2, 5.4 et 5.5) : la carte de fond devient une carte avec proximité routière. La fiche donne alors les incréments ; le fond avant effet routier figure dans ses « Détails du calcul ».</li>
 </ul>
@@ -1216,7 +1216,7 @@ map.on("load",function(){
     layout:{"text-field":["get","nom_du_chef_lieu"],"text-font":["Source Sans Pro Regular"],"text-size":12},
     paint:{"text-color":"#fff","text-halo-color":"rgba(13,27,36,.9)","text-halo-width":1.4}});
 
-  map.on("idle",function(){ if(ANIM.t || ANIM.raf) return; resolveMissing(map); updateFine(false); updateGeo(false); });   // pendant l'animation, chaque image rend la carte « idle »
+  map.on("idle",function(){ if(ANIM.t || ANIM.lecture) return; resolveMissing(map); updateFine(false); updateGeo(false); });   // pendant l'animation, chaque image rend la carte « idle »
   map.on("zoom",updateScale);
   map.on("click",onClick);
   map.on("mousemove","commune-fill",function(){ map.getCanvas().style.cursor="pointer"; });
@@ -1560,7 +1560,7 @@ function cleParis(deb,dec){
   FMT_PARIS.formatToParts(new Date(t)).forEach(function(x){ pa[x.type] = x.value; });
   c = pa.year+"/"+pa.month+"/"+pa.day+" "+pa.hour; CLES_PARIS.set(k,c); return c;
 }
-function parseE2(text,fusion){
+function parseE2(text,fusion,garder){                                         // garder(hk) : filtre facultatif sur l'heure de Paris
   var lines = text.split(/\r?\n/), head = lines[0].replace(/^﻿/,"").split(";").map(function(c){ return norm(c.replace(/"/g,"")); });
   function col(test){ for(var i=0;i<head.length;i++) if(test(head[i])) return i; return -1; }
   var iDeb = col(function(c){ return /^datede.*but$/.test(c); }), iCode = col(function(c){ return c==="codesite"; }),
@@ -1581,6 +1581,7 @@ function parseE2(text,fusion){
     if(!isFinite(v)) continue;
     if(iOk>=0 && !(parseFloat(cell(c,iOk))>0)) continue;                    // mesures invalides ou manquantes écartées
     var hk = cleParis(cell(c,iDeb),decalageOrg(cell(c,iOrg)));        // heure de Paris
+    if(garder && !garder(hk)) continue;
     if(horsFond){                                                            // stations trafic urbaines : gardées à part, pour le calage de l'effet routier
       if(norm(cell(c,iInf)).indexOf("trafic")>=0 && norm(cell(c,iImp)).indexOf("urbain")>=0){
         var tla = iLat>=0 ? parseFloat(cell(c,iLat)) : NaN, tlo = iLon>=0 ? parseFloat(cell(c,iLon)) : NaN;
@@ -1640,7 +1641,15 @@ function lcsqaLire(silencieux){
       if(!r.ok){ journal.push(court(u)+" : code "+r.status); throw 0; } return r.text(); },
       function(){ clearTimeout(t); journal.push(court(u)+" : refusé par le navigateur ou injoignable"); throw 0; });
   }
-  var copie = null;                                                        // état de la copie GitHub : {maj, fichiers:{date: nom}}
+  var copie = null, luDu = "";                                             // état de la copie GitHub : {maj, fichiers:{date: nom}} ; fichier lu
+  var jourParis = function(hk){ return hk.slice(0,10)===jours[0].replace(/-/g,"/"); };
+  // 0 h de Paris = 23 h TU de la veille : cette heure est dans le fichier de la veille, lu ensuite et limité au jour de Paris
+  // (sans lui, le curseur et l'animation commençaient à 1 h). Facultatif : son absence ne bloque rien.
+  function veille(){
+    var d = jours[1], n = copie && copie.fichiers && copie.fichiers[d], u = n && luDu.indexOf(E2_COPIE)===0 ? E2_COPIE+n : E2_BASES[0]+an+"/FR_E2_"+d+".csv";
+    if(!luDu || luDu.indexOf(d)>=0 || !GEO.meas) return Promise.resolve();
+    return lire(u).then(function(txt){ try{ parseE2(txt,true,jourParis); }catch(e){} }).catch(function(){});
+  }
   var depuisCopie = lire(E2_COPIE+"etat.json").then(function(txt){
     var j = JSON.parse(txt), out = []; copie = j;
     jours.forEach(function(d){ var n = j.fichiers && j.fichiers[d]; if(n) out.push(E2_COPIE+n); });
@@ -1659,7 +1668,8 @@ function lcsqaLire(silencieux){
     function suivant(i){
       if(i>=urls.length) return Promise.reject(0);
       return lire(urls[i]).then(function(txt){
-        try{ parseE2(txt,false); }catch(e){ journal.push(court(urls[i])+" : "+e.message); throw 0; }
+        try{ parseE2(txt,false,jourParis); }catch(e){ journal.push(court(urls[i])+" : "+e.message); throw 0; }
+        luDu = urls[i];
         var hm = function(d){ return d.toLocaleTimeString("fr-FR",{timeZone:"Europe/Paris",hour:"2-digit",minute:"2-digit"}); };
         if(urls[i].indexOf(E2_COPIE)===0){
           var dm = copie && copie.maj ? new Date(copie.maj) : null, vieux = dm && !isNaN(dm) && Date.now()-dm>3*36e5; GEO.copieMaj = copie && copie.maj || null;
@@ -1668,7 +1678,7 @@ function lcsqaLire(silencieux){
       }).catch(function(){ return suivant(i+1); });
     }
     return suivant(0);
-  }).then(function(){ return prevhLire(); }).then(function(){
+  }).then(function(){ return veille(); }).then(function(){ return prevhLire(); }).then(function(){
     GEO.busy = false; GEO.msg = ""; GEO.msgDetail = null; GEO.ajout = false; geoLireMontrer(false); geoCache(); geoPrepare(); refresh(); return true;
   },function(){
     GEO.busy = false; GEO.lcsqaJournal = journal; geoLireMontrer(true);
@@ -1881,8 +1891,8 @@ function geoPrepare(){
   var src;
   if(GEO.meas && Object.keys(GEO.meas).some(coordDe)){ GEO.sim = false; src = {meas:GEO.meas,coords:null,hours:GEO.hours,counts:GEO.counts}; }
   else{ GEO.sim = true; src = GEO.demo || (GEO.demo = simFond()); }
-  // Heures de tête trop peu renseignées écartées : de 21 h à 0 h de Paris, le fichier du jour ne contient que La Réunion et Mayotte
-  // (minuit à 3 h locales), si bien que la carte de la métropole restait vide. Le curseur et l'animation commencent ainsi à 1 h.
+  // Heures de tête trop peu renseignées écartées (garde-fou) : le fichier du jour est limité au jour de Paris et 0 h est reprise
+  // du fichier de la veille (depuis le 27 novembre) ; si ce dernier manque, le curseur et l'animation commencent à 1 h.
   if(!GEO.sim && src.hours.length>1){
     var mxT = 0; src.hours.forEach(function(h){ if((src.counts[h]||0)>mxT) mxT = src.counts[h]; });
     var i0 = 0; while(i0<src.hours.length-1 && (src.counts[src.hours[i0]]||0)<0.4*mxT) i0++;
@@ -4853,9 +4863,9 @@ var curDeb = 0;
    l'heure fixe l'interpolation linéaire des concentrations entre deux heures pleines, et l'image est dessinée dans un canevas
    lu directement par la carte (source « canvas » de MapLibre, sans passage par une image PNG). Les limites de classes glissent
    au lieu de sauter ; l'heure affichée, les fiches et la pause restent calées sur les heures pleines. */
-var ANIM = {t:null, raf:0, v:1, prep:null, cache:null, i:0, i0:0, f:0, t0:0, last:0, peint:0, tmp:null, canvas:false}, VITESSES = [[900,"×1"],[450,"×2"],[1800,"×½"]];   // bouton de vitesse masqué depuis le 26 novembre
+var ANIM = {t:null, raf:0, lecture:false, v:1, prep:null, cache:null, i:0, i0:0, f:0, t0:0, last:0, peint:0, tmp:null, canvas:false}, VITESSES = [[900,"×1"],[450,"×2"],[1800,"×½"]];   // bouton de vitesse masqué depuis le 26 novembre
 var ANIM_DT = MOBILE ? 50 : 33;                                  // intervalle minimal entre deux images (ms) : 30 images/s au plus, 20 sur smartphone
-function animActif(){ return !!(ANIM.t || ANIM.raf || ANIM.prep); }
+function animActif(){ return !!(ANIM.t || ANIM.raf || ANIM.prep || ANIM.lecture); }
 function animBouton(txt,titre,on){ var b = document.getElementById("geoAnim"); b.textContent = txt; b.title = titre; b.setAttribute("aria-pressed",on ? "true" : "false"); }
 function animCanevas(on){                                                        // bascule entre l'image fixe (« geo ») et le canevas animé (« geoA »)
   var src = map.getSource("geoA"); if(!src || !map.getLayer("geoA")) return false;
@@ -4880,7 +4890,7 @@ function animCanevas(on){                                                       
 function animTexture(){ var src = map.getSource("geoA"); if(src && src.play && src.pause){ src.play(); src.pause(); } else if(src) map.triggerRepaint(); }
 function animStop(caler){
   if(ANIM.t){ clearTimeout(ANIM.t); ANIM.t = null; }
-  var lecture = !!ANIM.raf;
+  var lecture = ANIM.lecture; ANIM.lecture = false;
   if(ANIM.raf){ cancelAnimationFrame(ANIM.raf); ANIM.raf = 0; }
   if(ANIM.prep){ clearTimeout(ANIM.prep.t); ANIM.prep = null; }
   if(lecture && caler && animCacheOk()) animHeure(ANIM.i);                       // pause ou fin : heure pleine affichée, image fixe à jour
@@ -4923,7 +4933,7 @@ function animPasser(i){                                                         
   GEO.grid = geoGrille(c.cad,e.C,e.has,e.U);
   GEO.key = c.cle+"|"+i+"|"+DYN.m.join();
   updateScale();
-  setTimeout(function(){ if(ANIM.raf) updateGeoInsets(); },0);                   // vignettes des DROM, après l'image
+  setTimeout(function(){ if(ANIM.lecture) updateGeoInsets(); },0);                   // vignettes des DROM, après l'image
 }
 function animGrilleEntre(i,f){                                                   // grille interpolée entre les heures i et i+1
   var c = ANIM.cache, a = c.g[i], b = c.g[i+1];
@@ -4961,7 +4971,7 @@ function animPreparer(debut,fin,pret){                                          
     ANIM.prep.t = 0;
     if(!animCacheOk()){ animStop(); return; }                                   // vue, polluant ou données changés pendant le calcul
     if(!w) w = grilleTravail(c.cad,c.hs[todo[0]]);
-    if(grilleAvance(w,ANIM.raf ? 8 : 25)){ c.g[todo[0]] = {C:w.C,has:w.has,U:w.U,dyn:animDyn(todo[0])}; todo.shift(); w = null; }   // tranches de 8 ms pendant la lecture
+    if(grilleAvance(w,ANIM.lecture ? 8 : 25)){ c.g[todo[0]] = {C:w.C,has:w.has,U:w.U,dyn:animDyn(todo[0])}; todo.shift(); w = null; }   // tranches de 8 ms pendant la lecture
     if(!lance){
       if(assez()){ lance = true; pret(); }
       else{ var pc = Math.round(100*(n0-todo.length+(w ? w.j/c.cad.ny : 0))/Math.min(n0,2)); animBouton(Math.min(99,pc)+" %","Préparation de l'animation ; cliquer pour annuler",true); }
@@ -5014,6 +5024,7 @@ document.getElementById("geoAnim").addEventListener("click",function(){
     ANIM.i0 = ANIM.i = i0; ANIM.f = 0; ANIM.t0 = ANIM.last = performance.now(); ANIM.peint = 0; ANIM.attente = false;
     animBouton("⏸","Mettre en pause",true);
     if(!animCanevas(true)){ animStop(); return; }
+    ANIM.lecture = true;
     ANIM.raf = requestAnimationFrame(animBoucle);
   });
 });
