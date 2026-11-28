@@ -1,0 +1,13 @@
+Copie automatique de données publiques pour IATMO.
+Licences : Licence Ouverte (Etalab), sauf trafic/paris.json, base dérivée du jeu « Comptage routier – Données trafic issues des capteurs permanents » de la Ville de Paris, diffusée sous ODbL (Open Database License) : toute réutilisation cite « Ville de Paris » et reste sous ODbL. Sources à citer : Météo-France (arome/), LCSQA – Geod'air (lcsqa/, archive/), Bison Futé (trafic/points.json).
+Contenu :
+- lcsqa/ : fichiers temps réel du LCSQA (data.gouv.fr), jour et veille ;
+- trafic/ : débits et vitesses Bison Futé sur le réseau national non concédé (data.gouv.fr) : fichiers bruts du moment, dernier état par point, points.json pour IATMO, archive horaire de 60 jours ; paris.json : débits horaires des capteurs permanents de la Ville de Paris (opendata.paris.fr, ODbL), profil type par jour de la semaine et par heure (médiane des 4 derniers jours de ce type publiés, hors jours fériés et vacances scolaires de la zone C), tiré de l'archive quotidienne paris_jours/ (56 jours) ;
+- arome/ : vent à 10 m, pluie, température et humidité à 2 m AROME (Météo-France) heure par heure, aujourd'hui et demain : métropole sur une grille de 0,1° (AAAA-MM-JJ.bin et ta-AAAA-MM-JJ.bin, 30 jours gardés), DROM en AROME Outre-Mer (om-AAAA-MM-JJ.bin, om-ta-AAAA-MM-JJ.bin) ; jours du 21/10 au 21/11/2026 restaurés aux seules stations trafic (Open-Meteo) ;
+- arome/previsions/ : prévisions AROME telles qu'émises à 8 h, 12 h et 16 h, aux stations, pour les heures restantes du jour (60 jours) ;
+- prevair/ : prévisions Prev'air (Ineris) du jour et du lendemain lues aux stations, une fois par jour (400 jours) ;
+- prevision/ : prévision d'IATMO jusqu'à minuit aux stations de fond de métropole (derniere.json, lu par la carte ; archive/ : prévisions telles qu'émises, une par heure, 60 jours ; modeles.npz : copie des modèles de la branche principale) ;
+- archive/lcsqa/ : mesures horaires du LCSQA par station (NO, NO2, NOx, O3, PM10, PM2,5, SO2), un fichier compressé par jour sur 180 jours, et table des stations ;
+- suivi/ : journal des passages (3 jours), première apparition de chaque heure du LCSQA (30 jours) et performances quotidiennes du krigeage (90 jours), progression du calage (calage_jours.json, 400 jours), lus par l'onglet Évaluation ;
+- calage/ : calage de l'effet routier sur les 30 derniers jours (incrément, profil horaire, vent, pluie, trafic et confinement), lu par la carte.
+Branche réécrite à chaque passage par la tâche .github/workflows/copie_lcsqa.yml : ne pas y travailler.

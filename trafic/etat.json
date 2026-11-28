@@ -1,0 +1,32 @@
+{
+ "maj": "2026-11-28T19:20:54+01:00",
+ "points": 1389,
+ "horodatage_min": "2026-11-28T19:12:00.000+01:00",
+ "horodatage_max": "2026-11-28T19:12:00.000+01:00",
+ "types_de_donnees": {
+  "TrafficFlow": 1389,
+  "TrafficSpeed": 1389
+ },
+ "racines_xml": {
+  "fichier_1.xml": "d2LogicalModel"
+ },
+ "erreurs": [],
+ "fichiers": {
+  "fichier_1.xml": 1443824,
+  "fichier_2.html": 4207,
+  "fichier_3.csv": 122406
+ },
+ "valeurs_par_point": {
+  "1 débits / 1 vitesses": 1389
+ },
+ "archive": [
+  "2026-11-23.csv.gz",
+  "2026-11-24.csv.gz",
+  "2026-11-25.csv.gz",
+  "2026-11-26.csv.gz",
+  "2026-11-27.csv.gz",
+  "2026-11-28.csv.gz"
+ ],
+ "referentiel": 844,
+ "sections_localisees": 521
+}
